@@ -79,11 +79,15 @@ class CrossFigureConfig:
     top_k: int = 10               # per-ranking ANN candidates per query
 
     # -- cross-image keypoint verification ---------------------------------
+    # min_inliers / min_region_area calibrated on the synthetic corpus:
+    # genuine reuses measured 44-313 inliers and >= 34k px^2 grown regions,
+    # while the worst accidental matches between unrelated figures reached
+    # 9 inliers and ~1.4k px^2 — these gates sit in the wide gap between.
     ratio_threshold: float = 0.75  # Lowe ratio for A->B matches
-    min_inliers: int = 6           # RANSAC inliers needed to claim region reuse
+    min_inliers: int = 10          # RANSAC inliers needed to claim region reuse
     min_scale: float = 0.25        # sanity bounds on recovered uniform scale
     max_scale: float = 4.0
-    min_region_area: int = 400     # px^2 of grown region in the candidate image
+    min_region_area: int = 2000    # px^2 of grown region in the candidate image
     # ZNCC here runs on HIGH-PASSED images (see CrossImageRegionMatcher):
     # unlike the within-image Stage 2 case, two *different* figures share
     # smooth background shading that correlates near 1.0 locally (any two

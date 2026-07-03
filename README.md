@@ -2,7 +2,7 @@
 
 Detects image manipulation (duplicated/spliced regions, cross-figure reuse, AI-generated artifacts) in scientific paper figures and cross-checks captions against reported data using CV forensics and NLP, flagging integrity risks for reviewers and journals.
 
-## Stage 2 — Copy-Move Forgery Detector (current)
+## Stage 2 — Copy-Move Forgery Detector
 
 Classical-CV detector that finds regions duplicated *within* a single figure
 (the most common form of blot/microscopy image fraud). CPU-only, no deep
@@ -129,10 +129,94 @@ python -m pytest tests/ -v
   construction — that's a Stage 3+ problem (cross-figure matching /
   noise-inconsistency analysis).
 
+## Stage 3 — Cross-Figure Duplicate Detection (current)
+
+Finds figures that duplicate — wholly or partially — *other* figures in a
+corpus (same paper or different papers): the "same blot presented as a
+different experiment" fraud pattern. Three escalating tiers:
+
+1. **pHash lookup** (`imagehash`) — instant; catches exact/near-exact
+   whole-figure duplicates (re-saves, resizes, mild recompression).
+2. **Deep-embedding ANN search** — MobileNetV3-small (ImageNet-pretrained,
+   inference only, CPU) features indexed in FAISS. Each figure is embedded
+   as 5 views (whole + 2×2 quadrant tiles) so a reused *sub-panel* can
+   dominate a tile even when the whole-image similarity is unremarkable.
+   Candidates are the union of top-k by whole-image score and top-k by
+   tile-max score. This tier **generates leads, it does not decide**.
+3. **Cross-image keypoint verification** — the Stage 2 SIFT machinery run
+   *between* the two images (query descriptors matched against candidate
+   descriptors), RANSAC affine + high-passed ZNCC region growing. This
+   localizes exactly which region was reused and is the decisive,
+   high-confidence evidence tier.
+
+### Build the corpus index and run a query
+
+```bash
+# (optional) simulate a multi-paper corpus with known reuse cases
+python -m src.utils.synth --corpus --corpus-dir data/figure_corpus
+
+# query one figure against the corpus (index is built once and cached in
+# data/figure_corpus/.scholarguard_index, ~0.5 s/figure to build on CPU)
+python -m src.detectors.cross_figure_detector \
+    --image path/to/figure.png --corpus data/figure_corpus \
+    --output outputs/stage3_results/
+```
+
+Prints/saves a JSON report with the three match lists
+(`exact_or_near_duplicate_matches`, `visual_similarity_matches`,
+`suspected_region_reuse`) and writes a query|match side-by-side PNG for
+every verified region reuse. Add `--rebuild-index` after changing corpus
+images. From Python:
+
+```python
+from src.detectors.cross_figure_detector import CrossFigureDetector
+
+detector = CrossFigureDetector("data/figure_corpus")  # index built once
+result = detector.detect("path/to/figure.png")
+```
+
+### Evaluate against a labelled corpus
+
+```bash
+python -m src.evaluation.metrics --cross-figure data/figure_corpus --output outputs/stage3_results
+```
+
+### Stage 3 results (synthetic corpus: 24 clean figures, 7 known reuses)
+
+| metric | value |
+|---|---|
+| retrieval recall (source found, any tier) | 1.00 (7/7) |
+| … caught by pHash | 2/7 (the re-saved/brightness whole-figure dups) |
+| … via embedding candidates | 5/7 (rotated/cropped dup + all 4 panel reuses) |
+| region reuse verified by keypoints | 1.00 (7/7) |
+| clean false-flag rate (pHash/verified tiers) | 0.00 (0/24) |
+| mean query time (i3-class CPU, incl. verification) | ~5 s |
+
+Calibration notes (measured on this corpus, see `CrossFigureConfig`):
+pHash Hamming ≤ 10 (duplicates 0–2, closest unrelated pair 18); embedding
+cosine floor 0.85 — on a homogeneous corpus unrelated figures reach 0.98,
+so absolute similarity **cannot** separate reuse from coincidence and the
+embedding tier is candidate-generation only; keypoint gates `min_inliers=10`
+and `min_region_area=2000 px²` (genuine reuses measured 44–313 inliers /
+≥34k px², accidental matches ≤9 inliers / ≤1.4k px²).
+
+### Stage 3 limitations
+
+- **Flags are leads, not proof** — legitimately similar figures (same lab,
+  protocol, equipment) score high on visual similarity; every hit needs
+  human review before any action.
+- **Embedding thresholds are corpus-dependent** — on visually homogeneous
+  corpora only *rank* is informative. A reused panel that neither ranks in
+  the top-k of either scoring nor matches by pHash is missed.
+- **Same keypoint caveats as Stage 2** for the verification tier
+  (textureless panels, heavy re-editing).
+
 ### Roadmap
 
 - **Stage 1** — data collection (synthetic forgeries + real fraud cases) ✅
-- **Stage 2** — copy-move detector (this stage) ✅
-- **Stage 3+** — cross-figure duplication search, splice detection via noise
-  /compression inconsistencies, dense fallback for textureless regions,
-  caption/data cross-checking, reviewer-facing report generation.
+- **Stage 2** — within-figure copy-move detector ✅
+- **Stage 3** — cross-figure duplicate/reuse detection ✅
+- **Stage 4+** — splice detection via noise/compression inconsistencies,
+  dense fallback for textureless regions, panel segmentation (multi-panel
+  figures currently indexed whole), caption/data cross-checking,
+  reviewer-facing report generation.

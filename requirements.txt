@@ -1,6 +1,19 @@
+# Core (Stage 2)
 opencv-python==4.13.0.92
 numpy==2.5.0
 scikit-learn==1.7.1
 scipy==1.16.1
 matplotlib==3.10.6
 pytest==8.4.2
+
+# Stage 3: cross-figure duplicate detection
+imagehash==4.3.2
+faiss-cpu==1.14.3
+tqdm==4.67.1
+pillow==12.0.0
+# torch/torchvision: install the CPU-only wheels (no GPU on target machine).
+# Plain `pip install torch` may pull large CUDA builds on some platforms —
+# prefer:  pip install torch==2.9.0 torchvision==0.24.0 \
+#              --index-url https://download.pytorch.org/whl/cpu
+torch==2.9.0
+torchvision==0.24.0

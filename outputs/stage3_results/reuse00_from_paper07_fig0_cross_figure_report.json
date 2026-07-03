@@ -1,0 +1,125 @@
+{
+  "query": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\reuse00_from_paper07_fig0.png",
+  "exact_or_near_duplicate_matches": [],
+  "visual_similarity_matches": [
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper05_fig1.png",
+      "similarity_score": 0.9581,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper02_fig1.png",
+      "similarity_score": 0.9492,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper00_fig0.png",
+      "similarity_score": 0.9464,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper04_fig0.png",
+      "similarity_score": 0.9452,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper06_fig0.png",
+      "similarity_score": 0.9437,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper06_fig1.png",
+      "similarity_score": 0.943,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper07_fig2.png",
+      "similarity_score": 0.9403,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper06_fig2.png",
+      "similarity_score": 0.9397,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\dup02_of_paper05_fig0.png",
+      "similarity_score": 0.9336,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper05_fig2.png",
+      "similarity_score": 0.9299,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper03_fig2.png",
+      "similarity_score": 0.9231,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper04_fig1.png",
+      "similarity_score": 0.9143,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper07_fig0.png",
+      "similarity_score": 0.9034,
+      "confidence_level": "low",
+      "method": "embedding"
+    },
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\reuse03_from_paper01_fig2.png",
+      "similarity_score": 0.903,
+      "confidence_level": "low",
+      "method": "embedding"
+    }
+  ],
+  "suspected_region_reuse": [
+    {
+      "matched_image_path": "C:\\Users\\HPSMG\\Desktop\\AI-Powered-Scientific-Figure-Fraud-Detector\\data\\figure_corpus\\paper07_fig0.png",
+      "similarity_score": 0.9914,
+      "confidence_level": "high",
+      "method": "keypoint_region",
+      "n_inliers": 97,
+      "query_bbox": [
+        84,
+        16,
+        278,
+        149
+      ],
+      "matched_bbox": [
+        248,
+        287,
+        278,
+        149
+      ],
+      "transform": [
+        [
+          0.9999371787716216,
+          -9.83816263624857e-05,
+          164.01737346648
+        ],
+        [
+          9.83816263624857e-05,
+          0.9999371787716216,
+          270.99746668147156
+        ]
+      ],
+      "mean_corr": 0.9786
+    }
+  ],
+  "note": "Matches are leads for human review, not proof of misconduct: legitimately similar figures can score high."
+}
