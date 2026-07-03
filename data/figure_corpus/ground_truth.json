@@ -1,0 +1,65 @@
+{
+  "pairs": [
+    {
+      "query": "dup00_of_paper07_fig1.png",
+      "source": "paper07_fig1.png",
+      "type": "whole_recompress"
+    },
+    {
+      "query": "dup01_of_paper06_fig0.png",
+      "source": "paper06_fig0.png",
+      "type": "whole_brightness"
+    },
+    {
+      "query": "dup02_of_paper05_fig0.png",
+      "source": "paper05_fig0.png",
+      "type": "whole_rotate_crop"
+    },
+    {
+      "query": "reuse00_from_paper07_fig0.png",
+      "source": "paper07_fig0.png",
+      "type": "panel"
+    },
+    {
+      "query": "reuse01_from_paper02_fig1.png",
+      "source": "paper02_fig1.png",
+      "type": "panel"
+    },
+    {
+      "query": "reuse02_from_paper01_fig1.png",
+      "source": "paper01_fig1.png",
+      "type": "panel"
+    },
+    {
+      "query": "reuse03_from_paper01_fig2.png",
+      "source": "paper01_fig2.png",
+      "type": "panel"
+    }
+  ],
+  "clean": [
+    "paper00_fig0.png",
+    "paper00_fig1.png",
+    "paper00_fig2.png",
+    "paper01_fig0.png",
+    "paper01_fig1.png",
+    "paper01_fig2.png",
+    "paper02_fig0.png",
+    "paper02_fig1.png",
+    "paper02_fig2.png",
+    "paper03_fig0.png",
+    "paper03_fig1.png",
+    "paper03_fig2.png",
+    "paper04_fig0.png",
+    "paper04_fig1.png",
+    "paper04_fig2.png",
+    "paper05_fig0.png",
+    "paper05_fig1.png",
+    "paper05_fig2.png",
+    "paper06_fig0.png",
+    "paper06_fig1.png",
+    "paper06_fig2.png",
+    "paper07_fig0.png",
+    "paper07_fig1.png",
+    "paper07_fig2.png"
+  ]
+}
