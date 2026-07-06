@@ -248,6 +248,84 @@ def evaluate_cross_figure(
     return summary
 
 
+def evaluate_ai_generation(
+    real_dir: str = "data/real_captured_samples",
+    ai_dir: str = "data/ai_generated_samples",
+    output_dir: str = "outputs/stage4_results",
+    weights_path: str | None = None,
+) -> dict:
+    """Benchmark the AI-generation detector on labelled real / AI folders.
+
+    Treats ``likely_ai_generated`` (and, as a softer positive,
+    ``suspicious``) as an AI prediction. Reports strict accuracy (only
+    ``likely_ai_generated`` counts as AI) and lenient recall (``suspicious``
+    counts too), plus mean forensic scores per class. Writes a per-image CSV.
+    """
+    from src.detectors.ai_generation_detector import (
+        LIKELY_AI, LIKELY_REAL, SUSPICIOUS, detect_ai_generation,
+    )
+
+    os.makedirs(output_dir, exist_ok=True)
+    rows: list[dict] = []
+    jobs = ([(p, "real") for p in list_images(real_dir)]
+            + [(p, "ai_generated") for p in list_images(ai_dir)])
+
+    for image_path, label in jobs:
+        start = time.perf_counter()
+        result = detect_ai_generation(image_path, weights_path=weights_path)
+        elapsed = time.perf_counter() - start
+        verdict = result["combined_verdict"]
+        rows.append({
+            "image": os.path.basename(image_path),
+            "true_label": label,
+            "verdict": verdict,
+            "freq_score": result["frequency_anomaly_score"],
+            "noise_score": result["noise_residual_anomaly_score"],
+            "classifier_score": result["classifier_score"],
+            "flagged_ai_strict": verdict == LIKELY_AI,
+            "flagged_ai_lenient": verdict in (LIKELY_AI, SUSPICIOUS),
+            "runtime_sec": round(elapsed, 2),
+        })
+
+    csv_path = os.path.join(output_dir, "ai_generation_results.csv")
+    with open(csv_path, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+
+    ai_rows = [r for r in rows if r["true_label"] == "ai_generated"]
+    real_rows = [r for r in rows if r["true_label"] == "real"]
+
+    def _mean(subset, key):
+        return float(np.mean([r[key] for r in subset])) if subset else 0.0
+
+    # Strict accuracy: AI must be "likely_ai_generated", real must be
+    # "likely_real" (a "suspicious" real is a soft false positive).
+    correct_strict = (sum(r["flagged_ai_strict"] for r in ai_rows)
+                      + sum(r["verdict"] == LIKELY_REAL for r in real_rows))
+    summary = {
+        "n_real": len(real_rows),
+        "n_ai": len(ai_rows),
+        "ai_recall_strict": (sum(r["flagged_ai_strict"] for r in ai_rows)
+                             / len(ai_rows) if ai_rows else 0.0),
+        "ai_recall_lenient": (sum(r["flagged_ai_lenient"] for r in ai_rows)
+                              / len(ai_rows) if ai_rows else 0.0),
+        "real_flagged_rate_strict": (sum(r["flagged_ai_strict"] for r in real_rows)
+                                     / len(real_rows) if real_rows else 0.0),
+        "real_suspicious_rate": (sum(r["flagged_ai_lenient"] for r in real_rows)
+                                 / len(real_rows) if real_rows else 0.0),
+        "strict_accuracy": correct_strict / len(rows) if rows else 0.0,
+        "mean_freq_real": _mean(real_rows, "freq_score"),
+        "mean_freq_ai": _mean(ai_rows, "freq_score"),
+        "mean_noise_real": _mean(real_rows, "noise_score"),
+        "mean_noise_ai": _mean(ai_rows, "noise_score"),
+        "classifier_used": any(r["classifier_score"] is not None for r in rows),
+        "mean_runtime_sec": _mean(rows, "runtime_sec"),
+        "csv_path": csv_path,
+    }
+    return summary
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="evaluate ScholarGuard detectors")
     parser.add_argument("--data", default="data/synthetic",
@@ -260,9 +338,22 @@ def main(argv=None) -> int:
     parser.add_argument("--cross-figure", metavar="CORPUS_DIR", default=None,
                         help="run the Stage 3 cross-figure evaluation on this "
                              "corpus instead of the Stage 2 evaluation")
+    parser.add_argument("--ai-generation", action="store_true",
+                        help="run the Stage 4 AI-generation evaluation")
+    parser.add_argument("--real-dir", default="data/real_captured_samples")
+    parser.add_argument("--ai-dir", default="data/ai_generated_samples")
+    parser.add_argument("--weights", default=None,
+                        help="optional artifact_classifier.pt for Stage 4")
     args = parser.parse_args(argv)
 
-    if args.cross_figure:
+    if args.ai_generation:
+        summary = evaluate_ai_generation(
+            args.real_dir, args.ai_dir,
+            output_dir=args.output or "outputs/stage4_results",
+            weights_path=args.weights,
+        )
+        print("=== ScholarGuard Stage 4 AI-generation evaluation ===")
+    elif args.cross_figure:
         summary = evaluate_cross_figure(
             args.cross_figure, output_dir=args.output or "outputs/stage3_results"
         )

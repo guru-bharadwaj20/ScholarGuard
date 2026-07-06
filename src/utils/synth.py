@@ -276,6 +276,97 @@ def generate_figure_corpus(
     return ground_truth
 
 
+# --------------------------------------------------------------------------
+# Stage 4: real-vs-AI-generated figure samples for the generation detector
+# --------------------------------------------------------------------------
+def apply_generative_artifacts(
+    image: np.ndarray, rng: np.random.Generator
+) -> np.ndarray:
+    """Bake the *forensic signatures* of a generative model into an image.
+
+    This is a LOCAL STAND-IN for real GAN/diffusion output — it does not
+    call any generator. It reproduces the three artifacts the Stage 4
+    forensics modules key on, so the pipeline can be built and validated
+    end-to-end on a CPU-only laptop:
+
+    1. **Over-smoothed sensor noise** — a strong denoise (bilateral +
+       Gaussian) strips the broadband high-frequency noise floor, leaving
+       an unnaturally weak, spatially-correlated residual (as diffusion
+       decoders do).
+    2. **Periodic upsampling grid** — a faint checkerboard added at a fixed
+       stride, mimicking transposed-convolution ("deconv") artifacts that
+       show up as periodic peaks in the spectrum.
+    3. **Mild recompression** — as republished generated images usually get.
+
+    For PRODUCTION, replace ``data/ai_generated_samples/`` with genuine
+    generator output (see colab/train_artifact_classifier.ipynb) — these
+    synthetic samples are for wiring/validation, not a substitute for real
+    diffusion data.
+    """
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image
+
+    # 1. Over-smooth: remove the sensor noise floor.
+    smooth = cv2.bilateralFilter(gray, 7, 40, 40)
+    smooth = cv2.GaussianBlur(smooth, (0, 0), 0.8).astype(np.float32)
+
+    # 2. Periodic grid (checkerboard) from a fixed upsampling stride.
+    h, w = smooth.shape
+    stride = int(rng.choice([2, 4]))
+    yy, xx = np.mgrid[0:h, 0:w]
+    grid = ((yy % stride) < stride // 2) ^ ((xx % stride) < stride // 2)
+    smooth += (grid.astype(np.float32) - 0.5) * rng.uniform(2.5, 4.0)
+
+    # A whisper of low-amplitude, spatially-smooth "generator noise" (NOT
+    # the broadband white noise a real sensor leaves).
+    gen_noise = cv2.GaussianBlur(
+        rng.normal(0, 1, (h, w)).astype(np.float32), (0, 0), 1.2
+    )
+    smooth += 1.2 * gen_noise
+
+    out = np.clip(smooth, 0, 255).astype(np.uint8)
+    out = cv2.cvtColor(out, cv2.COLOR_GRAY2BGR)
+
+    # 3. Mild JPEG recompression.
+    quality = int(rng.integers(70, 90))
+    ok, buf = cv2.imencode(".jpg", out, [cv2.IMWRITE_JPEG_QUALITY, quality])
+    if ok:
+        out = cv2.imdecode(buf, cv2.IMREAD_COLOR)
+    return out
+
+
+def generate_ai_detection_dataset(
+    ai_dir: str = "data/ai_generated_samples",
+    real_dir: str = "data/real_captured_samples",
+    n_each: int = 120,
+    seed: int = 202,
+) -> dict:
+    """Write paired real / AI-generated sample sets for Stage 4.
+
+    ``real`` samples are ``make_base_figure`` outputs (broadband sensor
+    noise); ``ai`` samples are the same content pushed through
+    :func:`apply_generative_artifacts`. Files are named ``real_NNN.png`` /
+    ``ai_NNN.png``. Returns ``{"real": [...], "ai": [...]}``.
+    """
+    rng = np.random.default_rng(seed)
+    os.makedirs(ai_dir, exist_ok=True)
+    os.makedirs(real_dir, exist_ok=True)
+    written = {"real": [], "ai": []}
+
+    for i in range(n_each):
+        size = (int(rng.integers(420, 560)), int(rng.integers(520, 700)))
+        base = make_base_figure(rng, size=size)
+
+        real_path = os.path.join(real_dir, f"real_{i:03d}.png")
+        save_image(base, real_path)
+        written["real"].append(real_path)
+
+        ai_path = os.path.join(ai_dir, f"ai_{i:03d}.png")
+        save_image(apply_generative_artifacts(base, rng), ai_path)
+        written["ai"].append(ai_path)
+
+    return written
+
+
 if __name__ == "__main__":
     import argparse
 
@@ -288,9 +379,20 @@ if __name__ == "__main__":
     parser.add_argument("--corpus", action="store_true",
                         help="generate the Stage 3 figure corpus instead")
     parser.add_argument("--corpus-dir", default="data/figure_corpus")
+    parser.add_argument("--ai", action="store_true",
+                        help="generate the Stage 4 real-vs-AI dataset instead")
+    parser.add_argument("--ai-dir", default="data/ai_generated_samples")
+    parser.add_argument("--real-dir", default="data/real_captured_samples")
+    parser.add_argument("--n-each", type=int, default=120)
     args = parser.parse_args()
 
-    if args.corpus:
+    if args.ai:
+        written = generate_ai_detection_dataset(
+            args.ai_dir, args.real_dir, n_each=args.n_each, seed=args.seed
+        )
+        print(f"wrote {len(written['real'])} real -> {args.real_dir}, "
+              f"{len(written['ai'])} AI-generated -> {args.ai_dir}")
+    elif args.corpus:
         gt = generate_figure_corpus(args.corpus_dir, seed=args.seed)
         print(f"wrote corpus to {args.corpus_dir}: "
               f"{len(gt['clean'])} originals, {len(gt['pairs'])} reuse cases")

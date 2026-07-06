@@ -11,6 +11,13 @@ imagehash==4.3.2
 faiss-cpu==1.14.3
 tqdm==4.67.1
 pillow==12.0.0
+
+# Stage 4: AI-generation detection
+# scipy/numpy (above) cover the FFT; PyWavelets drives the PRNU-style
+# wavelet noise-residual denoiser. torch/torchvision (below, from Stage 3)
+# are reused for the optional artifact classifier — inference runs on CPU;
+# training happens on GPU in colab/train_artifact_classifier.ipynb.
+PyWavelets==1.9.0
 # torch/torchvision: install the CPU-only wheels (no GPU on target machine).
 # Plain `pip install torch` may pull large CUDA builds on some platforms —
 # prefer:  pip install torch==2.9.0 torchvision==0.24.0 \

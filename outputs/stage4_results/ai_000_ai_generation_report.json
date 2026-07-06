@@ -1,0 +1,10 @@
+{
+  "frequency_anomaly_score": 0.6871,
+  "noise_residual_anomaly_score": 0.5831,
+  "classifier_score": null,
+  "combined_verdict": "likely_ai_generated",
+  "explanation": "frequency spectrum is anomalous (0.69): periodicity=0.89, falloff_gap=-7.3; noise residual is unnatural (0.58): autocorr=0.89, flatness=0.03; no classifier weights loaded \u2014 verdict from forensic signals only (train via colab notebook for stronger calls)",
+  "image": "data/ai_generated_samples/ai_000.png",
+  "classifier_weights_present": false,
+  "note": "Verdicts are leads for human review, not proof. Forensic-only mode cannot catch every generator."
+}

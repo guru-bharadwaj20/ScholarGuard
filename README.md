@@ -211,12 +211,125 @@ and `min_region_area=2000 px²` (genuine reuses measured 44–313 inliers /
 - **Same keypoint caveats as Stage 2** for the verification tier
   (textureless panels, heavy re-editing).
 
+## Stage 4 — AI-Generation Detection (current)
+
+Flags whether a figure (or region) was likely produced by a generative
+model (GAN/diffusion) rather than captured by a real instrument — the
+"fabricate data wholesale with AI" fraud pattern. Three signals, combined
+by a documented rule:
+
+1. **Frequency anomaly** ([frequency_analysis.py](src/forensics/frequency_analysis.py))
+   — CPU, training-free. Radial power-spectrum falloff, power-law fit
+   quality, high-frequency suppression, and periodic upsampling ("deconv"
+   grid) peaks.
+2. **Noise-residual anomaly** ([noise_residual.py](src/forensics/noise_residual.py))
+   — CPU, training-free. PRNU-style wavelet residual: energy, lag-1 spatial
+   autocorrelation, and spectral whiteness of the sensor-noise field.
+3. **Learned classifier** ([artifact_classifier.py](src/models/artifact_classifier.py))
+   — *optional*. MobileNetV3-small fine-tuned on **GPU (Colab)**; inference
+   runs (slowly) on CPU. Absent until you train and drop in weights.
+
+**The first two run fully locally with no GPU and no training.** The
+detector works on those alone and gracefully adds the classifier when
+`src/models/weights/artifact_classifier.pt` is present.
+
+### Run local-only detection (no GPU needed)
+
+```bash
+# (optional) generate a real-vs-AI sample set for testing
+python -m src.utils.synth --ai --n-each 120
+
+python -m src.detectors.ai_generation_detector \
+    --image path/to/figure.png --output outputs/stage4_results/
+```
+
+Writes a JSON report (`frequency_anomaly_score`, `noise_residual_anomaly_score`,
+`classifier_score` — `null` without weights, `combined_verdict`,
+`explanation`) and a spectrum heatmap PNG. From Python:
+
+```python
+from src.detectors.ai_generation_detector import detect_ai_generation
+result = detect_ai_generation("figure.png")               # forensics only
+result = detect_ai_generation("figure.png", weights_path="src/models/weights/artifact_classifier.pt")
+```
+
+### Train the classifier on Colab and plug weights back in
+
+1. Open [colab/train_artifact_classifier.ipynb](colab/train_artifact_classifier.ipynb)
+   in Colab, set the runtime to **GPU (T4)**.
+2. Upload your `real_captured_samples/` and `ai_generated_samples/` (Drive
+   mount or zip upload). Use **genuine** captures + **real** generator
+   output for a model that generalizes — the synthetic stand-ins are only
+   for wiring/validation.
+3. Run all cells (~3–6 min on a free T4). It exports
+   `artifact_classifier.pt` (checkpoint schema matches `classify_artifact`).
+4. Place it at `src/models/weights/artifact_classifier.pt`. The local
+   detector picks it up automatically and blends it in.
+
+### Signal combination (documented — it's a judgment call)
+
+`forensic = 0.5·freq + 0.5·noise` (independent artifacts → unweighted mean).
+- **No weights:** threshold `forensic` → `<0.35` `likely_real`, `0.35–0.55`
+  `suspicious`, `≥0.55` `likely_ai_generated`.
+- **With weights:** `combined = 0.6·p_ai + 0.4·forensic`, thresholded at
+  0.4/0.6. If classifier and forensics disagree strongly (`|p_ai−forensic| ≥
+  0.5`) the verdict is pinned to `suspicious` and the conflict is surfaced —
+  neither signal silently overrides the other.
+
+### Evaluate on labelled folders
+
+```bash
+python -m src.evaluation.metrics --ai-generation --output outputs/stage4_results
+```
+
+### Stage 4 results — forensics only, no classifier (120 real + 120 AI)
+
+| metric | value |
+|---|---|
+| AI recall, strict (`likely_ai_generated`) | 0.70 |
+| AI recall, lenient (`suspicious` or stronger) | 1.00 |
+| real images falsely flagged AI (strict) | 0.00 |
+| real images called `suspicious` | 0.00 |
+| strict accuracy | 0.85 |
+| mean freq score (real / AI) | 0.22 / 0.61 |
+| mean noise score (real / AI) | 0.12 / 0.56 |
+| mean runtime / image (CPU) | ~0.3 s |
+
+**Honest read:** frequency + noise cleanly separate *these* signatures
+(0 real false positives, every AI image at least `suspicious`), but only
+70% of AI images clear the confident `likely_ai_generated` bar — the other
+30% land in `suspicious`. That gap **is the point of the classifier**: it
+learns generator fingerprints the hand-crafted forensics can't name, and
+turns "suspicious" into a confident call. These numbers are on **synthetic
+stand-in** generative artifacts; real diffusion/GAN output will shift the
+distributions and the thresholds must be re-calibrated (and the classifier
+retrained) on genuine data.
+
+### Stage 4 limitations
+
+- **Verdicts are leads, not proof** — never an automated accusation.
+- **Forensic thresholds are signature-specific** — heavy JPEG recompression,
+  downscaling, or print-scan cycles alter the spectrum/noise of *real*
+  images too and can raise their scores; a generator that deliberately
+  re-injects sensor-like noise can lower its own. Re-calibrate per corpus.
+- **Synthetic training data ≠ real generators** — the shipped samples mimic
+  the *forensic signatures* (over-smoothing, deconv grid) but are not real
+  diffusion output; treat local numbers as a wiring check.
+
+### What Stage 5 (NLP claim-consistency) consumes from Stage 4
+
+Stage 5 cross-checks figure captions/claims against detected integrity
+issues. From this stage it takes, per figure: `combined_verdict`, the two
+forensic scores + `classifier_score`, and the `explanation` string — so a
+claim like "representative micrograph" over a `likely_ai_generated` panel
+becomes a high-priority, human-readable flag in the reviewer report.
+
 ### Roadmap
 
 - **Stage 1** — data collection (synthetic forgeries + real fraud cases) ✅
 - **Stage 2** — within-figure copy-move detector ✅
 - **Stage 3** — cross-figure duplicate/reuse detection ✅
-- **Stage 4+** — splice detection via noise/compression inconsistencies,
-  dense fallback for textureless regions, panel segmentation (multi-panel
-  figures currently indexed whole), caption/data cross-checking,
-  reviewer-facing report generation.
+- **Stage 4** — AI-generation detection (frequency + noise + optional CNN) ✅
+- **Stage 5+** — NLP caption/claim-consistency checking, splice detection via
+  noise/compression inconsistencies, dense fallback for textureless regions,
+  panel segmentation, reviewer-facing report generation.

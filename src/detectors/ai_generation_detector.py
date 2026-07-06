@@ -1,0 +1,195 @@
+"""AI-generation detector (Stage 4 orchestrator).
+
+Flags whether a scientific figure was likely produced by a generative
+model (GAN/diffusion) rather than captured by a real instrument. Combines
+three signals:
+
+    1. **Frequency anomaly**  (src.forensics.frequency_analysis) — CPU,
+       training-free. Spectral falloff + periodic upsampling artifacts.
+    2. **Noise-residual anomaly** (src.forensics.noise_residual) — CPU,
+       training-free. PRNU-style sensor-noise statistics.
+    3. **Learned classifier** (src.models.artifact_classifier) — optional;
+       MobileNetV3-small fine-tuned on GPU (Colab) and loaded for inference.
+       ``None`` when weights are not yet available.
+
+Signal combination (documented, since it is a judgment call)
+------------------------------------------------------------
+The two forensic scores are averaged into ``forensic = 0.5*freq +
+0.5*noise`` (they probe independent artifacts — spectrum vs. spatial noise
+— so an unweighted mean is the honest default).
+
+* **No classifier weights:** the verdict is a pure threshold on the
+  forensic score. Calibrated on the Stage 4 sample set (real forensic
+  ~0.17, synthetic ~0.55): ``< 0.35`` -> ``likely_real``; ``[0.35, 0.55)``
+  -> ``suspicious``; ``>= 0.55`` -> ``likely_ai_generated``. Because the
+  forensics cannot confidently catch every generator, many true synthetics
+  land only in ``suspicious`` here — that is the honest ceiling of the
+  training-free tier, and the reason the classifier exists.
+
+* **With classifier weights:** the learned model is the primary signal
+  (it can see artifacts the hand-crafted forensics miss). We blend
+  ``combined = 0.6*p_ai + 0.4*forensic`` and threshold at 0.5 /
+  ``suspicious`` band 0.4-0.6. The forensics still contribute so a
+  confident forensic hit isn't fully overridden by a wrong classifier and
+  vice-versa. When the classifier and forensics strongly *disagree* the
+  verdict is pinned to ``suspicious`` and the disagreement is surfaced in
+  the explanation, rather than silently trusting either.
+
+Every verdict is a **lead for human review**, never an accusation.
+
+CLI usage:
+    python -m src.detectors.ai_generation_detector \
+        --image path/to/figure.png --output outputs/stage4_results/
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+
+from src.forensics.frequency_analysis import analyze_frequency_spectrum
+from src.forensics.noise_residual import analyze_noise_residual
+from src.models.artifact_classifier import classify_artifact, weights_available
+
+# Verdict labels.
+LIKELY_REAL = "likely_real"
+SUSPICIOUS = "suspicious"
+LIKELY_AI = "likely_ai_generated"
+
+# Forensic-only thresholds (calibrated on the Stage 4 sample set).
+FORENSIC_LOW = 0.35
+FORENSIC_HIGH = 0.55
+# Classifier-blended thresholds.
+COMBINED_LOW = 0.40
+COMBINED_HIGH = 0.60
+# |p_ai - forensic| above this counts as a strong disagreement.
+DISAGREEMENT_MARGIN = 0.5
+
+
+def _forensic_verdict(forensic: float) -> str:
+    if forensic < FORENSIC_LOW:
+        return LIKELY_REAL
+    if forensic < FORENSIC_HIGH:
+        return SUSPICIOUS
+    return LIKELY_AI
+
+
+def _combined_verdict(combined: float) -> str:
+    if combined < COMBINED_LOW:
+        return LIKELY_REAL
+    if combined < COMBINED_HIGH:
+        return SUSPICIOUS
+    return LIKELY_AI
+
+
+def detect_ai_generation(image_path: str, weights_path: str | None = None) -> dict:
+    """Assess whether ``image_path`` is AI-generated.
+
+    Returns:
+    {
+        "frequency_anomaly_score": float,       # 0..1
+        "noise_residual_anomaly_score": float,  # 0..1
+        "classifier_score": float | None,       # p(AI); None if no weights
+        "combined_verdict": str,                # likely_real/suspicious/likely_ai_generated
+        "explanation": str,                     # which signals fired
+        "details": {...},                       # raw forensic feature dicts
+    }
+    """
+    freq = analyze_frequency_spectrum(image_path)
+    noise = analyze_noise_residual(image_path)
+    freq_score = freq["anomaly_score"]
+    noise_score = noise["anomaly_score"]
+    forensic = 0.5 * freq_score + 0.5 * noise_score
+
+    classifier = classify_artifact(image_path, weights_path)
+    reasons: list[str] = []
+
+    # Describe the forensic signals in words.
+    if freq_score >= FORENSIC_HIGH:
+        reasons.append(f"frequency spectrum is anomalous ({freq_score:.2f}): "
+                       f"periodicity={freq['periodicity']:.2f}, "
+                       f"falloff_gap={freq['high_freq_falloff']:.1f}")
+    if noise_score >= FORENSIC_HIGH:
+        reasons.append(f"noise residual is unnatural ({noise_score:.2f}): "
+                       f"autocorr={noise['autocorrelation']:.2f}, "
+                       f"flatness={noise['spectral_flatness']:.2f}")
+
+    if classifier is None:
+        verdict = _forensic_verdict(forensic)
+        classifier_score = None
+        if not reasons:
+            reasons.append(f"frequency ({freq_score:.2f}) and noise "
+                           f"({noise_score:.2f}) signals within natural range"
+                           if verdict == LIKELY_REAL else
+                           f"forensic signals mildly elevated "
+                           f"(freq {freq_score:.2f}, noise {noise_score:.2f})")
+        reasons.append("no classifier weights loaded — verdict from forensic "
+                       "signals only (train via colab notebook for stronger calls)")
+    else:
+        classifier_score = classifier["p_ai_generated"]
+        combined = 0.6 * classifier_score + 0.4 * forensic
+        disagreement = abs(classifier_score - forensic)
+        if disagreement >= DISAGREEMENT_MARGIN:
+            verdict = SUSPICIOUS
+            reasons.append(
+                f"classifier (p_ai={classifier_score:.2f}) and forensics "
+                f"(score={forensic:.2f}) strongly disagree — flagged for review")
+        else:
+            verdict = _combined_verdict(combined)
+            reasons.append(f"classifier p_ai={classifier_score:.2f} "
+                           f"(val_acc={classifier.get('val_accuracy')})")
+
+    if not reasons:
+        reasons.append("no anomalous signals detected")
+
+    return {
+        "frequency_anomaly_score": round(freq_score, 4),
+        "noise_residual_anomaly_score": round(noise_score, 4),
+        "classifier_score": (round(classifier_score, 4)
+                             if classifier_score is not None else None),
+        "combined_verdict": verdict,
+        "explanation": "; ".join(reasons),
+        "details": {
+            "forensic_score": round(forensic, 4),
+            "frequency": freq,
+            "noise_residual": noise,
+            "classifier_available": classifier is not None,
+        },
+    }
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description="ScholarGuard AI-generation detector")
+    parser.add_argument("--image", required=True, help="figure image to assess")
+    parser.add_argument("--output", default="outputs/stage4_results",
+                        help="directory for the JSON report + spectrum heatmap")
+    parser.add_argument("--weights", default=None,
+                        help="path to artifact_classifier.pt (optional)")
+    parser.add_argument("--no-heatmap", action="store_true")
+    args = parser.parse_args(argv)
+
+    result = detect_ai_generation(args.image, weights_path=args.weights)
+
+    os.makedirs(args.output, exist_ok=True)
+    stem = os.path.splitext(os.path.basename(args.image))[0]
+    if not args.no_heatmap:
+        analyze_frequency_spectrum(
+            args.image, heatmap_path=os.path.join(args.output, f"{stem}_spectrum.png")
+        )
+
+    report = {k: v for k, v in result.items() if k != "details"}
+    report["image"] = args.image
+    report["classifier_weights_present"] = weights_available(args.weights)
+    report["note"] = ("Verdicts are leads for human review, not proof. "
+                       "Forensic-only mode cannot catch every generator.")
+    report_path = os.path.join(args.output, f"{stem}_ai_generation_report.json")
+    with open(report_path, "w", encoding="utf-8") as fh:
+        json.dump(report, fh, indent=2)
+    print(json.dumps(report, indent=2))
+    print(f"\nreport saved to {report_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
