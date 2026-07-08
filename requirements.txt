@@ -29,6 +29,10 @@ torchvision==0.24.0
 # PyYAML parses the single config.yaml source of truth.
 PyYAML==6.0.3
 
+# Data acquisition: fetch real figures from PubMed Central Open Access.
+# tqdm + pillow are already listed above; requests is the HTTP client.
+requests==2.32.4
+
 # Stage 5: NLP claim-consistency checking
 # pymupdf (fitz) parses PDFs and extracts embedded figure images; anthropic is
 # the Claude API SDK (the LLM claim extractor); python-dotenv lets the API key

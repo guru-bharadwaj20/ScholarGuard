@@ -18,6 +18,50 @@ Everything is configured in [src/config/config.yaml](src/config/config.yaml)
 (see the [Stage 6 section](#stage-6--unified-pipeline-current)). The stage
 sections below document each detector individually.
 
+## Building a real figure corpus (PubMed Central Open Access)
+
+Populate `data/clean/` (and `data/figure_corpus/`) with **real** scientific
+figures from PubMed Central's Open Access subset, instead of synthetic
+stand-ins. [scripts/fetch_corpus.py](scripts/fetch_corpus.py) searches PMC,
+downloads each paper's OA package, extracts + dimension-filters the figure
+images, skips retracted papers, respects NCBI's rate limits, and records
+everything in a resumable manifest.
+
+### Setup (required by NCBI usage policy)
+
+```bash
+export NCBI_CONTACT_EMAIL=you@institution.edu   # REQUIRED — a real contact email
+export NCBI_API_KEY=your_ncbi_key               # OPTIONAL — raises 3/s -> 10/s
+```
+
+`NCBI_CONTACT_EMAIL` is read from the environment (never hardcoded); the script
+errors clearly if it is unset. With `NCBI_API_KEY` present the rate limiter
+auto-switches from 3 to 10 requests/second.
+
+### Run
+
+```bash
+python scripts/fetch_corpus.py --search-terms "western blot" "immunoblot" \
+    --target-count 300 --output-dir data/clean
+python scripts/fetch_corpus.py --search-terms "microscopy panel" \
+    --target-count 150 --output-dir data/figure_corpus
+```
+
+Options: `--min-image-dim` (default 200 px shorter side — drops icons/logos),
+`--max-package-mb` (default 50 — skips huge supplementary files),
+`--retmax-per-term`, `--manifest`, `--raw-dir`.
+
+- **Resumable:** every processed PMCID is recorded in `data/manifest.json`, so
+  re-running never re-downloads or re-processes a paper.
+- **Attribution:** each manifest entry records the paper's license (e.g.
+  `CC BY`, `CC BY-NC`), DOI, title, and saved image paths — check the license
+  before any use beyond personal research.
+- **Robust:** one paper failing (no OA package, download error, no qualifying
+  images, size cap) is logged and skipped; the run continues. A final summary
+  groups skips by reason.
+- **Clean only:** retracted papers (`retracted="yes"`) are skipped — this
+  script builds the legitimate corpus; retracted-case sourcing is separate.
+
 ## Stage 2 — Copy-Move Forgery Detector
 
 Classical-CV detector that finds regions duplicated *within* a single figure
