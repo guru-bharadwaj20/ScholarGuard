@@ -211,7 +211,7 @@ and `min_region_area=2000 px²` (genuine reuses measured 44–313 inliers /
 - **Same keypoint caveats as Stage 2** for the verification tier
   (textureless panels, heavy re-editing).
 
-## Stage 4 — AI-Generation Detection (current)
+## Stage 4 — AI-Generation Detection
 
 Flags whether a figure (or region) was likely produced by a generative
 model (GAN/diffusion) rather than captured by a real instrument — the
@@ -324,12 +324,129 @@ forensic scores + `classifier_score`, and the `explanation` string — so a
 claim like "representative micrograph" over a `likely_ai_generated` panel
 becomes a high-priority, human-readable flag in the reviewer report.
 
+## Stage 5 — Claim-Consistency Checking (current)
+
+An NLP layer that reads a paper's **PDF** (text + figures) and checks whether
+the written claims about each figure match what the figure shows and what the
+image-forensic detectors found. Targets textual inconsistency — a common
+accompanying signal in real fraud (e.g. "n = 12 independent replicates" over a
+figure showing 4 lanes).
+
+### Pipeline
+
+1. **PDF parsing** ([pdf_parser.py](src/nlp/pdf_parser.py)) — PyMuPDF extracts
+   text split by section (Abstract/Methods/Results/…), figure captions
+   (`Figure N` / `Fig. N` regex), the surrounding results context for each
+   figure, and the **embedded figure images** to disk.
+2. **Claim extraction** ([claim_extractor.py](src/nlp/claim_extractor.py)) —
+   the Claude API ([llm/client.py](src/llm/client.py)) extracts structured
+   claims (sample size, panel/lane count, p-values, fold-changes, error bars).
+   The call uses **structured outputs** (`output_config.format` + a JSON
+   Schema), so the response is *guaranteed* to parse and match the schema —
+   no fragile "please output JSON" prompting. Prompts live in
+   [llm/prompts.py](src/llm/prompts.py).
+3. **Consistency checking** ([consistency_checker.py](src/nlp/consistency_checker.py))
+   — compares claims against (a) an **approximate** visual element count
+   (classical CV: connected components + column-projection lane peaks) and
+   (b) the Stage 2/3/4 detector flags as a strong prior.
+4. **Orchestration** ([claim_consistency_detector.py](src/detectors/claim_consistency_detector.py))
+   — runs the existing Stage 2/3/4 detectors (unchanged, via their public
+   entry points) on every extracted figure, folds in the textual signals, and
+   emits one per-figure risk report (low/medium/high) plus a paper-level
+   summary.
+
+### Setup — API key (never hardcoded)
+
+The claim extractor calls the Claude API. Set your key in the environment:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...        # bash / zsh
+$env:ANTHROPIC_API_KEY = 'sk-ant-...'      # PowerShell
+```
+
+or put `ANTHROPIC_API_KEY=sk-ant-...` in a local `.env` file (loaded
+automatically via python-dotenv). Without a key, the pipeline still runs — it
+degrades gracefully to image-forensics-only and reports the missing key.
+
+### Run on a paper end-to-end
+
+```bash
+# (optional) generate a synthetic test paper with an embedded claim/image mismatch
+python -m src.utils.sample_paper --output data/sample_papers/synthetic_paper_01.pdf
+
+python -m src.detectors.claim_consistency_detector \
+    --pdf data/sample_papers/synthetic_paper_01.pdf --output outputs/stage5_results/
+```
+
+Drop real open-access PDFs into `data/sample_papers/` to analyze genuine
+papers. `--no-image-detectors` runs text-only; `--weights` supplies the
+optional Stage 4 classifier. From Python:
+
+```python
+from src.detectors.claim_consistency_detector import analyze_paper
+report = analyze_paper("paper.pdf")   # {"figures": [...], "paper_summary": {...}}
+```
+
+### Run the tests
+
+```bash
+python -m pytest tests/test_claim_consistency_detector.py -v
+```
+
+Automated tests **mock the LLM** (no credits spent). The one real-API test is
+gated behind `SCHOLARGUARD_LIVE_LLM=1`.
+
+### Stage 5 limitations (read before trusting output)
+
+- **The lane/panel visual count is the weakest link.** It is a coarse
+  classical-CV heuristic (blob components + column peaks), not a measurement.
+  It catches gross discrepancies (12 claimed vs ~4 shown) but will miss subtle
+  ones and misfire on dense/overlapping panels, multi-panel composites, or
+  unusual layouts. Treat every count-based flag as *"route to a human"*, not
+  *"proven wrong"* — full automation of panel counting is not reliable yet.
+- **Every flag is a lead, not an accusation.** Claim extraction, forensics,
+  and the visual count are all fallible; a `high` risk figure means "a reviewer
+  should look," never "misconduct."
+- **PDF/caption parsing is heuristic.** Journal layouts vary; caption↔image
+  association assumes roughly one image per figure in reading order.
+- **Within-paper cross-figure reuse is false-positive-prone** on figures that
+  legitimately share style (same equipment/background) — the self-match
+  exclusion handles a figure matching its own copy, but stylistic similarity
+  can still surface as a low-confidence lead.
+
+### What Stage 6 (full pipeline integration) needs from all detectors
+
+Stage 6 unifies everything into one reviewer report. Stage 5 already returns
+the merge-ready shape — per figure: the extracted `claims`, the
+`image_forensics.flags` + `detail` (Stage 2 copy-move, Stage 3 reuse, Stage 4
+AI-generation), the `consistency` mismatches with a `text_image_confidence`,
+and a banded `risk_level` with human-readable `risk_reasons`; plus a
+paper-level `paper_summary` (overall risk, counts, flagged figures). Stage 6
+needs each detector to keep emitting these structured, per-figure verdicts
+with confidences and short explanations so it can rank figures, deduplicate
+overlapping signals (e.g. a copy-move flag that also drives a text mismatch),
+and produce a single prioritized, explainable integrity report for editors.
+
+### Stage 5 results (synthetic test paper)
+
+On the generated sample paper (2 figures; Figure 1 caption claims 12 lanes,
+image shows 4), with the LLM claim extractor supplying the caption's claims:
+
+| signal | outcome |
+|---|---|
+| PDF parsing | 4 sections + 2 figures (caption + embedded image) extracted |
+| Claim extraction (structured JSON) | schema-valid every call (guaranteed by `output_config.format`) |
+| Visual count (Fig 1) | ~4 elements (blob 4 / lane 4) vs claimed 12 → **mismatch flagged** |
+| Image forensics | 0 false positives after self-match exclusion (copy-move / reuse / AI all clean) |
+| Figure 1 risk | **medium/high** (text/image count mismatch) |
+
 ### Roadmap
 
 - **Stage 1** — data collection (synthetic forgeries + real fraud cases) ✅
 - **Stage 2** — within-figure copy-move detector ✅
 - **Stage 3** — cross-figure duplicate/reuse detection ✅
 - **Stage 4** — AI-generation detection (frequency + noise + optional CNN) ✅
-- **Stage 5+** — NLP caption/claim-consistency checking, splice detection via
-  noise/compression inconsistencies, dense fallback for textureless regions,
-  panel segmentation, reviewer-facing report generation.
+- **Stage 5** — NLP caption/claim-consistency checking (PDF + Claude API) ✅
+- **Stage 6+** — full pipeline integration into one prioritized reviewer
+  report; splice detection via noise/compression inconsistencies; dense
+  fallback for textureless regions; panel segmentation for multi-panel figures.

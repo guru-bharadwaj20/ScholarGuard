@@ -24,3 +24,14 @@ PyWavelets==1.9.0
 #              --index-url https://download.pytorch.org/whl/cpu
 torch==2.9.0
 torchvision==0.24.0
+
+# Stage 5: NLP claim-consistency checking
+# pymupdf (fitz) parses PDFs and extracts embedded figure images; anthropic is
+# the Claude API SDK (the LLM claim extractor); python-dotenv lets the API key
+# live in a local .env. ANTHROPIC_API_KEY is read from the environment — never
+# hardcode it. sentence-transformers is the CPU-friendly local fallback for
+# text-similarity work that shouldn't burn API calls.
+pymupdf==1.28.0
+anthropic==0.116.0
+python-dotenv==1.1.1
+sentence-transformers==5.1.2

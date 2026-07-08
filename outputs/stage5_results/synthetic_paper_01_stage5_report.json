@@ -1,0 +1,121 @@
+{
+  "paper": "data/sample_papers/synthetic_paper_01.pdf",
+  "n_figures": 2,
+  "figures": [
+    {
+      "figure": "Figure 1",
+      "figure_num": 1,
+      "image_path": "outputs/stage5_results\\synthetic_paper_01_figures\\synthetic_paper_01_img00.png",
+      "caption": "Western blot of Protein X across 12 treatment conditions (n = 12 lanes). Band intensity increases with stress severity. Error bars represent mean +/- SEM.",
+      "claims": {
+        "claimed_description": null,
+        "claimed_n": null,
+        "claimed_panel_count": null,
+        "panel_count_kind": null,
+        "claimed_stats": [],
+        "error_bar_description": null
+      },
+      "claim_extraction_error": "ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically).",
+      "image_forensics": {
+        "flags": {
+          "copy_move_forged": false,
+          "cross_figure_reused": false,
+          "ai_generated": false
+        },
+        "detail": {
+          "copy_move": {
+            "forged": false,
+            "confidence": 0.0,
+            "n_regions": 0
+          },
+          "cross_figure": {
+            "n_exact": 0,
+            "n_region_reuse": 0,
+            "n_visual_similar": 1
+          },
+          "ai_generation": {
+            "verdict": "likely_real",
+            "freq": 0.371,
+            "noise": 0.1402
+          }
+        }
+      },
+      "consistency": {
+        "consistent": true,
+        "mismatches": [],
+        "text_image_confidence": 0.0
+      },
+      "risk_level": "low",
+      "risk_reasons": [
+        "no textual or image-forensic anomalies detected",
+        "note: claim extraction unavailable (ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically).)"
+      ]
+    },
+    {
+      "figure": "Figure 2",
+      "figure_num": 2,
+      "image_path": "outputs/stage5_results\\synthetic_paper_01_figures\\synthetic_paper_01_img01.png",
+      "caption": "Representative microscopy fields showing sub-cellular localization of Protein X (n = 6 replicates, 3 conditions shown).",
+      "claims": {
+        "claimed_description": null,
+        "claimed_n": null,
+        "claimed_panel_count": null,
+        "panel_count_kind": null,
+        "claimed_stats": [],
+        "error_bar_description": null
+      },
+      "claim_extraction_error": "ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically).",
+      "image_forensics": {
+        "flags": {
+          "copy_move_forged": false,
+          "cross_figure_reused": false,
+          "ai_generated": false
+        },
+        "detail": {
+          "copy_move": {
+            "forged": false,
+            "confidence": 0.0,
+            "n_regions": 0
+          },
+          "cross_figure": {
+            "n_exact": 0,
+            "n_region_reuse": 0,
+            "n_visual_similar": 1
+          },
+          "ai_generation": {
+            "verdict": "likely_real",
+            "freq": 0.3742,
+            "noise": 0.1255
+          }
+        }
+      },
+      "consistency": {
+        "consistent": true,
+        "mismatches": [],
+        "text_image_confidence": 0.0
+      },
+      "risk_level": "low",
+      "risk_reasons": [
+        "no textual or image-forensic anomalies detected",
+        "note: claim extraction unavailable (ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically).)"
+      ]
+    }
+  ],
+  "paper_summary": {
+    "overall_risk": "low",
+    "risk_counts": {
+      "low": 2,
+      "medium": 0,
+      "high": 0
+    },
+    "flagged_figures": [],
+    "note": "Flags are leads for human review, not proof of misconduct. The lane/panel visual count is approximate."
+  },
+  "sections_found": [
+    "Abstract",
+    "Discussion",
+    "Methods",
+    "Results",
+    "_preamble"
+  ]
+}
