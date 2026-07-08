@@ -1,0 +1,40 @@
+# ScholarGuard — Stage 7 evaluation configuration (separate from the runtime
+# config.yaml). Controls the benchmark run and metric reporting, NOT detector
+# logic. The pipeline itself is still driven by pipeline_config below.
+
+# The runtime pipeline config the benchmark hands to run_pipeline(). Point this
+# at config.yaml (defaults) or a variant that disables a detector to measure
+# each in isolation.
+pipeline_config: src/config/config.yaml
+
+# Where the labeled evaluation set lives.
+evaluation_set:
+  labels_path: data/evaluation_set/labels.json
+
+output:
+  dir: outputs/stage7_results
+
+# Paper-level decision: a paper is PREDICTED fraudulent when its overall risk
+# score is >= this cutoff. The threshold sweep explores alternatives; this is
+# the default operating point used for the headline confusion matrix.
+decision:
+  paper_score_threshold: 25.0     # == the "moderate" category boundary
+
+# Per-detector "did it fire on this figure" rules, used to build per-detector
+# confusion matrices against the per-figure ground-truth fraud_type.
+detector_fire_rules:
+  copy_move: forged_true          # copy_move.forged == True
+  cross_figure: any_reuse         # n_exact > 0 or n_region_reuse > 0
+  ai_generation: not_real         # verdict in {suspicious, likely_ai_generated}
+                                  # (matches how the risk scorer treats it)
+  claim_consistency: inconsistent # consistent == False
+
+# Threshold sweep range for the paper-level score cutoff.
+threshold_sweep:
+  start: 0.0
+  stop: 100.0
+  step: 2.5
+
+# How many worst-case examples to save per error category.
+error_analysis:
+  max_examples_per_category: 15

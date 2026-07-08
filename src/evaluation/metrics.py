@@ -326,6 +326,101 @@ def evaluate_ai_generation(
     return summary
 
 
+# --------------------------------------------------------------------------
+# Stage 7: binary-classification metrics (paper-level & per-detector) for the
+# full-pipeline benchmark. These are pure math over predicted/true labels and
+# do not run any detector — they are unit-tested independently of the pipeline.
+# --------------------------------------------------------------------------
+def confusion_counts(y_true: list[bool], y_pred: list[bool]) -> dict:
+    """Return {tp, fp, fn, tn} for aligned boolean label lists."""
+    if len(y_true) != len(y_pred):
+        raise ValueError("y_true and y_pred must be the same length")
+    tp = fp = fn = tn = 0
+    for t, p in zip(y_true, y_pred):
+        if t and p:
+            tp += 1
+        elif not t and p:
+            fp += 1
+        elif t and not p:
+            fn += 1
+        else:
+            tn += 1
+    return {"tp": tp, "fp": fp, "fn": fn, "tn": tn}
+
+
+def binary_metrics(counts: dict) -> dict:
+    """Precision/recall/F1/accuracy/FPR/FNR/specificity from confusion counts.
+
+    Undefined ratios (zero denominator) return None so they are visibly
+    "not applicable" rather than a misleading 0.0.
+    """
+    tp, fp, fn, tn = counts["tp"], counts["fp"], counts["fn"], counts["tn"]
+    total = tp + fp + fn + tn
+
+    def _ratio(num, den):
+        return round(num / den, 4) if den > 0 else None
+
+    return {
+        "precision": _ratio(tp, tp + fp),
+        "recall": _ratio(tp, tp + fn),          # == sensitivity / TPR
+        "specificity": _ratio(tn, tn + fp),
+        "false_positive_rate": _ratio(fp, fp + tn),
+        "false_negative_rate": _ratio(fn, fn + tp),
+        "accuracy": _ratio(tp + tn, total),
+        "f1": _f1(_ratio(tp, tp + fp), _ratio(tp, tp + fn)),
+        "support_positive": tp + fn,
+        "support_negative": tn + fp,
+        **counts,
+    }
+
+
+def _f1(precision, recall) -> float | None:
+    if not precision or not recall:
+        return None
+    if precision + recall == 0:
+        return 0.0
+    return round(2 * precision * recall / (precision + recall), 4)
+
+
+def classification_metrics(y_true: list[bool], y_pred: list[bool]) -> dict:
+    """Confusion counts + all derived metrics in one dict."""
+    return binary_metrics(confusion_counts(y_true, y_pred))
+
+
+def confusion_matrix_str(counts: dict, positive_label: str = "fraud",
+                         negative_label: str = "clean") -> str:
+    """A small human-readable 2x2 confusion matrix table."""
+    tp, fp, fn, tn = counts["tp"], counts["fp"], counts["fn"], counts["tn"]
+    return (
+        f"                 pred {positive_label:<8} pred {negative_label:<8}\n"
+        f"  true {positive_label:<8}  {tp:^12} {fn:^13}\n"
+        f"  true {negative_label:<8}  {fp:^12} {tn:^13}"
+    )
+
+
+def score_threshold_sweep(y_true: list[bool], scores: list[float],
+                          thresholds: list[float] | None = None) -> list[dict]:
+    """PR/ROC-style sweep: metrics at each score cutoff (pred = score >= T).
+
+    Reuses already-computed continuous risk scores — no detector re-runs.
+    Returns [{threshold, precision, recall, f1, false_positive_rate, ...}].
+    """
+    if thresholds is None:
+        thresholds = [round(t, 1) for t in _frange(0.0, 100.0, 2.5)]
+    rows = []
+    for thr in thresholds:
+        pred = [s >= thr for s in scores]
+        rows.append({"threshold": thr, "metrics": classification_metrics(y_true, pred)})
+    return rows
+
+
+def _frange(start: float, stop: float, step: float):
+    v = start
+    while v <= stop + 1e-9:
+        yield v
+        v += step
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="evaluate ScholarGuard detectors")
     parser.add_argument("--data", default="data/synthetic",

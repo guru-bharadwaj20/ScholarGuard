@@ -542,6 +542,116 @@ python -m pytest tests/test_orchestrator.py tests/test_risk_scorer.py \
 The LLM is mocked (no credits spent). Failure-mode tests cover all five
 degradation scenarios above.
 
+## Stage 7 — Formal Evaluation (current)
+
+Measures how the **whole pipeline** performs against labeled papers: does it
+catch documented fraud without falsely flagging clean papers? This produces the
+project's real metrics (precision, recall, FPR) and a categorized error
+analysis. **Measurement only — no detector logic was changed.**
+
+> **Honest data note:** Stage 1's *genuine* held-out fraud cases were never
+> present in this repo. Rather than fabricate "real fraud" numbers, Stage 7
+> ships a **clearly-labeled synthetic stand-in evaluation set**
+> ([make_eval_set.py](src/evaluation/make_eval_set.py)) that exercises the full
+> pipeline and includes realistic **false-positive traps** (dose-response
+> series of legitimately-similar figures). The metrics below are *real pipeline
+> metrics on synthetic data*. To evaluate on real fraud, drop genuine PDFs into
+> `data/evaluation_set/{fraud_cases,clean_control_papers}/` and label them in
+> `labels.json` — no code changes needed.
+
+### Run the full benchmark
+
+```bash
+# (optional) regenerate the synthetic stand-in evaluation set
+python -m src.evaluation.make_eval_set
+
+# run the pipeline over every labeled paper, then compute all metrics
+python -m src.evaluation.benchmark_runner --eval-config src/config/eval_config.yaml
+```
+
+Outputs to `outputs/stage7_results/`: `benchmark_report.json` (raw per-paper
+results, saved after **each** paper so a crash loses nothing — re-run to
+`--resume`), `metrics_summary.md` (report-ready), `threshold_sweep_results.csv`,
+and annotated worst-case images under `error_analysis/`. Use `--analyze-only`
+to recompute metrics from an existing benchmark without re-running the pipeline.
+
+### `labels.json` structure
+
+```json
+{
+  "dataset_name": "...",
+  "note": "provenance / caveats",
+  "papers": [
+    {
+      "paper_id": "fraud_copymove_01",
+      "pdf_path": "data/evaluation_set/fraud_cases/fraud_copymove_01.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",         // confirmed | disputed
+      "figures": [
+        {"figure_num": 1, "fraud_type": "copy_move", "label_confidence": "confirmed"},
+        {"figure_num": 2, "fraud_type": "none"}
+      ]
+    }
+  ]
+}
+```
+
+`fraud_type` ∈ `copy_move | cross_figure | ai_generated | claim_mismatch | none`.
+Missing PDFs are **warned** about (not fatal); disputed labels are carried
+through so weak evidence isn't over-counted.
+
+### Interpreting `metrics_summary.md`
+
+- **Per-detector table** — each detector's precision/recall/FPR at the
+  *figure* level, scored only on figures where it actually ran (skipped
+  detectors are counted separately, never as silent misses).
+- **Combined pipeline** — paper-level fraud classification at the decision
+  threshold, with a confusion matrix.
+- **Threshold sweep** — the precision/recall tradeoff across paper-score
+  cutoffs (reuses stored scores; no re-running), plus a recommended operating
+  point that **prioritizes few false positives** (a false accusation is costlier
+  than a missed case at screening).
+- **Error analysis** — every FP/FN bucketed by *why*, with annotated images.
+
+### Stage 7 results (synthetic stand-in set: 8 fraud + 6 clean papers)
+
+| Detector (figure-level) | Recall | Precision | FPR |
+|---|---:|---:|---:|
+| copy-move | **1.00** | 0.40 | 0.10 |
+| cross-figure | 0.50 | **0.09** | **0.35** |
+| AI-generation (forensics-only) | 1.00 | 0.67 | 0.04 |
+| claim-consistency | *not evaluated (no API key in this run)* | | |
+
+Combined paper-level: precision 0.57, recall 0.50. **No score threshold
+achieved zero false positives** — the honest headline finding.
+
+### Honest summary — strengths, weaknesses, and framing
+
+- **Catches reliably:** in-figure **copy-move** (100% recall here) and
+  **AI-generated** figures (both flagged, as `suspicious`, even without
+  classifier weights).
+- **Catches poorly / the main weakness:** **cross-figure reuse** has low
+  precision (0.09) because it **cannot distinguish legitimate similarity from
+  fraudulent reuse** — it flagged the dose-response series (9 of 14 false
+  positives). This is the #1 real-world false-positive risk and the clearest
+  target for future work (it needs semantic/context filtering, not threshold
+  tuning).
+- **Not measured here:** **claim-consistency** (text/claim mismatch) requires an
+  `ANTHROPIC_API_KEY`; this offline run skipped it and says so — the two
+  claim-mismatch fraud papers are reported as *not evaluated*, not as misses.
+- **Two documented findings (not patched, per stage rules):** (1) the AI
+  detector lands genuine AI figures at `suspicious` rather than the confident
+  tier without classifier weights — expected from Stage 4, but it means
+  forensics-only AI detection is a soft signal; (2) copy-move can false-trigger
+  on self-similar texture (FPR 0.10).
+
+**ScholarGuard is a screening/triage tool for human reviewers, NOT an
+autonomous accusation system.** Every flag is a lead for a person to verify.
+The false-positive analysis matters as much as detection rate: on this set the
+pipeline would hand a reviewer several clean-but-flagged figures, so the UI
+(Stage 8) must present flags as *prompts to look*, with the evidence and its
+uncertainty, never as verdicts.
+
 ### Roadmap
 
 - **Stage 1** — data collection (synthetic forgeries + real fraud cases) ✅
@@ -550,6 +660,7 @@ degradation scenarios above.
 - **Stage 4** — AI-generation detection (frequency + noise + optional CNN) ✅
 - **Stage 5** — NLP caption/claim-consistency checking (PDF + Claude API) ✅
 - **Stage 6** — unified, config-driven pipeline with one report + risk score ✅
-- **Stage 7+** — formal evaluation against real documented fraud cases; splice
-  detection via noise/compression inconsistencies; dense fallback for
-  textureless regions; panel segmentation for multi-panel figures.
+- **Stage 7** — formal evaluation, metrics, and error analysis ✅
+- **Stage 8+** — reviewer-facing UI (flags as evidence-backed prompts, not
+  verdicts); cross-figure specificity (the top weakness); splice detection;
+  panel segmentation; evaluation on real held-out fraud cases.
