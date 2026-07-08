@@ -103,6 +103,7 @@ def check_consistency(
     figure_image_path: str | None,
     prior_detector_flags: dict | None = None,
     visual_elements: dict | None = None,
+    panel_count_tolerance: float = PANEL_COUNT_TOLERANCE,
 ) -> dict:
     """Compare a figure's claims against its pixels + prior detector flags.
 
@@ -114,6 +115,9 @@ def check_consistency(
                "ai_generated": bool}`` from Stages 2/3/4.
         visual_elements: optional precomputed count_visual_elements() result
             (so the orchestrator doesn't run the CV twice).
+        panel_count_tolerance: fractional slack between claimed and observed
+            panel counts before flagging (defaults to the module constant;
+            Stage 6 sources it from config.yaml).
 
     Returns ``{"consistent": bool, "mismatches": list[str], "confidence": float}``
     where ``confidence`` is how confident we are that a *problem exists*
@@ -130,8 +134,8 @@ def check_consistency(
             visual_elements = count_visual_elements(figure_image_path)
         observed = visual_elements["best_estimate"]
         if observed >= MIN_ELEMENTS_FOR_CHECK:
-            lo = claimed_count * (1 - PANEL_COUNT_TOLERANCE)
-            hi = claimed_count * (1 + PANEL_COUNT_TOLERANCE)
+            lo = claimed_count * (1 - panel_count_tolerance)
+            hi = claimed_count * (1 + panel_count_tolerance)
             if not (lo <= observed <= hi):
                 kind = claims.get("panel_count_kind") or "elements"
                 mismatches.append(

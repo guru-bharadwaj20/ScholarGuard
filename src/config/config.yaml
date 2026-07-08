@@ -1,0 +1,102 @@
+# ScholarGuard — single source of truth for all pipeline configuration.
+# Loaded once by src/config/settings.py into a typed Settings object that
+# every stage reads from. Edit values here, not in the detector source.
+
+# ---------------------------------------------------------------------------
+# Detector toggles + per-stage thresholds. Stage 2/3 thresholds are injected
+# into their existing DetectorConfig / CrossFigureConfig dataclasses (no
+# detector source is edited). Stage 4's internal forensic bands remain at
+# their Stage-4-calibrated defaults; the pipeline consumes its verdict.
+# ---------------------------------------------------------------------------
+detectors:
+  copy_move:                        # Stage 2 — duplicated regions within a figure
+    enabled: true
+    confidence_threshold: 0.45      # >= this => figure flagged "forged"
+    ratio_threshold: 0.78           # Lowe ratio for self-matching
+    min_inliers: 3                  # RANSAC inliers to accept a cluster
+    sift_contrast_threshold: 0.008  # low, because figures are smooth
+    max_dim: 1600                   # downscale longest side (CPU speed)
+
+  cross_figure:                     # Stage 3 — a figure reusing another figure
+    enabled: true
+    phash_max_distance: 10          # Hamming distance for near-duplicate
+    embed_review: 0.85              # embedding-candidate floor
+    embed_high: 0.985               # "medium" confidence cutoff
+    min_inliers: 10                 # RANSAC inliers to claim region reuse
+    min_region_area: 2000           # px^2 of grown reused region
+    top_k: 10                       # ANN candidates per query
+    # Optional external corpus of prior figures to check against. If null,
+    # the paper's OWN figures form the corpus (catches within-paper reuse).
+    corpus_dir: null
+
+  ai_generation:                    # Stage 4 — GAN/diffusion-generated figures
+    enabled: true
+    # Optional fine-tuned classifier weights. If the file is absent the
+    # pipeline runs on frequency + noise forensics only and says so.
+    weights_path: src/models/weights/artifact_classifier.pt
+
+  claim_consistency:                # Stage 5 — text claims vs. figure content
+    enabled: true
+    panel_count_tolerance: 0.5      # fractional slack before flagging a count gap
+
+# ---------------------------------------------------------------------------
+# LLM (Claude API) settings for claim extraction. The API KEY is read from the
+# ANTHROPIC_API_KEY environment variable (or a .env file) — never stored here.
+# ---------------------------------------------------------------------------
+llm:
+  model: claude-opus-4-8
+  max_retries: 3
+  timeout_seconds: 60
+
+# ---------------------------------------------------------------------------
+# Efficiency: skip the expensive LLM claim-extraction call for a figure when
+# the (cheap) image forensics already put it at/above the configured risk
+# category — the paper is already flagged, so the marginal value is low. This
+# is DOCUMENTED and REPORTED per figure (status "skipped_optimization"), never
+# silent. Set enabled=false to always run every check.
+# ---------------------------------------------------------------------------
+optimization:
+  skip_llm_when_image_risk: true
+  skip_llm_at_category: critical    # low | moderate | high | critical
+
+# ---------------------------------------------------------------------------
+# Risk scoring. Per-figure score is 0-100: each detector contributes up to its
+# weight (weights sum to 100, so a figure that maxes every signal scores 100).
+# Documented in src/pipeline/risk_scorer.py.
+# ---------------------------------------------------------------------------
+risk_scoring:
+  weights:                          # max points each detector adds (sum = 100)
+    copy_move: 35
+    cross_figure: 30
+    ai_generation: 20
+    claim_consistency: 15
+  # Severity multipliers for signal sub-types (applied to the weight).
+  cross_figure_severity:
+    exact_duplicate: 1.0
+    region_reuse: 0.9
+    visual_similar_only: 0.0        # embedding-only leads don't score alone
+  ai_generation_severity:
+    likely_ai_generated: 1.0
+    suspicious: 0.5
+    likely_real: 0.0
+  # Paper score = max_figure_weight * worst_figure + mean_figure_weight * mean.
+  # Worst figure dominates so one clearly-forged figure isn't diluted by clean ones.
+  paper_aggregation:
+    max_figure_weight: 0.7
+    mean_figure_weight: 0.3
+  # Score -> category. A figure/paper gets the highest category whose
+  # threshold it meets or exceeds.
+  categories:
+    low: 0
+    moderate: 25
+    high: 50
+    critical: 75
+
+# ---------------------------------------------------------------------------
+# Output + logging.
+# ---------------------------------------------------------------------------
+paths:
+  output_dir: outputs/stage6_results
+
+logging:
+  level: INFO                       # DEBUG | INFO | WARNING | ERROR

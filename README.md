@@ -2,6 +2,22 @@
 
 Detects image manipulation (duplicated/spliced regions, cross-figure reuse, AI-generated artifacts) in scientific paper figures and cross-checks captions against reported data using CV forensics and NLP, flagging integrity risks for reviewers and journals.
 
+## Quick start — analyze a paper in one command
+
+```bash
+pip install -r requirements.txt
+export ANTHROPIC_API_KEY=sk-ant-...        # optional: enables text/claim checking
+python run_scholarguard.py --pdf path/to/paper.pdf
+```
+
+This runs the **unified Stage 6 pipeline** — every detector (copy-move,
+cross-figure reuse, AI-generation, claim consistency) over every figure — and
+writes one integrity report (JSON + Markdown) with a paper-level risk score.
+No API key? It still runs, on image forensics only, and says what it skipped.
+Everything is configured in [src/config/config.yaml](src/config/config.yaml)
+(see the [Stage 6 section](#stage-6--unified-pipeline-current)). The stage
+sections below document each detector individually.
+
 ## Stage 2 — Copy-Move Forgery Detector
 
 Classical-CV detector that finds regions duplicated *within* a single figure
@@ -440,6 +456,92 @@ image shows 4), with the LLM claim extractor supplying the caption's claims:
 | Image forensics | 0 false positives after self-match exclusion (copy-move / reuse / AI all clean) |
 | Figure 1 risk | **medium/high** (text/image count mismatch) |
 
+## Stage 6 — Unified Pipeline (current)
+
+The single, production-quality entry point that ties Stages 2–5 into **one
+robust, config-driven pipeline**: one PDF in, one comprehensive integrity
+report out. This stage adds no new detection logic — it orchestrates, wraps
+each detector in isolated error handling, centralizes all configuration, and
+produces a unified risk score.
+
+### The one command
+
+```bash
+python run_scholarguard.py --pdf paper.pdf \
+    [--config src/config/config.yaml] [--output-dir outputs/stage6_results]
+```
+
+Prints a per-figure + paper-level risk summary to the console and writes a
+full report (`<paper>_report.json` + `<paper>_report.md`) to the output
+directory. From Python:
+
+```python
+from src.pipeline import run_pipeline
+report = run_pipeline("paper.pdf")   # never raises on a bad/empty PDF
+```
+
+### Architecture
+
+- **[orchestrator.py](src/pipeline/orchestrator.py)** — `run_pipeline(pdf)`:
+  validate → parse (Stage 5 pdf_parser) → per figure run enabled detectors
+  (Stages 2/3/4) each in its own `try/except` → claim consistency (Stage 5) →
+  risk score → report. Uses the `logging` module throughout (INFO progress,
+  WARNING/ERROR for degraded steps). Builds the Stage 3 corpus/embeddings
+  **once** and reuses them.
+- **[risk_scorer.py](src/pipeline/risk_scorer.py)** — combines all signals into
+  a per-figure score (0–100) with a full contribution **breakdown**, and a
+  per-paper score where the **worst figure dominates** (not a plain mean).
+- **[report_builder.py](src/pipeline/report_builder.py)** — structured JSON
+  (the machine-readable source of truth) + human-readable Markdown.
+- **[config/settings.py](src/config/settings.py)** — loads and validates
+  [config.yaml](src/config/config.yaml) into a typed `Settings` object.
+
+### Configuration (`src/config/config.yaml`) — single source of truth
+
+| Section | What it controls |
+|---|---|
+| `detectors.<name>.enabled` | Turn each of the 4 detectors on/off |
+| `detectors.copy_move.*` | Stage 2 thresholds (`confidence_threshold`, `ratio_threshold`, `min_inliers`, `sift_contrast_threshold`, `max_dim`) |
+| `detectors.cross_figure.*` | Stage 3 thresholds (`phash_max_distance`, `embed_review`, `min_inliers`, `min_region_area`, `top_k`) + optional external `corpus_dir` (null ⇒ use the paper's own figures) |
+| `detectors.ai_generation.weights_path` | Stage 4 classifier weights (missing file ⇒ forensics-only, reported) |
+| `detectors.claim_consistency.panel_count_tolerance` | Stage 5 count-mismatch slack |
+| `llm.model` / `max_retries` / `timeout_seconds` | Claude API settings (**API key from `ANTHROPIC_API_KEY` env / `.env`, never in config**) |
+| `optimization.skip_llm_when_image_risk` + `skip_llm_at_category` | Documented cost-saver: skip the paid LLM call for a figure already at/above the given image-forensic risk category (reported per figure, never silent) |
+| `risk_scoring.weights` | Max points each detector adds (sum = 100) |
+| `risk_scoring.*_severity`, `paper_aggregation`, `categories` | Signal severities, worst-figure weighting, and score→category cutoffs |
+| `paths.output_dir`, `logging.level` | Where reports go; log verbosity |
+
+**How config reaches the detectors without touching their code:** Stage 2/3
+thresholds are injected via their existing `DetectorConfig` / `CrossFigureConfig`
+dataclasses (config.yaml → `Settings` → dataclass → detector). Stage 5's one
+loose constant (`panel_count_tolerance`) is now an optional parameter with a
+back-compatible default. Stage 4's internal forensic bands stay at their
+Stage-4-calibrated values (the pipeline consumes its verdict). No core
+detection algorithm was modified.
+
+### Graceful degradation (never crash, never silently skip)
+
+| Failure | Behavior |
+|---|---|
+| Missing Stage 4 classifier weights | AI detection runs **forensics-only**; a warning is added to the report |
+| Missing `ANTHROPIC_API_KEY` | Claim consistency **skipped** for all figures; a warning is added |
+| One detector throws on a figure | That detector is marked `status: error`; the **other detectors still run** |
+| Corrupted / unreadable PDF | `status: "failed"` with a clear message (no stack trace); a report is still written |
+| PDF with 0 extractable figures | `status: "completed_no_figures"` with a note; overall risk = low |
+
+Every skipped/degraded/errored step is recorded in `pipeline_warnings` and in
+the per-figure `risk.breakdown` — nothing is silently omitted.
+
+### Run the tests
+
+```bash
+python -m pytest tests/test_orchestrator.py tests/test_risk_scorer.py \
+    tests/test_pipeline_failure_modes.py -v
+```
+
+The LLM is mocked (no credits spent). Failure-mode tests cover all five
+degradation scenarios above.
+
 ### Roadmap
 
 - **Stage 1** — data collection (synthetic forgeries + real fraud cases) ✅
@@ -447,6 +549,7 @@ image shows 4), with the LLM claim extractor supplying the caption's claims:
 - **Stage 3** — cross-figure duplicate/reuse detection ✅
 - **Stage 4** — AI-generation detection (frequency + noise + optional CNN) ✅
 - **Stage 5** — NLP caption/claim-consistency checking (PDF + Claude API) ✅
-- **Stage 6+** — full pipeline integration into one prioritized reviewer
-  report; splice detection via noise/compression inconsistencies; dense
-  fallback for textureless regions; panel segmentation for multi-panel figures.
+- **Stage 6** — unified, config-driven pipeline with one report + risk score ✅
+- **Stage 7+** — formal evaluation against real documented fraud cases; splice
+  detection via noise/compression inconsistencies; dense fallback for
+  textureless regions; panel segmentation for multi-panel figures.
