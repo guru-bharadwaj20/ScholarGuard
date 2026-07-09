@@ -14,7 +14,14 @@ from PIL import Image
 
 from src.data_acquisition import manifest as manifest_mod
 from src.data_acquisition.figure_extractor import extract_figures
-from src.data_acquisition.pmc_oa_fetch import resolve_oa_package
+from src.data_acquisition.pmc_oa_fetch import (
+    DOWNLOAD_OK,
+    DOWNLOAD_SIZE_CAP,
+    candidate_urls,
+    download_package_ex,
+    reset_url_probe_cache,
+    resolve_oa_package,
+)
 from src.data_acquisition.pmc_search import search_pmc
 from src.data_acquisition.rate_limiter import RateLimiter
 
@@ -103,6 +110,58 @@ def test_resolve_oa_package_handles_error_element(fast_limiter):
     assert out["tgz_url"] is None
 
 
+def test_candidate_urls_falls_back_to_deprecated_tree():
+    """oa.fcgi hands out pre-2026 hrefs; the packages now live under
+    /pub/pmc/deprecated/. Both are tried, canonical first."""
+    reset_url_probe_cache()
+    url = "https://ftp.ncbi.nlm.nih.gov/pub/pmc/oa_package/54/be/PMC1.tar.gz"
+    assert candidate_urls(url) == [
+        url,
+        "https://ftp.ncbi.nlm.nih.gov/pub/pmc/deprecated/oa_package/54/be/PMC1.tar.gz",
+    ]
+    # A non-PMC URL is passed through untouched.
+    assert candidate_urls("https://example.org/x.tar.gz") == \
+        ["https://example.org/x.tar.gz"]
+    # An already-deprecated URL isn't double-prefixed.
+    dep = "https://ftp.ncbi.nlm.nih.gov/pub/pmc/deprecated/oa_package/x.tar.gz"
+    assert candidate_urls(dep) == [dep]
+    reset_url_probe_cache()
+
+
+def _streaming_session(status=200, headers=None, chunks=(b"data",)):
+    resp = MagicMock()
+    resp.status_code = status
+    resp.headers = headers or {}
+    resp.raise_for_status.return_value = None
+    resp.iter_content.return_value = iter(chunks)
+    resp.__enter__ = lambda s: resp
+    resp.__exit__ = lambda s, *a: False
+    session = MagicMock()
+    session.get.return_value = resp
+    return session
+
+
+def test_download_size_cap_is_distinguished_from_failure(tmp_path, fast_limiter):
+    """An oversized package is a permanent skip, not a retryable failure."""
+    reset_url_probe_cache()
+    big = _streaming_session(headers={"Content-Length": str(400 * 1024 * 1024)})
+    ok, outcome = download_package_ex(
+        "https://example.org/big.tar.gz", str(tmp_path / "p.tar.gz"),
+        max_size_mb=50, session=big, rate_limiter=fast_limiter)
+    assert ok is False and outcome == DOWNLOAD_SIZE_CAP
+    assert not (tmp_path / "p.tar.gz").exists()
+
+
+def test_download_success_reports_ok(tmp_path, fast_limiter):
+    reset_url_probe_cache()
+    sess = _streaming_session(headers={"Content-Length": "8"}, chunks=(b"abcdefgh",))
+    dest = str(tmp_path / "p.tar.gz")
+    ok, outcome = download_package_ex("https://example.org/p.tar.gz", dest,
+                                      session=sess, rate_limiter=fast_limiter)
+    assert ok is True and outcome == DOWNLOAD_OK
+    assert open(dest, "rb").read() == b"abcdefgh"
+
+
 # ---------------------------------------------------------------- test 3
 def _make_targz(path, images):
     """images: list of (filename, (w, h)). Build a .tar.gz of PNGs."""
@@ -157,6 +216,33 @@ def test_manifest_resumability(tmp_path):
     manifest_mod.add_entry({"pmcid": "PMC999", "status": "ok"}, mpath)
     ids = {e["pmcid"] for e in manifest_mod.load_manifest(mpath)}
     assert ids == {"PMC13901", "PMC999"}
+
+
+def test_manifest_transient_failures_are_retried(tmp_path):
+    """A download failure must NOT permanently exclude a paper from re-runs."""
+    mpath = str(tmp_path / "m.json")
+    manifest_mod.add_entry({"pmcid": "PMC7", "status": "download_failed",
+                            "retryable": True}, mpath)
+    # Default: retried (reported as not-processed) ...
+    assert manifest_mod.is_processed("PMC7", mpath) is False
+    # ... unless the caller explicitly opts out.
+    assert manifest_mod.is_processed("PMC7", mpath, retry_failed=False) is True
+
+    # Terminal outcomes are never retried.
+    for status in ("ok", "no_images", "skipped_retracted"):
+        manifest_mod.add_entry({"pmcid": f"PMC_{status}", "status": status}, mpath)
+        assert manifest_mod.is_processed(f"PMC_{status}", mpath) is True
+
+
+def test_manifest_add_entry_upserts_on_retry(tmp_path):
+    """Re-processing a PMCID replaces its old record instead of duplicating."""
+    mpath = str(tmp_path / "m.json")
+    manifest_mod.add_entry({"pmcid": "PMC7", "status": "download_failed",
+                            "retryable": True}, mpath)
+    manifest_mod.add_entry({"pmcid": "PMC7", "status": "ok", "n_images": 3}, mpath)
+    entries = manifest_mod.load_manifest(mpath)
+    assert len(entries) == 1
+    assert entries[0]["status"] == "ok" and entries[0]["n_images"] == 3
 
 
 # ---------------------------------------------------------------- test 5

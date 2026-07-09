@@ -52,15 +52,30 @@ Options: `--min-image-dim` (default 200 px shorter side — drops icons/logos),
 `--retmax-per-term`, `--manifest`, `--raw-dir`.
 
 - **Resumable:** every processed PMCID is recorded in `data/manifest.json`, so
-  re-running never re-downloads or re-processes a paper.
+  re-running never re-downloads or re-processes a paper. *Terminal* outcomes
+  (extracted, no images, retracted, not open-access, over the size cap) are
+  never retried; a *transient* download failure is retried on the next run, so
+  one network blip can't permanently exclude a paper. Pass `--no-retry-failed`
+  to treat every recorded PMCID as done.
 - **Attribution:** each manifest entry records the paper's license (e.g.
-  `CC BY`, `CC BY-NC`), DOI, title, and saved image paths — check the license
-  before any use beyond personal research.
+  `CC BY`, `CC BY-NC`, `CC BY-NC-ND`), DOI, title, and saved image paths —
+  check the license before any use beyond personal research.
 - **Robust:** one paper failing (no OA package, download error, no qualifying
   images, size cap) is logged and skipped; the run continues. A final summary
   groups skips by reason.
 - **Clean only:** retracted papers (`retracted="yes"`) are skipped — this
   script builds the legitimate corpus; retracted-case sourcing is separate.
+
+> **Note on NCBI's April 2026 restructure.** `oa.fcgi` still returns pre-2026
+> `ftp://.../pub/pmc/oa_package/...` hrefs, but those paths now **404** — the
+> legacy article-dataset files were moved under `/pub/pmc/deprecated/` (NCBI
+> says they'll be removed in **August 2026**). The downloader therefore tries
+> the canonical HTTPS path first and falls back to the `deprecated/` tree,
+> caching the result so it probes the dead path only once per run. When NCBI
+> publishes a replacement distribution channel (their AWS Open Data mirror is
+> the stated direction), update `candidate_urls()` in
+> [pmc_oa_fetch.py](src/data_acquisition/pmc_oa_fetch.py) — nothing else needs
+> to change.
 
 ## Stage 2 — Copy-Move Forgery Detector
 

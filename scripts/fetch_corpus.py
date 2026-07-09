@@ -37,7 +37,8 @@ from src.data_acquisition.figure_extractor import (  # noqa: E402
     extract_figures,
 )
 from src.data_acquisition.pmc_oa_fetch import (  # noqa: E402
-    download_package,
+    DOWNLOAD_SIZE_CAP,
+    download_package_ex,
     resolve_oa_package,
 )
 from src.data_acquisition.pmc_search import get_contact_email, search_pmc  # noqa: E402
@@ -48,7 +49,8 @@ logger = logging.getLogger("scholarguard.data")
 # Skip reason labels (also used to group the final summary).
 SKIP_RETRACTED = "retracted"
 SKIP_NO_PACKAGE = "no OA package"
-SKIP_DOWNLOAD_FAILED = "download failed / size cap exceeded"
+SKIP_DOWNLOAD_FAILED = "download failed"
+SKIP_SIZE_CAP = "size cap exceeded"
 SKIP_NO_IMAGES = "no qualifying images"
 SKIP_ERROR = "unexpected error"
 
@@ -79,11 +81,19 @@ def _process_paper(pmcid, args, session, limiter):
     ext = ".tar.gz" if url == oa.get("tgz_url") else ".pdf"
     dest = os.path.join(args.raw_dir, f"{pmcid}{ext}")
 
-    if not (os.path.isfile(dest) or download_package(
+    if not os.path.isfile(dest):
+        ok, outcome = download_package_ex(
             url, dest, max_size_mb=args.max_package_mb,
-            session=session, rate_limiter=limiter)):
-        return {**base_entry, "status": "skipped",
-                "reason": SKIP_DOWNLOAD_FAILED}, 0, SKIP_DOWNLOAD_FAILED
+            session=session, rate_limiter=limiter)
+        if not ok:
+            if outcome == DOWNLOAD_SIZE_CAP:
+                # Deterministic: the package will always be too big. Terminal,
+                # so a re-run never re-downloads a huge supplementary bundle.
+                return {**base_entry, "status": "skipped_too_large",
+                        "reason": SKIP_SIZE_CAP}, 0, SKIP_SIZE_CAP
+            # Transient: recorded as retryable so a later run attempts it again.
+            return {**base_entry, "status": "download_failed", "retryable": True,
+                    "reason": SKIP_DOWNLOAD_FAILED}, 0, SKIP_DOWNLOAD_FAILED
 
     meta = extract_article_metadata(dest) if ext == ".tar.gz" else {}
     images = extract_figures(dest, args.output_dir, pmcid,
@@ -123,15 +133,16 @@ def run(args) -> dict:
             for pmcid in pmcids:
                 if images_saved >= args.target_count:
                     break
-                if manifest_mod.is_processed(pmcid, args.manifest):
-                    logger.info("%s already in manifest — skipping", pmcid)
+                if manifest_mod.is_processed(pmcid, args.manifest,
+                                             retry_failed=not args.no_retry_failed):
+                    logger.info("%s already in manifest - skipping", pmcid)
                     continue
                 try:
                     entry, n_imgs, reason = _process_paper(pmcid, args, session, limiter)
                 except Exception as exc:  # noqa: BLE001 - never crash the run
                     logger.warning("%s: unexpected error, skipping: %s", pmcid, exc)
-                    entry = {"pmcid": pmcid, "status": "error", "reason": SKIP_ERROR,
-                             "error": str(exc),
+                    entry = {"pmcid": pmcid, "status": "error", "retryable": True,
+                             "reason": SKIP_ERROR, "error": str(exc),
                              "timestamp": datetime.datetime.now().isoformat(
                                  timespec="seconds")}
                     n_imgs, reason = 0, SKIP_ERROR
@@ -182,6 +193,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
                    help="max PMCIDs to fetch per search term")
     p.add_argument("--manifest", default="data/manifest.json")
     p.add_argument("--raw-dir", default="data/raw_downloads")
+    p.add_argument("--no-retry-failed", action="store_true",
+                   help="treat every recorded PMCID as done, including papers "
+                        "whose download previously failed (default: retry those)")
     return p
 
 
