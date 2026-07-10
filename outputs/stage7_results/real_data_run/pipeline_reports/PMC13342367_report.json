@@ -1,0 +1,356 @@
+{
+  "schema_version": "scholarguard/stage6/1.0",
+  "generated_at": "2026-07-10T08:36:34",
+  "paper": {
+    "path": "data/evaluation_set/clean_control_papers/PMC13342367.pdf",
+    "filename": "PMC13342367.pdf",
+    "sections_found": [
+      "Abstract",
+      "Introduction",
+      "References",
+      "_preamble"
+    ],
+    "n_figures": 5
+  },
+  "status": "completed",
+  "error": null,
+  "overall_risk": {
+    "score": 43.51,
+    "category": "moderate",
+    "n_figures": 5,
+    "worst_figure_score": 44.55,
+    "worst_figure_category": "moderate"
+  },
+  "figures": [
+    {
+      "figure": "Figure 1",
+      "figure_num": 1,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342367_img00.png",
+      "caption": "Design framework linking scaffold, cells and bioactive regulators to mechanics, endothelialization and host remodeling in tissue-engineered blood vessels. Created by the authors. 2 Journal of Tissue Engineering 17",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.8338,
+          "n_regions": 60
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3726,
+          "noise_score": 0.5442,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 39.18,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 29.18,
+            "note": "duplicated regions within figure (conf 0.8338)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 2",
+      "figure_num": 2,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342367_img01.png",
+      "caption": "Purine-metabolizing antithrombotic concept for CD39/CD73-based vascular interfaces. Created by the authors based on published mechanistic concepts.80,81 6 Journal of Tissue Engineering 17",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9907,
+          "n_regions": 16
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.2743,
+          "noise_score": 0.4218,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 34.67,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 34.67,
+            "note": "duplicated regions within figure (conf 0.9907)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 3",
+      "figure_num": 3,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342367_img02.png",
+      "caption": "Original schematic of the Ancr/E7-EXO strategy for targeting Gli1-positive progenitor cells and suppressing vascular graft calcification. Created by the authors. Chen et al. 7",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9605,
+          "n_regions": 28
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3389,
+          "noise_score": 0.5422,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 43.62,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 33.62,
+            "note": "duplicated regions within figure (conf 0.9605)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 4",
+      "figure_num": 4,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342367_img03.png",
+      "caption": "Representative auxiliary bioactive systems for antithrombosis, endothelialization, calcification control and immune regulation in tissue-engineered blood vessels. The figure summarizes stage-specific adjunctive concepts rather than clinically mature stand-alone platforms. Created by the authors based on published mechanistic concepts.79\u201391 8 Journal of Tissue Engineering 17",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9538,
+          "n_regions": 21
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.369,
+          "noise_score": 0.55,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 43.38,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 33.38,
+            "note": "duplicated regions within figure (conf 0.9538)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 5",
+      "figure_num": 5,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342367_img04.png",
+      "caption": "Simplified microRNA-regulated angiogenic network relevant to tissue-engineered blood vessel integration. The scheme is intended as a mechanistic overlay for scaffold and cell design, not as an exhaustive pathway atlas. Created by the authors based on published pathway evidence.122\u2013133 12 Journal of Tissue Engineering 17",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9872,
+          "n_regions": 40
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3728,
+          "noise_score": 0.5795,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 44.55,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 34.55,
+            "note": "duplicated regions within figure (conf 0.9872)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    }
+  ],
+  "pipeline_warnings": [
+    "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+    "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+  ],
+  "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic."
+}

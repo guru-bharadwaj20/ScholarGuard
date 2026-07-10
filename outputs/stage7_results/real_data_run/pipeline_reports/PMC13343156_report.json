@@ -1,0 +1,488 @@
+{
+  "schema_version": "scholarguard/stage6/1.0",
+  "generated_at": "2026-07-10T08:39:54",
+  "paper": {
+    "path": "data/evaluation_set/clean_control_papers/PMC13343156.pdf",
+    "filename": "PMC13343156.pdf",
+    "sections_found": [
+      "Acknowledgments",
+      "Discussion",
+      "Introduction",
+      "References",
+      "Results",
+      "_preamble"
+    ],
+    "n_figures": 7
+  },
+  "status": "completed",
+  "error": null,
+  "overall_risk": {
+    "score": 66.77,
+    "category": "high",
+    "n_figures": 7,
+    "worst_figure_score": 72.0,
+    "worst_figure_category": "high"
+  },
+  "figures": [
+    {
+      "figure": "Figure 1",
+      "figure_num": 1,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img00.png",
+      "caption": "Slit lamp imaging did not reveal changes post vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes Imaging of the injected eye of the same mouse at 2\u20132.5 and 5 months PI after vehicle or FLAG/PAX6 injection in WT (upper row) or Sey/+ (lower row) eyes. Slit lamp images of all injected WT and Sey/+ eyes in this study at both time points are available in Figures S2 andS3, respectively. PI, post-injection. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 3",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7,
+          "n_regions": 13
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3593,
+          "noise_score": 0.5784,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 34.5,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 24.5,
+            "note": "duplicated regions within figure (conf 0.7)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 2",
+      "figure_num": 2,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img01.png",
+      "caption": "Histological imaging showed virus-delivered PAX6 protein in the cornea of Sey/+ eyes and increased corneal thickness (A\u2013D) Immunofluorescence staining was performed on paraffin-embedded sections 5 months PI after vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. Magnification is indicated on the first image and was the same for all. (A) No positive FLAG staining was found in the cornea of vehicle-injected WT eyes. (B) Positive FLAG staining was found in the cornea of one FLAG/PAX6-injected WT eye. (C) No positive FLAG staining was found in the cornea of vehicle-injected Sey/+ eyes. (D) Positive FLAG staining was found in the cornea of all FLAG/PAX6-injected Sey/+ eyes. Representative images in (D) show the thicker epithelial layer in the FLAG/PAX6-injected Sey/+ eyes compared with (C) vehicle-injected Sey/+ eyes but not to the level of thickness seen in (A) vehicle-injected WT eyes. Co-labeling with PAX6 indicates the presence of virally delivered PAX6 protein (yellow, white arrows). EPI, epithelium; STR, stroma; END, endothelium. Molecular Therapy: Advances 4 Molecular Therapy: Advances Vol. 34 September 2026",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.5391,
+          "n_regions": 31
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 1
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3849,
+          "noise_score": 0.6383,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 72.0,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.5391)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 3",
+      "figure_num": 3,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img02.png",
+      "caption": "Histological imaging showed virus \u201cescaped\u201d and delivered PAX6 protein to the retina of Sey/+ eyes (A\u2013D) Immunofluorescence staining was performed on paraffin-embedded sections 5 months PI after vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. Magnification is indicated on the first image and was the same for all. (A) No positive FLAG staining was found in the retina of vehicle-injected WT eyes. (B) Positive FLAG staining was found in the retina of one FLAG/PAX6-injected WT eye. (C) No positive FLAG staining was found in the retina of vehicle-injected Sey/+eyes. (D) Positive FLAG staining was found in the retina of all FLAG/PAX6-injected Sey/+ eyes. Co-labeling with PAX6 indicates the presence of virally delivered PAX6 protein (yellow, white arrows). GCL, ganglion cell layer; INL, inner nuclear layer; ONL, outer nuclear layer. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 5",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.364,
+          "n_regions": 32
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 1
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3705,
+          "noise_score": 0.5264,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 72.0,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.364)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 4",
+      "figure_num": 4,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img03.png",
+      "caption": "Significant increase in corneal epithelial thickness after FLAG/ PAX6 injection in Sey/+ eyes (A\u2013D) Quantification of (A) epithelial thickness, (B) epithelial cell count, (C) stromal- endothelial thickness, and (D) stromal-endothelial cell count after vehicle or FLAG/ PAX6 injection in WT or Sey/+ eyes. Statistics for the subset of most relevant post hoc comparisons are shown; for all comparisons, see Figure S6A. The expected reduction in epithelial thickness in Sey/+ compared with WT eyes was observed. FLAG/PAX6 injection did not impact the epithelial thickness in WT eyes. However, it significantly increased the expected reduced thickness in Sey/+ eyes, although not back to WT levels. (B) The expected reduction in epithelial cell count in Sey/+ relative to WT eyes was observed. FLAG/PAX6 injection did not impact the epithelial cell count in WT eyes. However, it increased the expected reduced thickness in Sey/+ eyes, although not significantly and not back to WT levels. (C) Stromal-endothelial thickness was not significantly impacted by vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. (D) Stromal-endothelial cell count, despite a significant ANOVA, showed no significant differences on post hoc analysis by vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. Data shown are the mean \u00b1 SEM, with each dot indicating a single cornea analyzed from each mouse. Statistical significance was determined using ANOVA, and if significant, then a post hoc Tukey\u2019s multiple- comparison test. p \u22640.05 was considered as statistically significant. *, p \u22640.05; ***, p \u22640.001; ns, not significant. Molecular Therapy: Advances 6 Molecular Therapy: Advances Vol. 34 September 2026",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.8131,
+          "n_regions": 48
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 2,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3222,
+          "noise_score": 0.1987,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 55.46,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 28.46,
+            "note": "duplicated regions within figure (conf 0.8131)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "2 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 5",
+      "figure_num": 5,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img04.png",
+      "caption": "Correlations show that uninjected contralateral eyes were not impacted by injection in partner eye (A and B) Correlation analysis shows that the uninjected contralateral eyes were not impacted by injection in the partner eye. A positive and significant correlation between corneal epithelial thickness and epithelial cell count was seen for both the (A) injected eyes (data from Figures 4A and 4B), and (B) contralateral eyes. WT corneas cluster as the thickest with the most cells (top right of the correla\u00ad tions), demonstrating no impact of the FLAG/PAX6 injection (green) compared with vehicle (black). Sey/+ corneas are thinner with less cells (bottom left of the correlations). (A) FLAG/PAX6-injected Sey/+ corneas (red) are shifted toward thicker with more cells (up and to the right), showing the positive impact of FLAG/PAX6 injection, compared with vehicle (blue). (B) Sey/+ corneas of the contralateral eyes cluster as the thinnest with the least cells (bottom left of the correlation), showing no impact of FLAG/PAX6 injection of the partner eye (red), compared with vehicle injection of the partner eye (blue). Data were analyzed using simple linear correlation. p \u22640.05 was considered as statistically significant. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 7",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7121,
+          "n_regions": 14
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3965,
+          "noise_score": 0.3936,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 61.92,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 24.92,
+            "note": "duplicated regions within figure (conf 0.7121)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 6",
+      "figure_num": 6,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img05.png",
+      "caption": "FLAG/PAX6-injected Sey/+ corneas had the most FLAG-PAX6 transcripts, but the difference was not significant (A\u2013C) Transcript levels of virally delivered FLAG-tagged PAX6 (FLAG-PAX6 assay) or endogenous Pax6 (Endo- Pax6 assay) were quantified in corneas with RT-ddPCR. (A) FLAG-PAX6 detected mRNA transcripts in corneas after vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. FLAG/PAX6-injected Sey/+ corneas had the most FLAG-PAX6 transcripts, but the difference was not significant. (B) Reanalyzing the data in (A), conservatively removing the 1.768 FLAG/PAX6-injected Sey/+ data point, even though it was not a significant outlier. Statistics for the subset of most relevant post hoc comparisons are shown; for all comparisons, see Figure S10A. Overall significance was detected, and FLAG/PAX6-injected Sey/+ corneas still had the most FLAG-PAX6 transcripts, but the difference was not significant compared with vehicle-injected Sey/+ eyes. (C) Endo-Pax6 detected mRNA transcripts in corneas after vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. Statistics for the subset of most relevant post hoc comparisons are shown; for all comparisons, see Figure S10B. The expected reduction in Endo-Pax6 transcripts in Sey/+ compared with WT eyes was observed. However, there was no significant impact of vehicle or PAX6/FLAG injection. Data shown are the mean \u00b1 SEM, with each dot indicating a single cornea analyzed from each mouse. Statistical significance was determined using ANOVA, and if significant, then a post hoc Tukey\u2019s multiple-comparison test. The robust regression and outlier removal (ROUT) test was used to detect outliers. p \u22640.05 was considered as statistically significant. *, p \u22640.05; ns, not significant, RT-ddPCR, reverse transcription droplet digital PCR. Molecular Therapy: Advances 8 Molecular Therapy: Advances Vol. 34 September 2026",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7,
+          "n_regions": 23
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 2,
+          "n_visual_similar": 3
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3698,
+          "noise_score": 0.2377,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 51.5,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 24.5,
+            "note": "duplicated regions within figure (conf 0.7)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "2 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 7",
+      "figure_num": 7,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img06.png",
+      "caption": "Overall significant pattern of the correction of gene transcription back to WT levels (A\u2013D) Endogenous transcript levels in corneas after vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes were quantified with RT-ddPCR for (A) Notch1, (B) Hes1, (C) Wnt5a, and (D) Mtor. (A) In vehicle-injected WT or Sey/+ eyes, Notch1 endogenous transcripts were significantly elevated in Sey/+ eyes. After FLAG/PAX6 injection in Sey/+ eyes, the transcript levels were significantly reduced back to a level not significantly different from that in the vehicle-injected WT eyes. (B\u2013D) In vehicle- injected WT or Sey/+ eyes, endogenous transcripts of Hes1, Wnt5a, and Mtor were elevated in Sey/+ eyes, although not significantly. After FLAG/PAX6 injection in Sey/+ eyes, the transcript levels were reduced significantly for Hes1 and Mtor, back to a level not significantly different from that of vehicle-injected WT eyes. In (A)\u2013(D), boxplots show the maximum, mean, and minimum, with each dot indicating a single cornea analyzed from each mouse. (E) shows the mean difference and 95% confidence interval (CI), with all genes pooled for each pair of conditions. Overall, (1) there was a significant increase in the endogenous levels of these genes between vehicle-injected WT and vehicle-injected Sey/+ eyes; (2) there was a significant decrease in the endogenous levels of these genes between vehicle-injected Sey/+ and FLAG/PAX6- injected Sey/+ eyes; and (3) there was no significant difference in the endogenous levels of these genes between vehicle-injected WT and FLAG/PAX6-injected Sey/+ eyes. p \u22640.05 was considered as statistically significant. *, p \u22640.05; n, number of corneas; ns, not significant; RT-ddPCR, reverse transcription droplet digital PCR. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 9",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7,
+          "n_regions": 53
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 3
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.355,
+          "noise_score": 0.4105,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 34.5,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 24.5,
+            "note": "duplicated regions within figure (conf 0.7)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    }
+  ],
+  "pipeline_warnings": [
+    "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+    "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+  ],
+  "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic."
+}

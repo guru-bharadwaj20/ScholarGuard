@@ -3121,6 +3121,3768 @@
           "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13342975_report.md"
         }
       }
+    },
+    "PMC13342968": {
+      "ground_truth": {
+        "paper_id": "PMC13342968",
+        "pdf_path": "data/evaluation_set/clean_control_papers/PMC13342968.pdf",
+        "pdf_exists": true,
+        "is_fraudulent": false,
+        "label_confidence": "confirmed",
+        "figures": []
+      },
+      "status": "ok",
+      "runtime_sec": 718.03,
+      "pipeline_report": {
+        "schema_version": "scholarguard/stage6/1.0",
+        "generated_at": "2026-07-10T08:35:27",
+        "paper": {
+          "path": "data/evaluation_set/clean_control_papers/PMC13342968.pdf",
+          "filename": "PMC13342968.pdf",
+          "sections_found": [
+            "Acknowledgments",
+            "Conclusions",
+            "Discussion",
+            "Introduction",
+            "References",
+            "Results",
+            "_preamble"
+          ],
+          "n_figures": 13
+        },
+        "status": "completed",
+        "error": null,
+        "overall_risk": {
+          "score": 62.94,
+          "category": "high",
+          "n_figures": 13,
+          "worst_figure_score": 72.0,
+          "worst_figure_category": "high"
+        },
+        "figures": [
+          {
+            "figure": "Figure 1",
+            "figure_num": 1,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img01.png",
+            "caption": "Menaquinone-7 (MK-7) increases bone mass in aged mice. (A) Schematic diagram illustrating experimental design. (B, C) Micro-computed tomography (micro-CT) reconstructed representative images (B) and quantification (C) of trabecular bone volume fraction (Tb.BV/TV), trabecular number (Tb.N), trabecular thickness (Tb.Th), trabecular separation (Tb.Sp), cortical thickness (Ct.Th), and bone mineral density (BMD) of the cortical and trabecular bone in the femora in young (3-month) and old (20-month) mice treated with MK-7 or vehicle as control. (D, E) Hematoxylin and eosin (H&E) (D) and Masson (E) staining of femora sections in femora in mice of different groups. (F) Immu- nohistochemistry (IHC) staining for osteocalcin (Ocn) and quantification of the number of Ocn-positive (Ocn+, brown) osteoblasts (N. OBs) on the trabecular bone surface (BS) in femora in mice of different groups. Nuclei were stained blue with hematoxylin. (G) Calcein (green) labeling of trabecular bones in femora in mice of different groups and Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 5",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3591,
+                "noise_score": 0.4008,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 10.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 2",
+            "figure_num": 2,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img00.png",
+            "caption": "Menaquinone-7 (MK-7) rescues cellular senescence and promotes osteogenic differentiation in old primary bone marrow mesenchymal stem cells (BMSCs). (A) Repre- sentative images and quantitative analysis of Alizarin Red S staining for mineralization deposit in primary BMSCs extracted from young (3-month) or old (20-month) mice treated with or without MK-7 under osteogenic induction conditions. (B, C) Western blot (B) and reverse transcription quantitative polymerase chain reaction (RT-qPCR) (C) for osteogenic-related proteins/genes in primary BMSCs of different groups. (D) Representative images and quantitative analysis of immunofluorescence staining for runt-related transcription factor 2 (Runx2, red) in primary BMSCs of different groups, and nuclei were stained with 4\u2032,6-diamidino-2-phenylindole (DAPI, blue). (E, F) The volcano plot presented the differentially expressed genes (DEGs) as determined by RNA sequencing (RNA-Seq) in the femora of old mice treated with MK-7 or vehicle as control (E) and gene ontology (GO) enrichment analysis (F) of the 54 DEGs shown in E for biological processes. (G) Western blot for senescence-related proteins in primary BMSCs of different groups. (H) Representative images and quantification of senescence-associated \u03b2-galactosidase positive (SA-\u03b2-Gal+, blue) primary BMSCs of different groups. (I) RT-qPCR for cycle arrest- and senescence-associated secretory phenotype (SASP)-related genes in primary BMSCs of different groups. n = 4 mice (E, F) for each group or 4 independent repeats for in vitro experiments (A\u2013D, G\u2013I). Data were means \u00b1 standard error of the mean (SEM). *P < 0.05, **P < 0.01, ***P < 0.001 by one-way analysis of variance (ANOVA). Sp7/Sp7: the protein and Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 7",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 13.4103,
+                "n_regions": 3
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2974,
+                "noise_score": 0.173,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 35.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 13.4103)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 3",
+            "figure_num": 3,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img02.png",
+            "caption": "Menaquinone-7 (MK-7) restores mitochondrial integrity and function in old primary bone marrow mesenchymal stem cells (BMSCs). (A) Representative images of MitoTracker Green staining for mitochondria and quantification of mitochondrial length in primary BMSCs of different groups. (B, C) Mitochondrial membrane potential mea- surement by 5,5\u2032,6,6\u2032-Tetrachloro-1,1\u2032,3,3\u2032-tetraethylbenzimidazolylcarbocyanine iodide (JC-1) aggregates (red) and monomers (green) by confocal fluorescence microscopy (B) and Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 9",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_ai_generated",
+                "freq_score": 0.4278,
+                "noise_score": 0.799,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 20.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 20.0,
+                  "note": "AI-generation verdict: likely_ai_generated (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 4",
+            "figure_num": 4,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img03.png",
+            "caption": "Cellular communication network factor 2 (Ccn2) knockdown inhibits osteogenic differentiation and aggravates cellular senescence in old primary bone marrow mesenchymal stem cells (BMSCs). (A) The Venn diagram presented the overlapping differentially expressed genes (DEGs) identified by RNA sequencing (RNA-Seq) in the femora among different groups. (B) The heatmap showed the 31 DEGs as indicated by Venn analysis in (A). Pseudo color from blue to red indicates the relative expression level of the genes from low to high. (C) Reverse transcription quantitative polymerase chain reaction (RT-qPCR) for Ccn2 and forkhead box protein C2 (Foxc2) in various bone-related cells. (D) Expression levels of Ccn2 and Foxc2 by RNA-Seq in the femora tissues among different groups. (E) Representative images and quantification of mineralization deposit by Alizarin Red staining in primary BMSCs of different groups under osteogenic induction conditions. (F) Western blot for Ccn2 and osteogenic-related proteins in primary BMSCs of different groups. (G) Representative images and quantitative analysis of immunofluorescence staining for runt-related transcription factor 2 (Runx2, red) in primary BMSCs of different Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 11",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 2.0707,
+                "n_regions": 27
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 6
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3533,
+                "noise_score": 0.2239,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 35.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 2.0707)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 5",
+            "figure_num": 5,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img04.png",
+            "caption": "The multidirectional beneficial effect of menaquinone-7 (MK-7) on mitochondria is retarded by cellular communication network factor 2 (Ccn2) knockdown in old primary bone marrow mesenchymal stem cells (BMSCs). (A) Representative images of MitoTracker Green staining for mitochondria and quantification of mitochondrial length in primary Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 13",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.0218,
+                "n_regions": 47
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 2,
+                "n_visual_similar": 6
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3627,
+                "noise_score": 0.3343,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 62.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.0218)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "2 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 6",
+            "figure_num": 6,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img05.png",
+            "caption": "Cellular communication network factor 2 (Ccn2) overexpression enhanced menaquinone-7 (MK-7)'s advantageous effect in old primary bone marrow mesenchymal stem cells (BMSCs). (A) Representative images and quantification of mineralization deposit by Alizarin Red staining in primary BMSCs of different groups under osteogenic induction conditions. (B, C) Western blot for Ccn2, osteogenic- (B) and cell cycle arrest- (C) related proteins in primary BMSCs of different groups. (D) Representative images of MitoTracker Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 15",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.0786,
+                "n_regions": 29
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 5
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3548,
+                "noise_score": 0.29,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 35.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.0786)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 7",
+            "figure_num": 7,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img06.png",
+            "caption": "The therapeutic effect of menaquinone-7 (MK-7) on senile osteoporosis relies on cellular communication network factor 2 (Ccn2). (A, B) Micro-computed tomography (micro-CT) reconstructed representative images (A) and quantification (B) of trabecular bone volume fraction (Tb.BV/TV), trabecular number (Tb.N), trabecular thickness (Tb.Th), trabecular separation (Tb.Sp), cortical thickness (Ct.Th), and bone mineral density (BMD) of the cortical and trabecular bone in the femora in old mice of different groups. (C) Hematoxylin and eosin (H&E) staining of femora sections in femora in mice of different groups. (D) Immunohistochemistry (IHC) staining for osteocalcin (Ocn) and quantification of the number of Ocn+ (brown) osteoblasts (N. OBs) on the trabecular bone surface (BS) in femora in mice of different groups. Nuclei were stained blue with hematoxylin. (E, F) micro-CT reconstructed representative images (E) and quantification (F) of Tb.BV/TV, Tb.N, Tb.Th, Tb.Sp, Ct.Th., and BMD of the cortical and trabecular bone in the femora in old mice under different treatments. (G) Masson staining of femora sections for collagen distribution in femora in mice of different groups. (H) IHC staining for Ocn and quantification of the number of Ocn-positive (Ocn+, brown) osteoblasts (N. OBs) on the trabecular bone surface (BS) in femora in mice of different groups. Nuclei were stained blue with hematoxylin. n = 8 mice for each group. Data were means \u00b1 standard error of the mean (SEM). Not significant (ns) P > 0.05, *P < 0.05, **P < 0.01, ***P < 0.001 by one-way analysis of variance (ANOVA). shNC and AAV-NC: adeno-associated virus for negative control; shCcn2 and AAV-Ccn2: adeno-associated virus for Ccn2 knockdown and expression, respectively.",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7,
+                "n_regions": 40
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 7
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3702,
+                "noise_score": 0.4178,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 61.5,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 24.5,
+                  "note": "duplicated regions within figure (conf 0.7)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 8",
+            "figure_num": 8,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img07.png",
+            "caption": "Pregnane X receptor (PXR) is the nuclear receptor of menaquinone-7 (MK-7) in primary bone marrow mesenchymal stem cells (BMSCs). (A) Western blot for PXR after the total lysate of primary BMSCs was digested by different doses of protease with or without the pre-incubation of MK-7. (B) Western blot for PXR after the total lysate of primary BMSC was denatured under different temperatures and quantification of the temperature at which 50% of the relative band intensity is reduced (Tm50) for the binding of MK-7 to its target PXR in primary BMSCs. (C) Western blot for PXR after the total lysate of primary BMSC was denatured under temperature 51 \u25e6C with different dose of MK-7 and the quantification of half-maximal effective concentration (EC50) for the binding of MK-7 to PXR in primary BMSCs. (D) The molecular docking of MK-7 with mus musculus PXR protein. MK-7 is displayed in Cyan. The surrounding residues in the binding pocket are shown in green and pink. The backbone of the receptor is depicted as gray. (E) Schematic view of PXR receptor domain organizations and localization of the site-specific mutations generated for the following assessment. (F) Drug affinity responsive target stability Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 18",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.6594,
+                "n_regions": 48
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 5
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.366,
+                "noise_score": 0.3139,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 35.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.6594)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 9",
+            "figure_num": 9,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img08.png",
+            "caption": "Pregnane X receptor (PXR) is essential for the menaquinone-7 (MK-7)-induced activation of the extracellular signal-regulated kinases 1/2 (ERK1/2)/cyclic AMP-responsive element-binding protein (CREB) pathway in old primary bone marrow mesenchymal stem cells (BMSCs). (A) Kyoto Encyclopedia of Genes and Genomes (KEGG) enrichment Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 19",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7455,
+                "n_regions": 28
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 7
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3548,
+                "noise_score": 0.3214,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 53.09,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 26.09,
+                  "note": "duplicated regions within figure (conf 0.7455)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 10",
+            "figure_num": 10,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img09.png",
+            "caption": "Schematic diagram demonstrating menaquinone-7 (MK-7) restores mitochondrial function and determines the fate of bone marrow mesenchymal stem cells (BMSCs) via mitophagy pathways. Upon the binding of MK-7 to its nuclear receptor pregnane X receptor (PXR), the extracellular signal-regulated kinases 1/2 (ERK1/2)/cyclic AMP-responsive element-binding protein (CREB) pathway is activated, leading to an elevation expression in cellular communication network factor 2 (Ccn2). Subsequently, the Ccn2 drives PTEN- induced kinase 1 (PINK1)-dependent mitophagy, which eliminates mitochondrial DNA (mtDNA) and mitigates mitochondrial reactive oxygen species (mtROS). Thereby, cellular senescence is reversed and osteogenic differentiation in primary BMSCs of aged bones is enhanced. The schematic diagram was created by BioRender.com. ATP: adenosine triphosphate; LC3: microtubule-associated protein 1 light chain 3; MMP: mitochondrial membrane potential; p-CREB: phosphorylated cAMP response element binding protein; p-ERK1/2: phosphorylated extracellular signal-regulated kinases 1/2; SASP: senescence-associated secretory phenotype. Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 20",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 2.0373,
+                "n_regions": 51
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 3
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3609,
+                "noise_score": 0.4367,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 2.0373)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 18)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img10.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.2521,
+                "n_regions": 45
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3598,
+                "noise_score": 0.5516,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.2521)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 19)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img11.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.6359,
+                "n_regions": 39
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 3
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3576,
+                "noise_score": 0.3815,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.6359)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 20)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img12.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.2819,
+                "n_regions": 39
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3089,
+                "noise_score": 0.1353,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 35.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.2819)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          }
+        ],
+        "pipeline_warnings": [
+          "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+          "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+        ],
+        "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic.",
+        "report_paths": {
+          "json": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13342968_report.json",
+          "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13342968_report.md"
+        }
+      }
+    },
+    "PMC13342367": {
+      "ground_truth": {
+        "paper_id": "PMC13342367",
+        "pdf_path": "data/evaluation_set/clean_control_papers/PMC13342367.pdf",
+        "pdf_exists": true,
+        "is_fraudulent": false,
+        "label_confidence": "confirmed",
+        "figures": []
+      },
+      "status": "ok",
+      "runtime_sec": 67.54,
+      "pipeline_report": {
+        "schema_version": "scholarguard/stage6/1.0",
+        "generated_at": "2026-07-10T08:36:34",
+        "paper": {
+          "path": "data/evaluation_set/clean_control_papers/PMC13342367.pdf",
+          "filename": "PMC13342367.pdf",
+          "sections_found": [
+            "Abstract",
+            "Introduction",
+            "References",
+            "_preamble"
+          ],
+          "n_figures": 5
+        },
+        "status": "completed",
+        "error": null,
+        "overall_risk": {
+          "score": 43.51,
+          "category": "moderate",
+          "n_figures": 5,
+          "worst_figure_score": 44.55,
+          "worst_figure_category": "moderate"
+        },
+        "figures": [
+          {
+            "figure": "Figure 1",
+            "figure_num": 1,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342367_img00.png",
+            "caption": "Design framework linking scaffold, cells and bioactive regulators to mechanics, endothelialization and host remodeling in tissue-engineered blood vessels. Created by the authors. 2 Journal of Tissue Engineering 17",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.8338,
+                "n_regions": 60
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3726,
+                "noise_score": 0.5442,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 39.18,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 29.18,
+                  "note": "duplicated regions within figure (conf 0.8338)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 2",
+            "figure_num": 2,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342367_img01.png",
+            "caption": "Purine-metabolizing antithrombotic concept for CD39/CD73-based vascular interfaces. Created by the authors based on published mechanistic concepts.80,81 6 Journal of Tissue Engineering 17",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9907,
+                "n_regions": 16
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2743,
+                "noise_score": 0.4218,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 34.67,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 34.67,
+                  "note": "duplicated regions within figure (conf 0.9907)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 3",
+            "figure_num": 3,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342367_img02.png",
+            "caption": "Original schematic of the Ancr/E7-EXO strategy for targeting Gli1-positive progenitor cells and suppressing vascular graft calcification. Created by the authors. Chen et al. 7",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9605,
+                "n_regions": 28
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3389,
+                "noise_score": 0.5422,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 43.62,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 33.62,
+                  "note": "duplicated regions within figure (conf 0.9605)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 4",
+            "figure_num": 4,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342367_img03.png",
+            "caption": "Representative auxiliary bioactive systems for antithrombosis, endothelialization, calcification control and immune regulation in tissue-engineered blood vessels. The figure summarizes stage-specific adjunctive concepts rather than clinically mature stand-alone platforms. Created by the authors based on published mechanistic concepts.79\u201391 8 Journal of Tissue Engineering 17",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9538,
+                "n_regions": 21
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.369,
+                "noise_score": 0.55,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 43.38,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 33.38,
+                  "note": "duplicated regions within figure (conf 0.9538)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 5",
+            "figure_num": 5,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342367_img04.png",
+            "caption": "Simplified microRNA-regulated angiogenic network relevant to tissue-engineered blood vessel integration. The scheme is intended as a mechanistic overlay for scaffold and cell design, not as an exhaustive pathway atlas. Created by the authors based on published pathway evidence.122\u2013133 12 Journal of Tissue Engineering 17",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9872,
+                "n_regions": 40
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3728,
+                "noise_score": 0.5795,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 44.55,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 34.55,
+                  "note": "duplicated regions within figure (conf 0.9872)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          }
+        ],
+        "pipeline_warnings": [
+          "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+          "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+        ],
+        "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic.",
+        "report_paths": {
+          "json": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13342367_report.json",
+          "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13342367_report.md"
+        }
+      }
+    },
+    "PMC13343144": {
+      "ground_truth": {
+        "paper_id": "PMC13343144",
+        "pdf_path": "data/evaluation_set/clean_control_papers/PMC13343144.pdf",
+        "pdf_exists": true,
+        "is_fraudulent": false,
+        "label_confidence": "confirmed",
+        "figures": []
+      },
+      "status": "ok",
+      "runtime_sec": 32.6,
+      "pipeline_report": {
+        "schema_version": "scholarguard/stage6/1.0",
+        "generated_at": "2026-07-10T08:37:07",
+        "paper": {
+          "path": "data/evaluation_set/clean_control_papers/PMC13343144.pdf",
+          "filename": "PMC13343144.pdf",
+          "sections_found": [
+            "Acknowledgments",
+            "Discussion",
+            "Introduction",
+            "Materials And Methods",
+            "References",
+            "Results",
+            "_preamble"
+          ],
+          "n_figures": 22
+        },
+        "status": "completed",
+        "error": null,
+        "overall_risk": {
+          "score": 47.93,
+          "category": "moderate",
+          "n_figures": 22,
+          "worst_figure_score": 65.0,
+          "worst_figure_category": "high"
+        },
+        "figures": [
+          {
+            "figure": "Figure 1",
+            "figure_num": 1,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img04.png",
+            "caption": "AAV9-GBA1 ICV delivery into mice produces robust expression of active hGCase in the brain (A) Vector genome biodistribution, as measured by genomic copies (GC)/\u03bcg DNA, was quantified in the cortex (left) and striatum (right) from D409V+/+ mice injected with 1 \u00d7 109 (pink, n = 9), 7 \u00d7 109 (green, n = 13), 1 \u00d7 1010 (purple, n = 10), and 4 \u00d7 1010 (light blue, n = 23) total GC of AAV9-GBA1. (B) Representative images of in situ hybridization staining for hGBA1 mRNA from coronal mouse brain sections. From left to right, images of WT control mice (injected with AAV9-YFP at 4 \u00d7 1010 GC) and D409V+/+ mice injected with 1 \u00d7 109, 7 \u00d7 109, 1 \u00d7 1010, and 4 \u00d7 1010 total GC doses. (C) GCase activity (nmol/mg/h) in the cortex (left) and striatum (right) from WT mice injected with AAV9-YFP 4 \u00d7 1010 GC dose (WT control, gray; n = 21) and D409V+/+ mice injected with a range of doses: AAV9-YFP 4 \u00d7 1010 GC dose (\u201cControl,\u201d black; n = 22) and AAV9-GBA1 1 \u00d7 109 (pink, n = 18), 7 \u00d7 109 (green, n = 23), 1 \u00d7 1010 (purple, n = 20), and 4 \u00d7 1010 (light blue, n = 33 cortex and n = 31 striatum) total GC. Scale bar represents 1 mm. Mixed-effects model with Dunnett\u2019s multiple comparisons test. Data are presented as medians and min to max. **p < 0.01, ***p < 0.001, and ****p < 0.0001. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 3",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.4025,
+                "n_regions": 1
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 4
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2346,
+                "noise_score": 0.0339,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 2",
+            "figure_num": 2,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img02.png",
+            "caption": "AAV9-GBA1 IPa delivery into NHP yields increased vector biodistribution and mRNA expression in the brain compared with ICM delivery Heatmaps illustrating (A) vector biodistribution (GC/\u03bcg DNA) and (B) bulk tissue RNA expression (ddCT hGBA1/RPP30) data from the ICM study (left) and IPa study (right). Data are plotted as the mean values for each tissue sample and group. Scale bar indicates the range of the mean values for each dataset (white boxes with an \u201cX\u201d indicate samples not available), and dotted lines are used to denote those tissues in the brain (\u201cBrain\u201d; above the line) vs. the spinal cord and peripheral nervous system (\u201cSpinal cord/PNS\u201d; below the blue line). AMY, amygdala; Ca, caudate; CaPu, caudate/putamen; Pu, putamen; FCx, frontal cortex; PFC, prefrontal cortex; Ocx, occipital cortex; PCx, parietal cortex, TCx, temporal cortex; THM, thalamus; SC, C4, spinal cord, cervical level 4 level; SC, T9, spinal cord, thoracic level 9; SC, L2, spinal cord, lumbar level 2; TG, trigeminal nerve; DRG, C2, dorsal root ganglia, cervical level 4; DRG, C3, dorsal root ganglia, cervical level 3; DRG, C4, dorsal root ganglia, cervical level 4; DRG, C6, dorsal root ganglia, cervical level 6; DRG, C7, dorsal root ganglia, cervical level 7; DRG, T9, dorsal root ganglia, thoracic level 9; DRG, L1, dorsal root ganglia, lumbar level 1; DRG, L2, dorsal root ganglia, lumbar level 2; DRG, L3, dorsal root ganglia, lumbar level 3. Injected regions in the IPa study are denoted with an \u201c*.\u201d Molecular Therapy: Advances 4 Molecular Therapy: Advances Vol. 34 September 2026",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.6894,
+                "n_regions": 2
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2419,
+                "noise_score": 0.0955,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 24.13,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 24.13,
+                  "note": "duplicated regions within figure (conf 0.6894)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 3",
+            "figure_num": 3,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img03.png",
+            "caption": "IPa, but not ICM, delivery yields widespread transduction and target GCase activity in NHP brain Representative in situ hybridization images from sections stained for hGBA1 mRNA (hGBA1 ISH, red) from the Control (Ref), Low (ICM-low), Medium (ICM-medium), and High (ICM-high) dose groups (left to right) from the ICM study (A) and Control (Ref), Low P + T, High P + T, and High P only (left to right) from the IPa study (B). GCase activity, as quantified by the 4MUG assay, was measured in all groups across various brain regions for both the ICM study (C) and the IPa study (D) and is presented as fold change relative to the control group. Solid blue line denotes the target GCase activity based on rodent data. FCx, frontal cortex; CaPu, caudate/putamen; SN, substantia nigra; LC, locus coeruleus; THM, thalamus; AMY, amygdala; PFC, prefrontal cortex; Pu, putamen; MCx, motor cortex; Ca, caudate; GP, globus pallidus; In, insula. Brown boxes around the Pu and THM denote the injected regions in the IPa study. Scale bars represent 5 mm. Mixed-effects model with Dunnett\u2019s multiple comparisons test. Data are presented as medians and range. *p < 0.05. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 5",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.3626,
+                "n_regions": 2
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 1,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2382,
+                "noise_score": 0.0273,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 65.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.3626)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 30.0,
+                  "note": "1 near-exact duplicate figure(s)"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 4",
+            "figure_num": 4,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img00.png",
+            "caption": "AAV9-GBA1 ICM and IPa delivery into NHP produces histopathology findings in different nervous system regions Heatmap of major histopathology findings observed in the (A) ICM study and (B) IPa study in the brain (putamen, thalamus, brain stem, and cortex), spinal cord, and dorsal root ganglia (DRG) regions. Each box denotes the highest severity of finding in an individual animal for the specified tissue/brain region. Severity of findings from no findings to most severe: none (green), minimal (yellow), mild (light orange), moderate (dark orange), marked (red), and severe (black). MN infiltration, mononuclear cell infiltration. Molecular Therapy: Advances 6 Molecular Therapy: Advances Vol. 34 September 2026",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.6828,
+                "n_regions": 1
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 4
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2273,
+                "noise_score": 0.0098,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 23.9,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 23.9,
+                  "note": "duplicated regions within figure (conf 0.6828)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 5",
+            "figure_num": 5,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img01.png",
+            "caption": "AAV9-GBA1 ICM and IPa delivery into NHP produces microscopic lesions in CNS and PNS (A) NHP ICM study: H&E staining of the cervical spinal cord dorsal funiculi and DRG from the control animal no. 1501\u2014within normal limits (top panels, 5\u00d7: scale bar, 500 \u03bcm, and 20\u00d7: scale bar, 100 \u03bcm). H&E staining of the cervical (C6) spinal cord and DRG from animal no. 3501: moderate bilateral nerve fiber degeneration of the dorsal funiculi of the spinal cord (arrow) and neuronal cell body degeneration/necrosis (arrow) with mononuclear cell infiltration (*) and neuronophagia (star) in the DRG (bottom panels, 5\u00d7: scale bar, 500 \u03bcm, and 20\u00d7: scale bar, 100 \u03bcm, respectively). (B) NHP IPa study: H&E staining of the brain from control animal no. 1002, block 11/slice 9\u2014within normal limits (1\u00d7: scale bar, 3 mm, and 20\u00d7: scale bar, 200 \u03bcm). H&E staining of the brain from a low-dose P + T animal no. 2501, block 11/slice 9\u2014within the thalamus (Th), there was neuronal eosinophilic material accumulation and neuronal degeneration/necrosis (40\u00d7: scale bar, 100 \u03bcm) accompanied by peri\u00ad vascular inflammation extending into the surrounding neuropil and gliosis (20\u00d7: scale bar, 200 \u03bcm). Substantia nigra (SN): within normal limits (1\u00d7: scale bar, 3 mm). www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 7",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.3223,
+                "n_regions": 2
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 1,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.227,
+                "noise_score": 0.0146,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 65.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.3223)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 30.0,
+                  "note": "1 near-exact duplicate figure(s)"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img12.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3465,
+                "noise_score": 0.208,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img09.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 3
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3548,
+                "noise_score": 0.1325,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img10.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3345,
+                "noise_score": 0.1983,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img11.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 3
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3422,
+                "noise_score": 0.1491,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img08.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3099,
+                "noise_score": 0.144,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img06.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3099,
+                "noise_score": 0.191,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img07.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3411,
+                "noise_score": 0.3184,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img05.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3296,
+                "noise_score": 0.2862,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img17.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2923,
+                "noise_score": 0.3302,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img13.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3025,
+                "noise_score": 0.0244,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img18.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2826,
+                "noise_score": 0.3083,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img14.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3114,
+                "noise_score": 0.0,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img15.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3019,
+                "noise_score": 0.1894,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img20.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2833,
+                "noise_score": 0.1854,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img21.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 3
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3094,
+                "noise_score": 0.2757,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img16.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2848,
+                "noise_score": 0.0867,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343144_img19.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.2811,
+                "noise_score": 0.3721,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          }
+        ],
+        "pipeline_warnings": [
+          "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+          "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+        ],
+        "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic.",
+        "report_paths": {
+          "json": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13343144_report.json",
+          "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13343144_report.md"
+        }
+      }
+    },
+    "PMC13343156": {
+      "ground_truth": {
+        "paper_id": "PMC13343156",
+        "pdf_path": "data/evaluation_set/clean_control_papers/PMC13343156.pdf",
+        "pdf_exists": true,
+        "is_fraudulent": false,
+        "label_confidence": "confirmed",
+        "figures": []
+      },
+      "status": "ok",
+      "runtime_sec": 167.48,
+      "pipeline_report": {
+        "schema_version": "scholarguard/stage6/1.0",
+        "generated_at": "2026-07-10T08:39:54",
+        "paper": {
+          "path": "data/evaluation_set/clean_control_papers/PMC13343156.pdf",
+          "filename": "PMC13343156.pdf",
+          "sections_found": [
+            "Acknowledgments",
+            "Discussion",
+            "Introduction",
+            "References",
+            "Results",
+            "_preamble"
+          ],
+          "n_figures": 7
+        },
+        "status": "completed",
+        "error": null,
+        "overall_risk": {
+          "score": 66.77,
+          "category": "high",
+          "n_figures": 7,
+          "worst_figure_score": 72.0,
+          "worst_figure_category": "high"
+        },
+        "figures": [
+          {
+            "figure": "Figure 1",
+            "figure_num": 1,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img00.png",
+            "caption": "Slit lamp imaging did not reveal changes post vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes Imaging of the injected eye of the same mouse at 2\u20132.5 and 5 months PI after vehicle or FLAG/PAX6 injection in WT (upper row) or Sey/+ (lower row) eyes. Slit lamp images of all injected WT and Sey/+ eyes in this study at both time points are available in Figures S2 andS3, respectively. PI, post-injection. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 3",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7,
+                "n_regions": 13
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3593,
+                "noise_score": 0.5784,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 34.5,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 24.5,
+                  "note": "duplicated regions within figure (conf 0.7)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 2",
+            "figure_num": 2,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img01.png",
+            "caption": "Histological imaging showed virus-delivered PAX6 protein in the cornea of Sey/+ eyes and increased corneal thickness (A\u2013D) Immunofluorescence staining was performed on paraffin-embedded sections 5 months PI after vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. Magnification is indicated on the first image and was the same for all. (A) No positive FLAG staining was found in the cornea of vehicle-injected WT eyes. (B) Positive FLAG staining was found in the cornea of one FLAG/PAX6-injected WT eye. (C) No positive FLAG staining was found in the cornea of vehicle-injected Sey/+ eyes. (D) Positive FLAG staining was found in the cornea of all FLAG/PAX6-injected Sey/+ eyes. Representative images in (D) show the thicker epithelial layer in the FLAG/PAX6-injected Sey/+ eyes compared with (C) vehicle-injected Sey/+ eyes but not to the level of thickness seen in (A) vehicle-injected WT eyes. Co-labeling with PAX6 indicates the presence of virally delivered PAX6 protein (yellow, white arrows). EPI, epithelium; STR, stroma; END, endothelium. Molecular Therapy: Advances 4 Molecular Therapy: Advances Vol. 34 September 2026",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.5391,
+                "n_regions": 31
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3849,
+                "noise_score": 0.6383,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.5391)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 3",
+            "figure_num": 3,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img02.png",
+            "caption": "Histological imaging showed virus \u201cescaped\u201d and delivered PAX6 protein to the retina of Sey/+ eyes (A\u2013D) Immunofluorescence staining was performed on paraffin-embedded sections 5 months PI after vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. Magnification is indicated on the first image and was the same for all. (A) No positive FLAG staining was found in the retina of vehicle-injected WT eyes. (B) Positive FLAG staining was found in the retina of one FLAG/PAX6-injected WT eye. (C) No positive FLAG staining was found in the retina of vehicle-injected Sey/+eyes. (D) Positive FLAG staining was found in the retina of all FLAG/PAX6-injected Sey/+ eyes. Co-labeling with PAX6 indicates the presence of virally delivered PAX6 protein (yellow, white arrows). GCL, ganglion cell layer; INL, inner nuclear layer; ONL, outer nuclear layer. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 5",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.364,
+                "n_regions": 32
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3705,
+                "noise_score": 0.5264,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.364)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 4",
+            "figure_num": 4,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img03.png",
+            "caption": "Significant increase in corneal epithelial thickness after FLAG/ PAX6 injection in Sey/+ eyes (A\u2013D) Quantification of (A) epithelial thickness, (B) epithelial cell count, (C) stromal- endothelial thickness, and (D) stromal-endothelial cell count after vehicle or FLAG/ PAX6 injection in WT or Sey/+ eyes. Statistics for the subset of most relevant post hoc comparisons are shown; for all comparisons, see Figure S6A. The expected reduction in epithelial thickness in Sey/+ compared with WT eyes was observed. FLAG/PAX6 injection did not impact the epithelial thickness in WT eyes. However, it significantly increased the expected reduced thickness in Sey/+ eyes, although not back to WT levels. (B) The expected reduction in epithelial cell count in Sey/+ relative to WT eyes was observed. FLAG/PAX6 injection did not impact the epithelial cell count in WT eyes. However, it increased the expected reduced thickness in Sey/+ eyes, although not significantly and not back to WT levels. (C) Stromal-endothelial thickness was not significantly impacted by vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. (D) Stromal-endothelial cell count, despite a significant ANOVA, showed no significant differences on post hoc analysis by vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. Data shown are the mean \u00b1 SEM, with each dot indicating a single cornea analyzed from each mouse. Statistical significance was determined using ANOVA, and if significant, then a post hoc Tukey\u2019s multiple- comparison test. p \u22640.05 was considered as statistically significant. *, p \u22640.05; ***, p \u22640.001; ns, not significant. Molecular Therapy: Advances 6 Molecular Therapy: Advances Vol. 34 September 2026",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.8131,
+                "n_regions": 48
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 2,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3222,
+                "noise_score": 0.1987,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 55.46,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 28.46,
+                  "note": "duplicated regions within figure (conf 0.8131)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "2 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 5",
+            "figure_num": 5,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img04.png",
+            "caption": "Correlations show that uninjected contralateral eyes were not impacted by injection in partner eye (A and B) Correlation analysis shows that the uninjected contralateral eyes were not impacted by injection in the partner eye. A positive and significant correlation between corneal epithelial thickness and epithelial cell count was seen for both the (A) injected eyes (data from Figures 4A and 4B), and (B) contralateral eyes. WT corneas cluster as the thickest with the most cells (top right of the correla\u00ad tions), demonstrating no impact of the FLAG/PAX6 injection (green) compared with vehicle (black). Sey/+ corneas are thinner with less cells (bottom left of the correlations). (A) FLAG/PAX6-injected Sey/+ corneas (red) are shifted toward thicker with more cells (up and to the right), showing the positive impact of FLAG/PAX6 injection, compared with vehicle (blue). (B) Sey/+ corneas of the contralateral eyes cluster as the thinnest with the least cells (bottom left of the correlation), showing no impact of FLAG/PAX6 injection of the partner eye (red), compared with vehicle injection of the partner eye (blue). Data were analyzed using simple linear correlation. p \u22640.05 was considered as statistically significant. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 7",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7121,
+                "n_regions": 14
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3965,
+                "noise_score": 0.3936,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 61.92,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 24.92,
+                  "note": "duplicated regions within figure (conf 0.7121)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 6",
+            "figure_num": 6,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img05.png",
+            "caption": "FLAG/PAX6-injected Sey/+ corneas had the most FLAG-PAX6 transcripts, but the difference was not significant (A\u2013C) Transcript levels of virally delivered FLAG-tagged PAX6 (FLAG-PAX6 assay) or endogenous Pax6 (Endo- Pax6 assay) were quantified in corneas with RT-ddPCR. (A) FLAG-PAX6 detected mRNA transcripts in corneas after vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. FLAG/PAX6-injected Sey/+ corneas had the most FLAG-PAX6 transcripts, but the difference was not significant. (B) Reanalyzing the data in (A), conservatively removing the 1.768 FLAG/PAX6-injected Sey/+ data point, even though it was not a significant outlier. Statistics for the subset of most relevant post hoc comparisons are shown; for all comparisons, see Figure S10A. Overall significance was detected, and FLAG/PAX6-injected Sey/+ corneas still had the most FLAG-PAX6 transcripts, but the difference was not significant compared with vehicle-injected Sey/+ eyes. (C) Endo-Pax6 detected mRNA transcripts in corneas after vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes. Statistics for the subset of most relevant post hoc comparisons are shown; for all comparisons, see Figure S10B. The expected reduction in Endo-Pax6 transcripts in Sey/+ compared with WT eyes was observed. However, there was no significant impact of vehicle or PAX6/FLAG injection. Data shown are the mean \u00b1 SEM, with each dot indicating a single cornea analyzed from each mouse. Statistical significance was determined using ANOVA, and if significant, then a post hoc Tukey\u2019s multiple-comparison test. The robust regression and outlier removal (ROUT) test was used to detect outliers. p \u22640.05 was considered as statistically significant. *, p \u22640.05; ns, not significant, RT-ddPCR, reverse transcription droplet digital PCR. Molecular Therapy: Advances 8 Molecular Therapy: Advances Vol. 34 September 2026",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7,
+                "n_regions": 23
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 2,
+                "n_visual_similar": 3
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3698,
+                "noise_score": 0.2377,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 51.5,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 24.5,
+                  "note": "duplicated regions within figure (conf 0.7)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "2 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 7",
+            "figure_num": 7,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343156_img06.png",
+            "caption": "Overall significant pattern of the correction of gene transcription back to WT levels (A\u2013D) Endogenous transcript levels in corneas after vehicle or FLAG/PAX6 injection in WT or Sey/+ eyes were quantified with RT-ddPCR for (A) Notch1, (B) Hes1, (C) Wnt5a, and (D) Mtor. (A) In vehicle-injected WT or Sey/+ eyes, Notch1 endogenous transcripts were significantly elevated in Sey/+ eyes. After FLAG/PAX6 injection in Sey/+ eyes, the transcript levels were significantly reduced back to a level not significantly different from that in the vehicle-injected WT eyes. (B\u2013D) In vehicle- injected WT or Sey/+ eyes, endogenous transcripts of Hes1, Wnt5a, and Mtor were elevated in Sey/+ eyes, although not significantly. After FLAG/PAX6 injection in Sey/+ eyes, the transcript levels were reduced significantly for Hes1 and Mtor, back to a level not significantly different from that of vehicle-injected WT eyes. In (A)\u2013(D), boxplots show the maximum, mean, and minimum, with each dot indicating a single cornea analyzed from each mouse. (E) shows the mean difference and 95% confidence interval (CI), with all genes pooled for each pair of conditions. Overall, (1) there was a significant increase in the endogenous levels of these genes between vehicle-injected WT and vehicle-injected Sey/+ eyes; (2) there was a significant decrease in the endogenous levels of these genes between vehicle-injected Sey/+ and FLAG/PAX6- injected Sey/+ eyes; and (3) there was no significant difference in the endogenous levels of these genes between vehicle-injected WT and FLAG/PAX6-injected Sey/+ eyes. p \u22640.05 was considered as statistically significant. *, p \u22640.05; n, number of corneas; ns, not significant; RT-ddPCR, reverse transcription droplet digital PCR. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 9",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7,
+                "n_regions": 53
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 3
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.355,
+                "noise_score": 0.4105,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 34.5,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 24.5,
+                  "note": "duplicated regions within figure (conf 0.7)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          }
+        ],
+        "pipeline_warnings": [
+          "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+          "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+        ],
+        "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic.",
+        "report_paths": {
+          "json": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13343156_report.json",
+          "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13343156_report.md"
+        }
+      }
+    },
+    "PMC9069901": {
+      "ground_truth": {
+        "paper_id": "PMC9069901",
+        "pdf_path": "data/evaluation_set/fraud_cases/PMC9069901.pdf",
+        "pdf_exists": true,
+        "is_fraudulent": true,
+        "label_confidence": "confirmed",
+        "figures": [
+          {
+            "figure_num": null,
+            "fraud_type": "copy_move",
+            "label_confidence": "confirmed"
+          }
+        ]
+      },
+      "status": "ok",
+      "runtime_sec": 292.91,
+      "pipeline_report": {
+        "schema_version": "scholarguard/stage6/1.0",
+        "generated_at": "2026-07-10T08:44:47",
+        "paper": {
+          "path": "data/evaluation_set/fraud_cases/PMC9069901.pdf",
+          "filename": "PMC9069901.pdf",
+          "sections_found": [
+            "Conclusion",
+            "Discussion",
+            "Introduction",
+            "Materials And Methods",
+            "References",
+            "Results",
+            "_preamble"
+          ],
+          "n_figures": 7
+        },
+        "status": "completed",
+        "error": null,
+        "overall_risk": {
+          "score": 68.93,
+          "category": "high",
+          "n_figures": 7,
+          "worst_figure_score": 72.0,
+          "worst_figure_category": "high"
+        },
+        "figures": [
+          {
+            "figure": "(uncaptioned figure, page 1)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC9069901_img00.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7276,
+                "n_regions": 1
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.4618,
+                "noise_score": 0.4884,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 35.47,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 25.47,
+                  "note": "duplicated regions within figure (conf 0.7276)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 3)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC9069901_img01.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7,
+                "n_regions": 26
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 3
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.5009,
+                "noise_score": 0.3719,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 61.5,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 24.5,
+                  "note": "duplicated regions within figure (conf 0.7)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 4)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC9069901_img02.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9056,
+                "n_regions": 46
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 3,
+                "n_visual_similar": 5
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.367,
+                "noise_score": 0.3127,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 58.7,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 31.7,
+                  "note": "duplicated regions within figure (conf 0.9056)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "3 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 4)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC9069901_img03.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.3932,
+                "n_regions": 66
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 3,
+                "n_visual_similar": 5
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3647,
+                "noise_score": 0.4504,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.3932)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "3 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC9069901_img04.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7556,
+                "n_regions": 64
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 4
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3653,
+                "noise_score": 0.4939,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 63.45,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 26.45,
+                  "note": "duplicated regions within figure (conf 0.7556)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 6)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC9069901_img05.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9234,
+                "n_regions": 65
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 2,
+                "n_visual_similar": 4
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3648,
+                "noise_score": 0.5319,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 69.32,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 32.32,
+                  "note": "duplicated regions within figure (conf 0.9234)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "2 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC9069901_img06.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.107,
+                "n_regions": 42
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 4,
+                "n_visual_similar": 5
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3647,
+                "noise_score": 0.4826,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.107)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "4 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          }
+        ],
+        "pipeline_warnings": [
+          "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+          "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+        ],
+        "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic.",
+        "report_paths": {
+          "json": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC9069901_report.json",
+          "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC9069901_report.md"
+        }
+      }
     }
   }
 }
