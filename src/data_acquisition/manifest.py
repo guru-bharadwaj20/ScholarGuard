@@ -11,6 +11,25 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import time
+
+
+def _atomic_replace(src: str, dst: str, attempts: int = 6) -> None:
+    """``os.replace`` with retries.
+
+    On Windows an antivirus scanner or the search indexer can hold a transient
+    handle on a just-written temp file, making ``os.replace`` raise
+    ``PermissionError`` (WinError 5). That is a flake, not a real failure, and
+    it must never abort a long-running corpus build — so retry briefly.
+    """
+    for attempt in range(1, attempts + 1):
+        try:
+            os.replace(src, dst)
+            return
+        except PermissionError:
+            if attempt == attempts:
+                raise
+            time.sleep(0.1 * attempt)
 
 
 def load_manifest(manifest_path: str) -> list[dict]:
@@ -71,7 +90,7 @@ def add_entry(entry: dict, manifest_path: str) -> None:
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
             json.dump(manifest, fh, indent=2)
-        os.replace(tmp, manifest_path)  # atomic on the same filesystem
+        _atomic_replace(tmp, manifest_path)  # atomic on the same filesystem
     except OSError:
         if os.path.exists(tmp):
             os.remove(tmp)

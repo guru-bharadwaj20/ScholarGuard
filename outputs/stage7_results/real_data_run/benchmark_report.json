@@ -1,0 +1,3126 @@
+{
+  "results": {
+    "PMC10551568": {
+      "ground_truth": {
+        "paper_id": "PMC10551568",
+        "pdf_path": "data/evaluation_set/fraud_cases/PMC10551568.pdf",
+        "pdf_exists": true,
+        "is_fraudulent": true,
+        "label_confidence": "confirmed",
+        "figures": [
+          {
+            "figure_num": null,
+            "fraud_type": "copy_move",
+            "label_confidence": "confirmed"
+          }
+        ]
+      },
+      "status": "ok",
+      "runtime_sec": 147.96,
+      "pipeline_report": {
+        "schema_version": "scholarguard/stage6/1.0",
+        "generated_at": "2026-07-10T07:59:50",
+        "paper": {
+          "path": "data/evaluation_set/fraud_cases/PMC10551568.pdf",
+          "filename": "PMC10551568.pdf",
+          "sections_found": [
+            "Conclusion",
+            "Introduction",
+            "References",
+            "Results And Discussion",
+            "_preamble"
+          ],
+          "n_figures": 15
+        },
+        "status": "completed",
+        "error": null,
+        "overall_risk": {
+          "score": 71.37,
+          "category": "high",
+          "n_figures": 15,
+          "worst_figure_score": 75.0,
+          "worst_figure_category": "critical"
+        },
+        "figures": [
+          {
+            "figure": "Figure 8",
+            "figure_num": 8,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img00.png",
+            "caption": "Figures-8a-8d: Antimicrobial screening of PAF terpolymer ligand. N. Mujafarkani et al.",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.5679,
+                "n_regions": 1
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.4799,
+                "noise_score": 0.473,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 29.88,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 19.88,
+                  "note": "duplicated regions within figure (conf 0.5679)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 9",
+            "figure_num": 9,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img01.png",
+            "caption": "Fig. 9a\u2013c: Antimicrobial screening of PAF-Ni polychelate. Table-6 Antioxidant activity of samples by DPPH assay method. Concentration (\u03bcg/ml) Antioxidant Activity DPPH% PAF-Ni PAF Ascorbic Acid 20 \u03bcg/ml 51.26 47.89 53.78 40 \u03bcg/ml 56.3 52.10 63.86 60 \u03bcg/ml 61.34 57.98 66.38 80 \u03bcg/ml 72.26 59.66 75.63 100 \u03bcg/ml 73.94 63.06 82.35 IC50 17.58 27.61 6.62 N. Mujafarkani et al.",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9446,
+                "n_regions": 29
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3649,
+                "noise_score": 0.468,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 43.06,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 33.06,
+                  "note": "duplicated regions within figure (conf 0.9446)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 4)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img02.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.1998,
+                "n_regions": 21
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3666,
+                "noise_score": 0.4394,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.1998)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img03.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9506,
+                "n_regions": 9
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3614,
+                "noise_score": 0.4005,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 70.27,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 33.27,
+                  "note": "duplicated regions within figure (conf 0.9506)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 6)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img05.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9466,
+                "n_regions": 13
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 2,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3695,
+                "noise_score": 0.4545,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 70.13,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 33.13,
+                  "note": "duplicated regions within figure (conf 0.9466)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "2 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 6)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img04.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.942,
+                "n_regions": 13
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 1,
+                "n_region_reuse": 1,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3776,
+                "noise_score": 0.4337,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.97,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 32.97,
+                  "note": "duplicated regions within figure (conf 0.942)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 30.0,
+                  "note": "1 near-exact duplicate figure(s)"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img07.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9447,
+                "n_regions": 11
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 1,
+                "n_region_reuse": 1,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3726,
+                "noise_score": 0.4304,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 73.06,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 33.06,
+                  "note": "duplicated regions within figure (conf 0.9447)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 30.0,
+                  "note": "1 near-exact duplicate figure(s)"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 7)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img06.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9455,
+                "n_regions": 10
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3837,
+                "noise_score": 0.543,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 70.09,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 33.09,
+                  "note": "duplicated regions within figure (conf 0.9455)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 8)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img08.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 3.1111,
+                "n_regions": 17
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 1,
+                "n_region_reuse": 1,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.4965,
+                "noise_score": 0.5186,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 75.0,
+              "category": "critical",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 3.1111)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 30.0,
+                  "note": "1 near-exact duplicate figure(s)"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 9)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img10.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 2.9363,
+                "n_regions": 20
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 1,
+                "n_region_reuse": 1,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.4738,
+                "noise_score": 0.5277,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 75.0,
+              "category": "critical",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 2.9363)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 30.0,
+                  "note": "1 near-exact duplicate figure(s)"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 9)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img09.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9243,
+                "n_regions": 12
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3884,
+                "noise_score": 0.5479,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 69.35,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 32.35,
+                  "note": "duplicated regions within figure (conf 0.9243)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 10)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img11.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9269,
+                "n_regions": 6
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.37,
+                "noise_score": 0.467,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 69.44,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 32.44,
+                  "note": "duplicated regions within figure (conf 0.9269)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 11)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img13.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.8774,
+                "n_regions": 7
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3321,
+                "noise_score": 0.4029,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 40.71,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 30.71,
+                  "note": "duplicated regions within figure (conf 0.8774)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 11)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img14.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9387,
+                "n_regions": 4
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3573,
+                "noise_score": 0.4688,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 42.85,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 32.85,
+                  "note": "duplicated regions within figure (conf 0.9387)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 11)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC10551568_img12.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9278,
+                "n_regions": 5
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3486,
+                "noise_score": 0.448,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 69.47,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 32.47,
+                  "note": "duplicated regions within figure (conf 0.9278)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          }
+        ],
+        "pipeline_warnings": [
+          "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+          "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+        ],
+        "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic.",
+        "report_paths": {
+          "json": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC10551568_report.json",
+          "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC10551568_report.md"
+        }
+      }
+    },
+    "PMC11388766": {
+      "ground_truth": {
+        "paper_id": "PMC11388766",
+        "pdf_path": "data/evaluation_set/fraud_cases/PMC11388766.pdf",
+        "pdf_exists": true,
+        "is_fraudulent": true,
+        "label_confidence": "confirmed",
+        "figures": [
+          {
+            "figure_num": null,
+            "fraud_type": "copy_move",
+            "label_confidence": "confirmed"
+          }
+        ]
+      },
+      "status": "ok",
+      "runtime_sec": 307.11,
+      "pipeline_report": {
+        "schema_version": "scholarguard/stage6/1.0",
+        "generated_at": "2026-07-10T08:04:56",
+        "paper": {
+          "path": "data/evaluation_set/fraud_cases/PMC11388766.pdf",
+          "filename": "PMC11388766.pdf",
+          "sections_found": [
+            "Conclusions",
+            "Discussion",
+            "Introduction",
+            "Materials And Methods",
+            "References",
+            "Results",
+            "_preamble"
+          ],
+          "n_figures": 8
+        },
+        "status": "completed",
+        "error": null,
+        "overall_risk": {
+          "score": 43.62,
+          "category": "moderate",
+          "n_figures": 8,
+          "worst_figure_score": 45.0,
+          "worst_figure_category": "moderate"
+        },
+        "figures": [
+          {
+            "figure": "Figure 1",
+            "figure_num": 1,
+            "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img00.png",
+            "caption": "Construction of extrahepatic cholangiocarcinoma organoids and TAMs co-culture system. (A) Study design used to create co-culture system from eCCA patients. (B) Morphology of eCCA organoids with TAMs in bright field. Organoids had a round structure (red arrow), and TAMs had a spindle structure. (magnification, 100\u00d7). Y. Guo et al.",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.5679,
+                "n_regions": 1
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.4799,
+                "noise_score": 0.473,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 29.88,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 19.88,
+                  "note": "duplicated regions within figure (conf 0.5679)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 2",
+            "figure_num": 2,
+            "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img01.png",
+            "caption": "Histopathological characterization comparing eCCA organoids from mono-culture and co-culture models and corresponding specimens. (A\u2013B) Representative H&E staining of eCCA specimens and organoids (specimen magnification, 200\u00d7; organoid magnification, 400\u00d7). (C\u2013D) Representative immunohistochemistry staining for CK7, MUC-1, and EPCAM in eCCA specimens and organoids (specimen magnification, 200\u00d7; organoid magnification, 400\u00d7). Y. Guo et al.",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9719,
+                "n_regions": 16
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3518,
+                "noise_score": 0.4579,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 44.02,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 34.02,
+                  "note": "duplicated regions within figure (conf 0.9719)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 3",
+            "figure_num": 3,
+            "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img02.png",
+            "caption": "General genetic alterations in two original specimens and organoids. (A) Number of SNP in different regions of the genome (left) and number of different types of SNP in the coding region (right) from patients 4. (B) Number of INDEL in different regions of the genome (left) and number of different types of INDEL in the coding region (right) from patients 4. (C) Number of SNP in different regions of the genome (left) and number of different types of SNP in the coding region (right) from patients 6. (D) Number of INDEL in different regions of the genome (left) and number of different types of INDEL in the coding region (right) from patients 6. Y. Guo et al.",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9237,
+                "n_regions": 24
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3567,
+                "noise_score": 0.5936,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 42.33,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 32.33,
+                  "note": "duplicated regions within figure (conf 0.9237)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 4",
+            "figure_num": 4,
+            "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img03.png",
+            "caption": "Detailed genetic profiles of six original specimens and organoids. (A) Representative driver genes of the specimens and organoids are presented. The horizontal coordinate is the sample (P: specimens; Mo: monocultured organoids; Co: co-cultured organoids); the vertical coordinate is the gene; the top is the number of gene mutations in each sample; the right is the number of mutations in each gene in these samples presented. (B) Representative mutation spectrum in the specimens and organoids are presented. (C) Representative cancer predisposition genes in the specimens and organoids are presented. (D) Mutation characteristics of the specimens and organoids are presented. Y. Guo et al.",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.8954,
+                "n_regions": 30
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3057,
+                "noise_score": 0.4355,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 41.34,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 31.34,
+                  "note": "duplicated regions within figure (conf 0.8954)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 5",
+            "figure_num": 5,
+            "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img04.png",
+            "caption": "Organoids response to gemcitabine and cisplatin. (A) Representative images showing patient 2 organoids from the two models response to gemcitabine (magnification, 100\u00d7). (B) Dose-response curves of organoids chemosensitivity to gemcitabine. Data are expressed as means \u00b1 SD. (C) Representative MR Images of patient 2 during follow-up. (D) Representative images showing patient 6 organoids from the two models response to cisplatin (magnification, 100\u00d7). (E) Dose-response curves of organoids chemosensitivity to cisplatin. Data are expressed as means \u00b1 SD. (F) Representative MR Images of patient 6 during follow-up. Y. Guo et al.",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.178,
+                "n_regions": 31
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3586,
+                "noise_score": 0.5222,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.178)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 6",
+            "figure_num": 6,
+            "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img05.png",
+            "caption": "Organoids response to 5-fluorouracil and paclitaxel. (A) Representative images showing patient 6 organoids from the two models response to 5-fluorouracil(magnification, 100\u00d7). (B\u2013D) Dose-response curves of organoids chemosensitivity to 5-fluorouracil. Data are expressed as means \u00b1 SD. (E) Representative images showing patient 8 organoids from the two models response to paclitaxel(magnification, 100\u00d7). (F\u2013H) Dose-response curves of organoids chemosensitivity to paclitaxel. Data are expressed as means \u00b1 SD. Y. Guo et al.",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.8913,
+                "n_regions": 18
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3559,
+                "noise_score": 0.5919,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 41.2,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 31.2,
+                  "note": "duplicated regions within figure (conf 0.8913)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 7",
+            "figure_num": 7,
+            "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img06.png",
+            "caption": "TAMs promotes the growth of eCCA organoids in vitro and in vivo. (A) Representative images of eCCA organoids in mono-culture and co- culture(magnification, 40\u00d7). (B) Diameters of eCCA organoids cultured with or without TAMs(n = 6, 3 organoids for each well randomly were measured, **P < 0.01, ***P < 0.001). Data are expressed as means \u00b1 SD. (C) Cell viability of eCCA organoids cultured with or without TAMs(n = 6 experimental settings with 3 biological replicates for each; **P < 0.01, ***P < 0.001). Data are expressed as means \u00b1 SD. (D) Representative images of the tumors from mono-transplantation and co-transplantation. (E\u2013F) Weights and volumes of tumors from mono-transplantation and co-trans- plantation(n = 5, **P < 0.01, ***P < 0.001). Data are expressed as means \u00b1 SD. (G) Representative H&E staining of tumors from specimens, mono- transplantation, and co-transplantation. (H) Representative immunohistochemistry staining for CK7, MUC-1, and EPCAM in tumors from specimens, mono-transplantation and co-transplantation (magnification, 200\u00d7). Y. Guo et al.",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.0487,
+                "n_regions": 33
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3583,
+                "noise_score": 0.5222,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.0487)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 10)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img07.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7,
+                "n_regions": 39
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3543,
+                "noise_score": 0.5831,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 34.5,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 24.5,
+                  "note": "duplicated regions within figure (conf 0.7)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          }
+        ],
+        "pipeline_warnings": [
+          "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+          "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+        ],
+        "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic.",
+        "report_paths": {
+          "json": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC11388766_report.json",
+          "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC11388766_report.md"
+        }
+      }
+    },
+    "PMC13343157": {
+      "ground_truth": {
+        "paper_id": "PMC13343157",
+        "pdf_path": "data/evaluation_set/clean_control_papers/PMC13343157.pdf",
+        "pdf_exists": true,
+        "is_fraudulent": false,
+        "label_confidence": "confirmed",
+        "figures": []
+      },
+      "status": "ok",
+      "runtime_sec": 269.56,
+      "pipeline_report": {
+        "schema_version": "scholarguard/stage6/1.0",
+        "generated_at": "2026-07-10T08:15:24",
+        "paper": {
+          "path": "data/evaluation_set/clean_control_papers/PMC13343157.pdf",
+          "filename": "PMC13343157.pdf",
+          "sections_found": [
+            "Acknowledgments",
+            "Discussion",
+            "Introduction",
+            "Materials And Methods",
+            "References",
+            "Results",
+            "_preamble"
+          ],
+          "n_figures": 7
+        },
+        "status": "completed",
+        "error": null,
+        "overall_risk": {
+          "score": 58.36,
+          "category": "high",
+          "n_figures": 7,
+          "worst_figure_score": 62.0,
+          "worst_figure_category": "high"
+        },
+        "figures": [
+          {
+            "figure": "Figure 1",
+            "figure_num": 1,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img00.png",
+            "caption": "WWOX restoration driven by the synapsin promoter achieves high expression efficiency (A, D, G, and J) Kaplan-Meier survival analyses of Wwox-null mice treated with AAV9-EF1a-hWWOX-WPRE (4 \u00d7 1010 vg, n = 5), AAV9-CMV- hWWOX -WPRE (4 \u00d7 1010 vg, n = 5), AAV9-MBP- hWWOX -WPRE (4 \u00d7 1010 vg, n = 5), and AAV9-hSynI- hWWOX -WPRE (4 \u00d7 1010 vg, n = 6), respectively, compared with Wwox-null (KO) and wild type (WT) mice injected with the reference item (RI) (n = 6). p < 0.01, log rank (Mantel-Cox) test. (B, E, H, and K) Graphs showing body weight (g) of WT mice (n = 6), KO mice injected with the RI (n = 6), and KO mice injected with hWWOX driven by different promoters (n = 5\u20136) at multiple postnatal time points. At postnatal day 14 (P14), KO mice treated with hWWOX-hSynI and hWWOX-CMV exhibited significant increases in body weight compared with RI-injected KO mice (p < 0.001 and p < 0.01, respectively), whereas no statistically significant differences were observed in KO mice treated with hWWOX-EF1\u03b1 or hWWOX-MBP. (C, F, I, and L) Bar graphs representing glucose levels (mg/dL) at P14 in WT mice (n = 6), KO mice injected with RI (n = 6), and KO mice injected with hWWOX using different promoters (n = 5\u20136). p < 0.001 for KO mice injected with hWWOX-hSynI and hWWOX-CMV, but no significant difference was observed for KO mice injected with hWWOX-Ef1a and KO mice injected with hWWOX-MBP compared with KO mice injected with RI. (M) Immunohistochemistry staining for WWOX (red) in the cortex of P18 mice indicating the specificity and intensity of WWOX restoration using different promoters. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 3",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.7701,
+                "n_regions": 29
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3585,
+                "noise_score": 0.264,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 62.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.7701)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 2",
+            "figure_num": 2,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img01.png",
+            "caption": "Consequences of WPRE removal on WWOX expression and therapeutic efficacy (A) Schematic representation of AAV9 vectors expressing WWOX under the human synapsin (hSynI) promoter, with or without the WPRE regulatory element. (B) Kaplan- Meier survival analyses of Wwox-null mice treated with AAV9-hSynI-hWWOX (4 \u00d7 1010 vg), AAV9-hSynI-hWWOX-WPRE (4 \u00d7 1010 vg), or AAV9-hSynI-hWWOX (8 \u00d7 1010 vg). p < 0.01, log rank (Mantel-Cox) test. The black dot indicates that this mouse was collected for analysis. (C) A graph showing body weight (g) monitoring of WT (n = 5), KO (n = 4), and KO mice injected with AAV9-hSynI-hWWOX (4 \u00d7 1010 vg, n = 3), AAV9-hSynI-hWWOX-WPRE (4 \u00d7 1010 vg, n = 3), or AAV9-hSynI-hWWOX (8 \u00d7 1010 vg, n = 5). (D) A graph showing glucose monitoring (mg/dL) of WT (n = 5), KO (n = 4), and KO mice injected with AAV9-hSynI-hWWOX (4 \u00d7 1010 vg,n = 3), (legend continued on next page) Molecular Therapy: Advances 4 Molecular Therapy: Advances Vol. 34 September 2026",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.1667,
+                "n_regions": 24
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 3
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3555,
+                "noise_score": 0.2559,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 62.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.1667)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 3",
+            "figure_num": 3,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img02.png",
+            "caption": "WWOX gene therapy enhances survival in a dose-dependent manner (A) Schematic representation of the AAV9-hSynI-hWWOX vectors used for neonatal intracerebroventricular (ICV) injections. Two viral doses were tested: a low dose (LD, 1.23 \u00d7 1011 vg) and a high dose (HD, 2.63 \u00d7 1011 vg). (B) Kaplan-Meier survival analyses of Wwox-null mice treated with HD or LD AAV9-SynI-WWOX compared with KO and WT mice injected with the RI. HD produced survival comparable to WT animals (p = 0.78), and significantly extended survival relative to the LD group (p < 0.0001) and the KO + RI controls (p < 0.0001). LD also significantly improved survival compared with the KO + RI controls (p < 0.0001). (C) A graph representing body weight during the first postnatal month in KO + LD and KO + HD mice, with weights reaching near WT levels by postnatal day 30, whereas KO mice exhibited marked growth retardation. (D) Long- term growth monitoring demonstrated sustained weight gain and normalization in KO + HD mice up to 180 days of age. (E\u2013G) Blood glucose levels (mg/dL) measured at postnatal days 10, 20, and 30. (H) A graph representing glucose measurements (mg/dL) of KO + HD mice at P180 was indistinguishable from that of WT mice. Statistical analysis was performed using Student\u2019s t test (*p < 0.05; **p < 0.01; ns, not significant). Error bars represent mean \u00b1 SD. Molecular Therapy: Advances 6 Molecular Therapy: Advances Vol. 34 September 2026",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.0066,
+                "n_regions": 36
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 4
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3229,
+                "noise_score": 0.4985,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.0066)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 4",
+            "figure_num": 4,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img03.png",
+            "caption": "High-dose neuronal WWOX expression restores neurobehavioral performance (A) Schematic representation of the experimental design. KO mice were injected at postnatal day 0\u20131 (P0\u2011P1) with AAV9-hSynI-hWWOX at HD (2.63 \u00d7 1011 vg) and monitored for survival, body weight, glucose levels, behavioral symptoms, and seizure activity. Behavioral assessments were performed at 3 months of age, including open field, elevated plus maze, and rotarod tests. (B) Representative locomotor tracking plots of male and female WT (n = 9) and KO + W HD (n = 10) mice in the open field test. (C) Representative trajectory maps from the elevated plus maze of male and female WT (n = 9) and KO + W HD groups (n = 10). (D\u2013G) Quantitative analysis of open field parameters: velocity (cm/s), total distance traveled (cm), frequency in zone center, and frequency in periphery, respectively. (H\u2013J) Quantitative analysis of elevated plus maze test parameters: velocity (cm/s), duration in the open arm (s), and duration in the closed arm (s), respectively. (K) A graph representing the latency (s) of the mice (WT n = 9, KO + W HD n = 10) to fall from the rotarod. Statistical analysis was performed using Student\u2019s t test (*p < 0.05; ns, not significant), Error bars represent mean \u00b1 SD. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 7",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.9872,
+                "n_regions": 38
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3569,
+                "noise_score": 0.4025,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.9872)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 5",
+            "figure_num": 5,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img04.png",
+            "caption": "AAV9-hSynI-hWWOX increases WWOX DNA, mRNA, and protein expression in Wwox-null mice in a dose-dependent manner (A\u2013D) Vector genome copies (GC) in cortex, hippocampus, midbrain, and cerebellum at postnatal day 30 (P30), measured by qPCR and normalized to WT levels. (E\u2013H) WWOX mRNA expression in the same brain regions, normalized to WT. (I\u2013L) Representative western blot analysis showing WWOX protein expression in cortex, hippo\u00ad campus, midbrain, and cerebellum, respectively, following LD (1.23 \u00d7 1011 vg) and HD (2.63 \u00d7 1011 vg) AAV9-hSynI-hWWOX treatments. Quantification indicates WWOX intensity relative to WT. Statistical analysis was performed using Student\u2019s t test (*p < 0.05; ns, not significant; in G and H it is near significant, p value = 0.08 and 0.06, respectively). Error bars represent mean \u00b1 SD. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 9",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.2117,
+                "n_regions": 47
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3592,
+                "noise_score": 0.3984,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.2117)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 6",
+            "figure_num": 6,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img05.png",
+            "caption": "Neuronal WWOX restoration rescues hypomyelination in Wwox-null mice in a dose-dependent manner (A) Representative coronal brain sections stained for myelin basic protein (MBP) showing reduced myelination in KO mice compared with WT controls at P18. (B) MBP immunohistochemistry staining in the corpus callosum (CC), cortex, striatum, and anterior commissure (AC) of WT and KO mice at P18. (C\u2013E) Bar graphs showing significant reduction in brain weight (C), CC thickness (D), and MBP intensity across regions (E) in KO mice relative to WT controls. Percentages (E) indicate relative MBP intensity compared with WT. (F) Representative MBP staining in WT and AAV9-hSynI-hWWOX-treated KO mice at LD (1.23 \u00d7 1011 vg) and HD (2.63 \u00d7 1011 vg), demonstrating dose- dependent restoration of myelination across CC, striatum, and cortex. Statistical analysis was performed using Student\u2019s t test (**p < 0.01, ***p < 0.001). Error bars represent mean \u00b1 SD. Molecular Therapy: Advances 10 Molecular Therapy: Advances Vol. 34 September 2026",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 4.6614,
+                "n_regions": 36
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3629,
+                "noise_score": 0.5962,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 4.6614)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 7",
+            "figure_num": 7,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img06.png",
+            "caption": "Wwox KO littermates exhibit elevated spike activity compared with WT pups, and AAV-mediated WWOX restoration rescues SWDs in Wwox KO pups (A) A single representative ECoG trace together with a magnified segment of pups at \u223cP14 showing recurrent spikes. A zoomed-in segment highlights a single spike discharge. (B) Quantification of daily spike frequency (spikes/hour) over 7 days of recording. KO pups consistently displayed higher spike rates compared with WT littermates. (C) Averaged spike counts across the recording period in WT and KO pups. Data are shown as mean \u00b1 SEM; n = 5 littermates per group. Statistical significance was determined using Student\u2019s t test. *p < 0.05; ns, non-significant. (D) Representative ECoG trace from a WWOX KO pup at \u223cP14 showing a characteristic burst of generalized spike-wave discharges (SWDs). Magnified segment highlights rhythmic SWD activity typical of the KO group. (E) Quantification of SWD events per animal across groups (WT, KO, and KO + AAV9-hSynI-hWWOX [HD]). WWOX KO pups exhibited a significantly higher number of SWDs relative to WT, whereas WWOX-rescued pups (HD) showed a marked reduction in SWD incidence. Data are presented as mean \u00b1 SEM (n = 5 pups per group). Statistical significance was determined using Student\u2019s t test. ****p < 0.0001; ns, non-significant. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 11",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.0809,
+                "n_regions": 7
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3661,
+                "noise_score": 0.4979,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.0809)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          }
+        ],
+        "pipeline_warnings": [
+          "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+          "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+        ],
+        "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic.",
+        "report_paths": {
+          "json": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13343157_report.json",
+          "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13343157_report.md"
+        }
+      }
+    },
+    "PMC13344374": {
+      "ground_truth": {
+        "paper_id": "PMC13344374",
+        "pdf_path": "data/evaluation_set/clean_control_papers/PMC13344374.pdf",
+        "pdf_exists": true,
+        "is_fraudulent": false,
+        "label_confidence": "confirmed",
+        "figures": []
+      },
+      "status": "ok",
+      "runtime_sec": 357.52,
+      "pipeline_report": {
+        "schema_version": "scholarguard/stage6/1.0",
+        "generated_at": "2026-07-10T08:21:21",
+        "paper": {
+          "path": "data/evaluation_set/clean_control_papers/PMC13344374.pdf",
+          "filename": "PMC13344374.pdf",
+          "sections_found": [
+            "Abstract",
+            "Conclusions",
+            "Discussion",
+            "Introduction",
+            "Materials And Methods",
+            "References",
+            "Results",
+            "_preamble"
+          ],
+          "n_figures": 7
+        },
+        "status": "completed",
+        "error": null,
+        "overall_risk": {
+          "score": 64.96,
+          "category": "high",
+          "n_figures": 7,
+          "worst_figure_score": 72.0,
+          "worst_figure_category": "high"
+        },
+        "figures": [
+          {
+            "figure": "(uncaptioned figure, page 1)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13344374_img00.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3727,
+                "noise_score": 0.2907,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 0.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 15)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13344374_img01.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.0312,
+                "n_regions": 72
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 5
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3435,
+                "noise_score": 0.2088,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 62.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.0312)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 17)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13344374_img02.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.5301,
+                "n_regions": 50
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 5
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3608,
+                "noise_score": 0.5159,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.5301)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 19)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13344374_img03.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.0739,
+                "n_regions": 46
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 4
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3642,
+                "noise_score": 0.5753,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.0739)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 21)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13344374_img04.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.5208,
+                "n_regions": 50
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 5
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3702,
+                "noise_score": 0.5811,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.5208)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 23)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13344374_img05.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.0983,
+                "n_regions": 30
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 4
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3669,
+                "noise_score": 0.5784,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 45.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.0983)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 24)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13344374_img06.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.9631,
+                "n_regions": 55
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 5
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3364,
+                "noise_score": 0.5774,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 43.71,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 33.71,
+                  "note": "duplicated regions within figure (conf 0.9631)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          }
+        ],
+        "pipeline_warnings": [
+          "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+          "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+        ],
+        "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic.",
+        "report_paths": {
+          "json": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13344374_report.json",
+          "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13344374_report.md"
+        }
+      }
+    },
+    "PMC13342975": {
+      "ground_truth": {
+        "paper_id": "PMC13342975",
+        "pdf_path": "data/evaluation_set/clean_control_papers/PMC13342975.pdf",
+        "pdf_exists": true,
+        "is_fraudulent": false,
+        "label_confidence": "confirmed",
+        "figures": []
+      },
+      "status": "ok",
+      "runtime_sec": 127.08,
+      "pipeline_report": {
+        "schema_version": "scholarguard/stage6/1.0",
+        "generated_at": "2026-07-10T08:23:29",
+        "paper": {
+          "path": "data/evaluation_set/clean_control_papers/PMC13342975.pdf",
+          "filename": "PMC13342975.pdf",
+          "sections_found": [
+            "Acknowledgments",
+            "Conclusion",
+            "Discussion",
+            "Introduction",
+            "Materials And Methods",
+            "References",
+            "Results",
+            "_preamble"
+          ],
+          "n_figures": 7
+        },
+        "status": "completed",
+        "error": null,
+        "overall_risk": {
+          "score": 65.07,
+          "category": "high",
+          "n_figures": 7,
+          "worst_figure_score": 72.0,
+          "worst_figure_category": "high"
+        },
+        "figures": [
+          {
+            "figure": "Figure 1",
+            "figure_num": 1,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342975_img01.png",
+            "caption": "Workflow of experimental procedures. M. Akhbari et al. IBRO Neuroscience Reports 21 (2026) 199\u2013206 200",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.7703,
+                "n_regions": 2
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3703,
+                "noise_score": 0.5495,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 36.96,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 26.96,
+                  "note": "duplicated regions within figure (conf 0.7703)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 2",
+            "figure_num": 2,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342975_img00.png",
+            "caption": "The effect of S. boulardii administration (gavage, four weeks, 1010 CFU/rat/day) on spatial learning and memory in LPS-induced (250 \u00b5g/kg/day, i.p., for 9 days), rats. a) Escape latency to locate the concealed platform during four consecutive days, b) The latency to first cross the former platform location in the probe trial. c) Distance moved to reach the platform. (d) The duration of time spent in target quadrant; (e) The escape latency to locate the visible platform during visio- motor activity. Data are presented as the mean \u00b1 SEM. The differences between groups were identified by ANOVA and Tukey test. n = 9\u201310, *P < 0.05 and **P < 0.01 vs. the control and the LPS groups. M. Akhbari et al. IBRO Neuroscience Reports 21 (2026) 199\u2013206 202",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.8302,
+                "n_regions": 1
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.367,
+                "noise_score": 0.5638,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 39.06,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 29.06,
+                  "note": "duplicated regions within figure (conf 0.8302)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 3",
+            "figure_num": 3,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342975_img02.png",
+            "caption": "The effect of S. boulardii (gavage, four weeks, 1010 CFU/rat/day) on downstream effectors within the TLR4 neuroinflammatory signaling pathway and hippocampal inflammatory cytokines in LPS-stimulated (250 \u00b5g/kg/day, i.p., for 9 days) rats. Representative immunoblot bands and quantitative analysis of BDNF, TLR4, NF-\u03baB, TNF-\u03b1, and IL\u22121\u03b2 expression in rat hippocampi (a, b, c, and d, respectively). The level of proteins was measured relative to \u03b2-actin. The quantitative results are expressed as normalized optical density relative to the control group. Data are presented as the mean \u00b1 SEM. n = 3\u20134, *P < 0.05, and **P < 0.01 vs. control and LPS groups. M. Akhbari et al. IBRO Neuroscience Reports 21 (2026) 199\u2013206 203",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": false,
+                "confidence": 0.0,
+                "n_regions": 0
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_ai_generated",
+                "freq_score": 0.4188,
+                "noise_score": 0.7614,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 20.0,
+              "category": "low",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 0.0,
+                  "note": "no in-figure duplication"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 20.0,
+                  "note": "AI-generation verdict: likely_ai_generated (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "Figure 4",
+            "figure_num": 4,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342975_img03.png",
+            "caption": "The effect of S. boulardii (gavage, four weeks, 1010 CFU/rat/day) pretreatment on LPS-induced (250 \u00b5g/kg/day, i.p., for 9 days) neuronal loss in the hip\u00ad pocampus. a) Representative images of Nissl-stained hippocampus sections at \u00d7 4 and 40 magnification. Morphological evaluation shows fewer and sparsely distributed neurons in the CA1, CA2, and CA3 subfields of the hippocampus in the LPS group. b) Neuronal density represented on the graphs per hippocampal subfield. Significant increases in the number of alive neurons in the CA1 and CA3 are observed in SB + LPS group. Data are presented as mean \u00b1 SEM. n = 3\u20134, *P < 0.05, **P < 0.01, ***P < 0.001 vs. control and LPS groups. M. Akhbari et al. IBRO Neuroscience Reports 21 (2026) 199\u2013206 204",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.0244,
+                "n_regions": 39
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 0,
+                "n_visual_similar": 0
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "likely_real",
+                "freq_score": 0.3604,
+                "noise_score": 0.287,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 35.0,
+              "category": "moderate",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.0244)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 0.0,
+                  "note": "only low-confidence visual-similarity leads"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 0.0,
+                  "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 4)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342975_img04.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.1069,
+                "n_regions": 47
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 2,
+                "n_visual_similar": 2
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3669,
+                "noise_score": 0.4848,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.1069)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "2 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 5)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342975_img05.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 1.5525,
+                "n_regions": 52
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3638,
+                "noise_score": 0.5232,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 72.0,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 35.0,
+                  "note": "duplicated regions within figure (conf 1.5525)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          },
+          {
+            "figure": "(uncaptioned figure, page 6)",
+            "figure_num": null,
+            "image_path": "outputs/stage6_results\\_figures\\PMC13342975_img06.png",
+            "caption": "",
+            "detectors": {
+              "copy_move": {
+                "status": "ok",
+                "forged": true,
+                "confidence": 0.8638,
+                "n_regions": 21
+              },
+              "cross_figure": {
+                "status": "ok",
+                "n_exact": 0,
+                "n_region_reuse": 1,
+                "n_visual_similar": 1
+              },
+              "ai_generation": {
+                "status": "ok",
+                "verdict": "suspicious",
+                "freq_score": 0.3557,
+                "noise_score": 0.5343,
+                "classifier_used": false
+              },
+              "claim_consistency": {
+                "status": "skipped",
+                "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+              }
+            },
+            "risk": {
+              "score": 67.23,
+              "category": "high",
+              "breakdown": [
+                {
+                  "detector": "copy_move",
+                  "status": "ok",
+                  "max_points": 35.0,
+                  "points": 30.23,
+                  "note": "duplicated regions within figure (conf 0.8638)"
+                },
+                {
+                  "detector": "cross_figure",
+                  "status": "ok",
+                  "max_points": 30.0,
+                  "points": 27.0,
+                  "note": "1 reused region(s) from another figure"
+                },
+                {
+                  "detector": "ai_generation",
+                  "status": "ok",
+                  "max_points": 20.0,
+                  "points": 10.0,
+                  "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+                },
+                {
+                  "detector": "claim_consistency",
+                  "status": "skipped",
+                  "max_points": 15.0,
+                  "points": 0.0,
+                  "note": "claim-consistency skipped"
+                }
+              ]
+            }
+          }
+        ],
+        "pipeline_warnings": [
+          "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+          "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+        ],
+        "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic.",
+        "report_paths": {
+          "json": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13342975_report.json",
+          "markdown": "outputs/stage7_results/real_data_run\\pipeline_reports\\PMC13342975_report.md"
+        }
+      }
+    }
+  }
+}

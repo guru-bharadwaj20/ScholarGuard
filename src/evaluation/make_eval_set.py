@@ -160,8 +160,18 @@ def _build_pdf(pdf_path, title, figures):
     os.rmdir(scratch)
 
 
-def generate_evaluation_set(seed: int = 2026) -> dict:
-    """Generate all fraud + clean papers and write labels.json. Returns labels."""
+def generate_evaluation_set(seed: int = 2026, force: bool = False) -> dict:
+    """Generate all fraud + clean papers and write labels.json. Returns labels.
+
+    Refuses to run if ``LABELS_PATH`` already holds REAL downloaded entries
+    (see labels_builder.assert_safe_to_overwrite) unless ``force`` is set —
+    real data costs thousands of rate-limited NCBI requests to rebuild.
+    """
+    from src.data_acquisition.labels_builder import assert_safe_to_overwrite
+
+    # Check BEFORE generating anything, so we never write stray PDFs either.
+    assert_safe_to_overwrite(LABELS_PATH, force=force)
+
     rng = np.random.default_rng(seed)
     os.makedirs(FRAUD_DIR, exist_ok=True)
     os.makedirs(CLEAN_DIR, exist_ok=True)
@@ -171,6 +181,7 @@ def generate_evaluation_set(seed: int = 2026) -> dict:
         path = os.path.join(folder, f"{paper_id}.pdf")
         _build_pdf(path, title, figures)
         papers.append({
+            "source": "synthetic",   # never mistaken for downloaded data
             "paper_id": paper_id, "pdf_path": path.replace("\\", "/"),
             "is_fraudulent": is_fraud, "label_confidence": conf,
             "figures": [{"figure_num": n, "fraud_type": t,
@@ -259,7 +270,37 @@ def generate_evaluation_set(seed: int = 2026) -> dict:
     return labels
 
 
+def main(argv=None) -> int:
+    import argparse
+    import sys
+
+    from src.data_acquisition.labels_builder import RealDataOverwriteError
+
+    parser = argparse.ArgumentParser(
+        description="generate the SYNTHETIC stand-in evaluation set")
+    parser.add_argument("--seed", type=int, default=2026)
+    parser.add_argument("--force", action="store_true",
+                        help="overwrite labels.json even if it holds REAL "
+                             "downloaded evaluation entries (destructive)")
+    args = parser.parse_args(argv)
+
+    try:
+        lab = generate_evaluation_set(seed=args.seed, force=args.force)
+    except RealDataOverwriteError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+
+    n_fraud = sum(p["is_fraudulent"] for p in lab["papers"])
+    print(f"wrote {len(lab['papers'])} papers "
+          f"({n_fraud} fraud, {len(lab['papers']) - n_fraud} clean) + {LABELS_PATH}")
+    return 0
+
+
 if __name__ == "__main__":
+    raise SystemExit(main())
+
+
+def _legacy_entrypoint():  # pragma: no cover - retained for reference
     lab = generate_evaluation_set()
     n_fraud = sum(p["is_fraudulent"] for p in lab["papers"])
     print(f"wrote {len(lab['papers'])} papers "

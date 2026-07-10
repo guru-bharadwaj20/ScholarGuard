@@ -1,0 +1,363 @@
+{
+  "dataset_name": "scholarguard_real_eval_v1",
+  "note": "REAL evaluation set. Fraud cases are formal retractions from the Retraction Watch database (Crossref) whose stated reason concerns image integrity; PDFs fetched from the PMC Open Access subset. Clean controls are PMC OA papers cross-checked against the FULL Retraction Watch DOI list (all retractions, not just image-related). IMPORTANT: labels are PAPER-LEVEL only \u2014 figure_num is null for every fraud case because Retraction Watch does not identify which figure was manipulated. Per-detector, figure-level metrics therefore require manual figure annotation first; paper-level metrics are valid as-is.",
+  "n_fraud": 15,
+  "n_clean": 10,
+  "papers": [
+    {
+      "paper_id": "PMC10551568",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC10551568.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2023.e20459",
+      "title": "Unveiling a novel terpolymer-metal complex: A detailed exploration of synthesis, characterization, and its potential as an antimicrobial and antioxidant agent",
+      "retraction_reason": "Concerns/Issues about Authorship/Affiliation;Concerns/Issues about Image;Concerns/Issues about Peer Review;Concerns/Issues about Referencing/Attributions;Duplication of/in Image;Euphemisms for Duplication;Investigation by Journal/Publisher;Investigation by Third Party;Objections by Author(s);Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC11388766",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC11388766.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2024.e36377",
+      "title": "Construction and drug screening of Co-culture system using extrahepatic cholangiocarcinoma organoids and tumor-associated macrophages",
+      "retraction_reason": "Duplication of/in Image;Euphemisms for Duplication;Investigation by Journal/Publisher;Original Data and/or Images not Provided and/or not Available;Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC13343157",
+      "pdf_path": "data/evaluation_set/clean_control_papers/PMC13343157.pdf",
+      "is_fraudulent": false,
+      "label_confidence": "confirmed",
+      "figures": [],
+      "doi": "10.1016/j.omta.2026.201791",
+      "title": "",
+      "subset": "dose_response"
+    },
+    {
+      "paper_id": "PMC13344374",
+      "pdf_path": "data/evaluation_set/clean_control_papers/PMC13344374.pdf",
+      "is_fraudulent": false,
+      "label_confidence": "confirmed",
+      "figures": [],
+      "doi": "10.1016/j.aspetd.2025.100014",
+      "title": "",
+      "subset": "dose_response"
+    },
+    {
+      "paper_id": "PMC13342975",
+      "pdf_path": "data/evaluation_set/clean_control_papers/PMC13342975.pdf",
+      "is_fraudulent": false,
+      "label_confidence": "confirmed",
+      "figures": [],
+      "doi": "10.1016/j.ibneur.2026.06.008",
+      "title": "",
+      "subset": "dose_response"
+    },
+    {
+      "paper_id": "PMC13342968",
+      "pdf_path": "data/evaluation_set/clean_control_papers/PMC13342968.pdf",
+      "is_fraudulent": false,
+      "label_confidence": "confirmed",
+      "figures": [],
+      "doi": "10.1016/j.jpha.2025.101432",
+      "title": "",
+      "subset": "dose_response"
+    },
+    {
+      "paper_id": "PMC13342367",
+      "pdf_path": "data/evaluation_set/clean_control_papers/PMC13342367.pdf",
+      "is_fraudulent": false,
+      "label_confidence": "confirmed",
+      "figures": [],
+      "doi": "10.1177/20417314261466954",
+      "title": "",
+      "subset": "generic"
+    },
+    {
+      "paper_id": "PMC13343144",
+      "pdf_path": "data/evaluation_set/clean_control_papers/PMC13343144.pdf",
+      "is_fraudulent": false,
+      "label_confidence": "confirmed",
+      "figures": [],
+      "doi": "10.1016/j.omta.2026.201779",
+      "title": "",
+      "subset": "generic"
+    },
+    {
+      "paper_id": "PMC13343156",
+      "pdf_path": "data/evaluation_set/clean_control_papers/PMC13343156.pdf",
+      "is_fraudulent": false,
+      "label_confidence": "confirmed",
+      "figures": [],
+      "doi": "10.1016/j.omta.2026.201786",
+      "title": "",
+      "subset": "generic"
+    },
+    {
+      "paper_id": "PMC9069901",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC9069901.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1039/c9ra04500g",
+      "title": "Berberine alleviates amyloid beta-induced injury in Alzheimer\u2019s disease by miR-107/ZNF217",
+      "retraction_reason": "Concerns/Issues about Data;Concerns/Issues about Image;Falsification/Fabrication of Image;Lack of Approval from Third Party;Paper Mill;Plagiarism of Image;"
+    },
+    {
+      "paper_id": "PMC11378924",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC11378924.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2024.e35999",
+      "title": "Synthesis of a novel AlBeSiTiV light weight HEA coating on SS316 using atmospheric plasma spray process",
+      "retraction_reason": "Duplication of/in Image;Euphemisms for Duplication;Investigation by Journal/Publisher;Objections by Author(s);Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC7347657",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC7347657.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2020.e04327",
+      "title": "A novel immunosensor for the monitoring of PSA using binding of biotinylated antibody to the prostate specific antigen based on nano-ink modified flexible paper substrate: efficient method for diagnosis of cancer using biosensing technology",
+      "retraction_reason": "Computer-Aided Content or Computer-Generated Content;Concerns/Issues about Data;Concerns/Issues about Image;Duplication of/in Image;Euphemisms for Duplication;Investigation by Journal/Publisher;Manipulation of Images;Objections by Author(s);Plagiarism of/in Article;"
+    },
+    {
+      "paper_id": "PMC11279800",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC11279800.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2024.e34189",
+      "title": "Study of changes in folding/unfolding properties and stability of Arabidopsis thaliana MYB12 transcription factor following UV-B exposure in vitro",
+      "retraction_reason": "Duplication of/in Image;Euphemisms for Duplication;Investigation by Journal/Publisher;Objections by Author(s);Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC11327604",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC11327604.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2024.e34993",
+      "title": "Exploring the synergistic potential of pomegranate fermented juice compounds against oxidative stress-induced neurotoxicity through computational docking and experimental analysis in human neuroblastoma cells",
+      "retraction_reason": "Duplication of/in Image;Euphemisms for Duplication;Investigation by Journal/Publisher;Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC8220243",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC8220243.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2021.e07301",
+      "title": "Meso-microporous activated carbon derived from Raffia palm shells: optimization of synthesis conditions using response surface methodology",
+      "retraction_reason": "Concerns/Issues about Image;Duplication of/in Image;Euphemisms for Duplication;Investigation by Journal/Publisher;Objections by Author(s);Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC11128842",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC11128842.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2024.e30806",
+      "title": "The role and mechanism of IFITM1 in developing acquired cisplatin resistance in small cell lung cancer",
+      "retraction_reason": "Duplication of/in Image;Error in Cell Lines/Tissues;Euphemisms for Duplication;Investigation by Journal/Publisher;Objections by Author(s);Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC11141269",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC11141269.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2024.e30754",
+      "title": "Dynamics and control of a plant-herbivore model incorporating Allee's effect",
+      "retraction_reason": "Duplication of/in Image;Euphemisms for Duplication;Investigation by Journal/Publisher;Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC11046237",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC11046237.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2024.e29818",
+      "title": "The effect of porcelain filler particulates madar fiber reinforced epoxy composite \u2013 A comprehensive study for biomedical applications",
+      "retraction_reason": "Concerns/Issues about Authorship/Affiliation;Concerns/Issues about Referencing/Attributions;Duplication of/in Image;Investigation by Journal/Publisher;Investigation by Third Party;Objections by Author(s);Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC10020002",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC10020002.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2023.e14265",
+      "title": "MiR-1281 is involved in depression disorder and the antidepressant effects of Kai-Xin-San by targeting ADCY1 and DVL1",
+      "retraction_reason": "Concerns/Issues about Image;Investigation by Journal/Publisher;Lack of IRB/IACUC Approval and/or Compliance;Manipulation of Images;Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC10979162",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC10979162.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2024.e28393",
+      "title": "Low temperature soldering technology based on superhydrophobic copper microlayer",
+      "retraction_reason": "Duplication of/in Image;Euphemisms for Duplication;Investigation by Journal/Publisher;Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC7980076",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC7980076.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2021.e06476",
+      "title": "Oleic acid as a restorative agent in alleviating adrenaline induced altered morphofunctional milieu of gastric tissue and mitochondria",
+      "retraction_reason": "Author Unresponsive;Concerns/Issues about Image;Duplication of/in Image;Euphemisms for Duplication;Original Data and/or Images not Provided and/or not Available;Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC10692775",
+      "pdf_path": "data/evaluation_set/fraud_cases/PMC10692775.pdf",
+      "is_fraudulent": true,
+      "label_confidence": "confirmed",
+      "figures": [
+        {
+          "figure_num": null,
+          "fraud_type": "copy_move",
+          "label_confidence": "confirmed",
+          "note": "paper-level label only; the specific manipulated figure is NOT annotated and requires manual review"
+        }
+      ],
+      "doi": "10.1016/j.heliyon.2023.e21981",
+      "title": "Correlation between the particle size, structural and photoluminescence spectra of nano NiCr2O4 and La doped NiCr2O4 materials",
+      "retraction_reason": "Concerns/Issues about Referencing/Attributions;Duplication of/in Image;Euphemisms for Duplication;Investigation by Journal/Publisher;Objections by Author(s);Unreliable Results and/or Conclusions;"
+    },
+    {
+      "paper_id": "PMC13343036",
+      "pdf_path": "data/evaluation_set/clean_control_papers/PMC13343036.pdf",
+      "is_fraudulent": false,
+      "label_confidence": "confirmed",
+      "figures": [],
+      "doi": "10.1136/wjps-2026-001222",
+      "title": "",
+      "subset": "generic"
+    },
+    {
+      "paper_id": "PMC13342431",
+      "pdf_path": "data/evaluation_set/clean_control_papers/PMC13342431.pdf",
+      "is_fraudulent": false,
+      "label_confidence": "confirmed",
+      "figures": [],
+      "doi": "10.1177/17562848261464690",
+      "title": "",
+      "subset": "generic"
+    },
+    {
+      "paper_id": "PMC13344357",
+      "pdf_path": "data/evaluation_set/clean_control_papers/PMC13344357.pdf",
+      "is_fraudulent": false,
+      "label_confidence": "confirmed",
+      "figures": [],
+      "doi": "10.1016/j.premed.2026.100034",
+      "title": "",
+      "subset": "generic"
+    }
+  ]
+}

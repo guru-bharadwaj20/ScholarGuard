@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# Secrets — NCBI_CONTACT_EMAIL / NCBI_API_KEY live here, never in code
+.env
+
+# Third-party data clone (63 MB CSV, re-clonable via retraction_watch.py)
+retraction-watch-data/
+
+# Intermediate download cache (re-fetchable; can reach hundreds of MB)
+data/raw_downloads/
+
+# Manifest scratch files
+data/*.tmp
+data/*.bak
+
+# Model weights (trained on Colab, not versioned)
+src/models/weights/*.pt

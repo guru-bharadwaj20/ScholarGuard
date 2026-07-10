@@ -1,0 +1,489 @@
+{
+  "schema_version": "scholarguard/stage6/1.0",
+  "generated_at": "2026-07-10T08:15:24",
+  "paper": {
+    "path": "data/evaluation_set/clean_control_papers/PMC13343157.pdf",
+    "filename": "PMC13343157.pdf",
+    "sections_found": [
+      "Acknowledgments",
+      "Discussion",
+      "Introduction",
+      "Materials And Methods",
+      "References",
+      "Results",
+      "_preamble"
+    ],
+    "n_figures": 7
+  },
+  "status": "completed",
+  "error": null,
+  "overall_risk": {
+    "score": 58.36,
+    "category": "high",
+    "n_figures": 7,
+    "worst_figure_score": 62.0,
+    "worst_figure_category": "high"
+  },
+  "figures": [
+    {
+      "figure": "Figure 1",
+      "figure_num": 1,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img00.png",
+      "caption": "WWOX restoration driven by the synapsin promoter achieves high expression efficiency (A, D, G, and J) Kaplan-Meier survival analyses of Wwox-null mice treated with AAV9-EF1a-hWWOX-WPRE (4 \u00d7 1010 vg, n = 5), AAV9-CMV- hWWOX -WPRE (4 \u00d7 1010 vg, n = 5), AAV9-MBP- hWWOX -WPRE (4 \u00d7 1010 vg, n = 5), and AAV9-hSynI- hWWOX -WPRE (4 \u00d7 1010 vg, n = 6), respectively, compared with Wwox-null (KO) and wild type (WT) mice injected with the reference item (RI) (n = 6). p < 0.01, log rank (Mantel-Cox) test. (B, E, H, and K) Graphs showing body weight (g) of WT mice (n = 6), KO mice injected with the RI (n = 6), and KO mice injected with hWWOX driven by different promoters (n = 5\u20136) at multiple postnatal time points. At postnatal day 14 (P14), KO mice treated with hWWOX-hSynI and hWWOX-CMV exhibited significant increases in body weight compared with RI-injected KO mice (p < 0.001 and p < 0.01, respectively), whereas no statistically significant differences were observed in KO mice treated with hWWOX-EF1\u03b1 or hWWOX-MBP. (C, F, I, and L) Bar graphs representing glucose levels (mg/dL) at P14 in WT mice (n = 6), KO mice injected with RI (n = 6), and KO mice injected with hWWOX using different promoters (n = 5\u20136). p < 0.001 for KO mice injected with hWWOX-hSynI and hWWOX-CMV, but no significant difference was observed for KO mice injected with hWWOX-Ef1a and KO mice injected with hWWOX-MBP compared with KO mice injected with RI. (M) Immunohistochemistry staining for WWOX (red) in the cortex of P18 mice indicating the specificity and intensity of WWOX restoration using different promoters. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 3",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.7701,
+          "n_regions": 29
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3585,
+          "noise_score": 0.264,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 62.0,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.7701)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 2",
+      "figure_num": 2,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img01.png",
+      "caption": "Consequences of WPRE removal on WWOX expression and therapeutic efficacy (A) Schematic representation of AAV9 vectors expressing WWOX under the human synapsin (hSynI) promoter, with or without the WPRE regulatory element. (B) Kaplan- Meier survival analyses of Wwox-null mice treated with AAV9-hSynI-hWWOX (4 \u00d7 1010 vg), AAV9-hSynI-hWWOX-WPRE (4 \u00d7 1010 vg), or AAV9-hSynI-hWWOX (8 \u00d7 1010 vg). p < 0.01, log rank (Mantel-Cox) test. The black dot indicates that this mouse was collected for analysis. (C) A graph showing body weight (g) monitoring of WT (n = 5), KO (n = 4), and KO mice injected with AAV9-hSynI-hWWOX (4 \u00d7 1010 vg, n = 3), AAV9-hSynI-hWWOX-WPRE (4 \u00d7 1010 vg, n = 3), or AAV9-hSynI-hWWOX (8 \u00d7 1010 vg, n = 5). (D) A graph showing glucose monitoring (mg/dL) of WT (n = 5), KO (n = 4), and KO mice injected with AAV9-hSynI-hWWOX (4 \u00d7 1010 vg,n = 3), (legend continued on next page) Molecular Therapy: Advances 4 Molecular Therapy: Advances Vol. 34 September 2026",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.1667,
+          "n_regions": 24
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 3
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3555,
+          "noise_score": 0.2559,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 62.0,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.1667)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 3",
+      "figure_num": 3,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img02.png",
+      "caption": "WWOX gene therapy enhances survival in a dose-dependent manner (A) Schematic representation of the AAV9-hSynI-hWWOX vectors used for neonatal intracerebroventricular (ICV) injections. Two viral doses were tested: a low dose (LD, 1.23 \u00d7 1011 vg) and a high dose (HD, 2.63 \u00d7 1011 vg). (B) Kaplan-Meier survival analyses of Wwox-null mice treated with HD or LD AAV9-SynI-WWOX compared with KO and WT mice injected with the RI. HD produced survival comparable to WT animals (p = 0.78), and significantly extended survival relative to the LD group (p < 0.0001) and the KO + RI controls (p < 0.0001). LD also significantly improved survival compared with the KO + RI controls (p < 0.0001). (C) A graph representing body weight during the first postnatal month in KO + LD and KO + HD mice, with weights reaching near WT levels by postnatal day 30, whereas KO mice exhibited marked growth retardation. (D) Long- term growth monitoring demonstrated sustained weight gain and normalization in KO + HD mice up to 180 days of age. (E\u2013G) Blood glucose levels (mg/dL) measured at postnatal days 10, 20, and 30. (H) A graph representing glucose measurements (mg/dL) of KO + HD mice at P180 was indistinguishable from that of WT mice. Statistical analysis was performed using Student\u2019s t test (*p < 0.05; **p < 0.01; ns, not significant). Error bars represent mean \u00b1 SD. Molecular Therapy: Advances 6 Molecular Therapy: Advances Vol. 34 September 2026",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.0066,
+          "n_regions": 36
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 4
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3229,
+          "noise_score": 0.4985,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 45.0,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.0066)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 4",
+      "figure_num": 4,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img03.png",
+      "caption": "High-dose neuronal WWOX expression restores neurobehavioral performance (A) Schematic representation of the experimental design. KO mice were injected at postnatal day 0\u20131 (P0\u2011P1) with AAV9-hSynI-hWWOX at HD (2.63 \u00d7 1011 vg) and monitored for survival, body weight, glucose levels, behavioral symptoms, and seizure activity. Behavioral assessments were performed at 3 months of age, including open field, elevated plus maze, and rotarod tests. (B) Representative locomotor tracking plots of male and female WT (n = 9) and KO + W HD (n = 10) mice in the open field test. (C) Representative trajectory maps from the elevated plus maze of male and female WT (n = 9) and KO + W HD groups (n = 10). (D\u2013G) Quantitative analysis of open field parameters: velocity (cm/s), total distance traveled (cm), frequency in zone center, and frequency in periphery, respectively. (H\u2013J) Quantitative analysis of elevated plus maze test parameters: velocity (cm/s), duration in the open arm (s), and duration in the closed arm (s), respectively. (K) A graph representing the latency (s) of the mice (WT n = 9, KO + W HD n = 10) to fall from the rotarod. Statistical analysis was performed using Student\u2019s t test (*p < 0.05; ns, not significant), Error bars represent mean \u00b1 SD. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 7",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.9872,
+          "n_regions": 38
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 1
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3569,
+          "noise_score": 0.4025,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 45.0,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.9872)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 5",
+      "figure_num": 5,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img04.png",
+      "caption": "AAV9-hSynI-hWWOX increases WWOX DNA, mRNA, and protein expression in Wwox-null mice in a dose-dependent manner (A\u2013D) Vector genome copies (GC) in cortex, hippocampus, midbrain, and cerebellum at postnatal day 30 (P30), measured by qPCR and normalized to WT levels. (E\u2013H) WWOX mRNA expression in the same brain regions, normalized to WT. (I\u2013L) Representative western blot analysis showing WWOX protein expression in cortex, hippo\u00ad campus, midbrain, and cerebellum, respectively, following LD (1.23 \u00d7 1011 vg) and HD (2.63 \u00d7 1011 vg) AAV9-hSynI-hWWOX treatments. Quantification indicates WWOX intensity relative to WT. Statistical analysis was performed using Student\u2019s t test (*p < 0.05; ns, not significant; in G and H it is near significant, p value = 0.08 and 0.06, respectively). Error bars represent mean \u00b1 SD. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 9",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.2117,
+          "n_regions": 47
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3592,
+          "noise_score": 0.3984,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 45.0,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.2117)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 6",
+      "figure_num": 6,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img05.png",
+      "caption": "Neuronal WWOX restoration rescues hypomyelination in Wwox-null mice in a dose-dependent manner (A) Representative coronal brain sections stained for myelin basic protein (MBP) showing reduced myelination in KO mice compared with WT controls at P18. (B) MBP immunohistochemistry staining in the corpus callosum (CC), cortex, striatum, and anterior commissure (AC) of WT and KO mice at P18. (C\u2013E) Bar graphs showing significant reduction in brain weight (C), CC thickness (D), and MBP intensity across regions (E) in KO mice relative to WT controls. Percentages (E) indicate relative MBP intensity compared with WT. (F) Representative MBP staining in WT and AAV9-hSynI-hWWOX-treated KO mice at LD (1.23 \u00d7 1011 vg) and HD (2.63 \u00d7 1011 vg), demonstrating dose- dependent restoration of myelination across CC, striatum, and cortex. Statistical analysis was performed using Student\u2019s t test (**p < 0.01, ***p < 0.001). Error bars represent mean \u00b1 SD. Molecular Therapy: Advances 10 Molecular Therapy: Advances Vol. 34 September 2026",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 4.6614,
+          "n_regions": 36
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3629,
+          "noise_score": 0.5962,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 45.0,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 4.6614)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 7",
+      "figure_num": 7,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13343157_img06.png",
+      "caption": "Wwox KO littermates exhibit elevated spike activity compared with WT pups, and AAV-mediated WWOX restoration rescues SWDs in Wwox KO pups (A) A single representative ECoG trace together with a magnified segment of pups at \u223cP14 showing recurrent spikes. A zoomed-in segment highlights a single spike discharge. (B) Quantification of daily spike frequency (spikes/hour) over 7 days of recording. KO pups consistently displayed higher spike rates compared with WT littermates. (C) Averaged spike counts across the recording period in WT and KO pups. Data are shown as mean \u00b1 SEM; n = 5 littermates per group. Statistical significance was determined using Student\u2019s t test. *p < 0.05; ns, non-significant. (D) Representative ECoG trace from a WWOX KO pup at \u223cP14 showing a characteristic burst of generalized spike-wave discharges (SWDs). Magnified segment highlights rhythmic SWD activity typical of the KO group. (E) Quantification of SWD events per animal across groups (WT, KO, and KO + AAV9-hSynI-hWWOX [HD]). WWOX KO pups exhibited a significantly higher number of SWDs relative to WT, whereas WWOX-rescued pups (HD) showed a marked reduction in SWD incidence. Data are presented as mean \u00b1 SEM (n = 5 pups per group). Statistical significance was determined using Student\u2019s t test. ****p < 0.0001; ns, non-significant. www.moleculartherapy.org Molecular Therapy: Advances Vol. 34 September 2026 11",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.0809,
+          "n_regions": 7
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3661,
+          "noise_score": 0.4979,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 45.0,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.0809)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    }
+  ],
+  "pipeline_warnings": [
+    "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+    "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+  ],
+  "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic."
+}

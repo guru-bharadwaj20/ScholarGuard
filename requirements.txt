@@ -31,7 +31,10 @@ PyYAML==6.0.3
 
 # Data acquisition: fetch real figures from PubMed Central Open Access.
 # tqdm + pillow are already listed above; requests is the HTTP client.
+# pandas reads the 63 MB Retraction Watch CSV. The repo is cloned with the
+# `git` CLI via subprocess -- deliberately NO gitpython dependency.
 requests==2.32.4
+pandas==2.3.1
 
 # Stage 5: NLP claim-consistency checking
 # pymupdf (fitz) parses PDFs and extracts embedded figure images; anthropic is

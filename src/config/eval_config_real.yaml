@@ -1,0 +1,42 @@
+# ScholarGuard — Stage 7 evaluation against the REAL evaluation set.
+#
+# Kept separate from eval_config.yaml (the synthetic run) so BOTH sets of
+# results are preserved side by side and neither overwrites the other:
+#   outputs/stage7_results/               <- synthetic run (unchanged)
+#   outputs/stage7_results/real_data_run/ <- this run
+#
+# Data: 15 formally-retracted image-fraud papers + 10 clean controls
+# (6 generic, 4 dose-response) downloaded from PMC Open Access.
+
+pipeline_config: src/config/config.yaml
+
+evaluation_set:
+  labels_path: data/evaluation_set/labels.json
+
+output:
+  dir: outputs/stage7_results/real_data_run
+
+# Same default operating point as the synthetic run, so the two are directly
+# comparable. The real-data sweep re-derives a recommendation from scratch.
+decision:
+  paper_score_threshold: 25.0
+
+detector_fire_rules:
+  copy_move: forged_true
+  cross_figure: any_reuse
+  ai_generation: not_real         # verdict in {suspicious, likely_ai_generated}
+  claim_consistency: inconsistent
+
+threshold_sweep:
+  start: 0.0
+  stop: 100.0
+  step: 2.5
+
+error_analysis:
+  max_examples_per_category: 15
+
+# Recompute the earlier SYNTHETIC run's metrics from its benchmark report (which
+# embeds its own ground truth) and render a side-by-side table. Nothing in the
+# synthetic run's output directory is modified.
+comparison:
+  baseline_benchmark: outputs/stage7_results/benchmark_report.json

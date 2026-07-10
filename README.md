@@ -77,6 +77,108 @@ Options: `--min-image-dim` (default 200 px shorter side — drops icons/logos),
 > [pmc_oa_fetch.py](src/data_acquisition/pmc_oa_fetch.py) — nothing else needs
 > to change.
 
+## Building the REAL evaluation set (Retraction Watch × PMC OA)
+
+[scripts/fetch_evaluation_set.py](scripts/fetch_evaluation_set.py) cross-references
+the [Retraction Watch database](https://gitlab.com/crossref/retraction-watch-data)
+against PMC Open Access to assemble a **real** evaluation set: formally-retracted
+papers whose stated retraction reason concerns image integrity, plus clean control
+papers (including dose-response series — the false-positive trap Stage 7 found).
+It writes a `labels.json` that Stage 7's `ground_truth_loader` consumes unchanged.
+
+It saves **full PDFs** (not just figure images) because Stage 5's `pdf_parser`
+needs whole documents with captions and results text intact. It reuses
+`pmc_oa_fetch`, `pmc_search`, `rate_limiter` and `manifest` as-is.
+
+```bash
+export NCBI_CONTACT_EMAIL=you@institution.edu       # required
+python scripts/fetch_evaluation_set.py --fraud-target 40 --clean-target 25 \
+    --dose-response-count 10 --output-dir data/evaluation_set
+```
+
+The Retraction Watch repo (~63 MB) is shallow-cloned automatically via the `git`
+CLI. Progress is tracked in `data/evaluation_manifest.json` (separate from
+`data/manifest.json`); **targets are absolute**, so a resumed run tops the set up
+rather than fetching a fresh quota. Runs are fully resumable — safe to interrupt.
+
+### `labels.json` schema
+
+```json
+{
+  "dataset_name": "...", "note": "...", "n_fraud": 15, "n_clean": 10,
+  "papers": [{
+    "paper_id": "PMC10551568",
+    "pdf_path": "data/evaluation_set/fraud_cases/PMC10551568.pdf",
+    "is_fraudulent": true,
+    "label_confidence": "confirmed",
+    "figures": [{"figure_num": null, "fraud_type": "copy_move",
+                 "label_confidence": "confirmed", "note": "..."}],
+    "doi": "10.1016/j.heliyon.2023.e20459",
+    "retraction_reason": "…;Duplication of/in Image;…"
+  }]
+}
+```
+
+- `is_fraudulent` — paper-level ground truth.
+- `label_confidence` — `confirmed` for every Retraction Watch case (these are
+  *formal retractions*; Expressions of Concern and Corrections are excluded).
+- `fraud_type` — a **coarse** mapping of the retraction reason onto the detector
+  taxonomy. All three image reasons (`Duplication of/in Image`,
+  `Manipulation of Images`, `Falsification/Fabrication of Image`) map to
+  `copy_move`; we deliberately never map fabrication to `ai_generated`, which
+  would assert a generative origin the data does not support. The verbatim
+  reason is preserved in `retraction_reason`.
+- `doi`, `title`, `subset` — provenance; the loader ignores unknown keys.
+
+### ⚠ Figure-level locations are NOT annotated
+
+**`figure_num` is `null` for every fraud case.** Retraction Watch states *why a
+paper was retracted*, never *which figure* was manipulated — so the script never
+guesses a figure number. Consequences:
+
+- **Paper-level metrics are valid** (does the pipeline flag the retracted paper?).
+- **Figure-level, per-detector metrics are NOT** — without knowing which figure
+  is fraudulent, every detection on a fraud paper's other figures would be
+  miscounted. Manual figure-level annotation is required before trusting
+  per-detector precision/recall on this set.
+
+### Clean-control safety
+
+Every clean candidate's DOI is resolved (via NCBI's ID Converter) and checked
+against the **entire** Retraction Watch DOI set — all ~108k retracted DOIs, not
+just the image-related subset — *before* anything is downloaded. As a second
+gate, any paper whose OA record reports `retracted="yes"` is discarded too.
+
+### Real vs. synthetic data: the overwrite guard
+
+Every `labels.json` entry carries a `source` field (`"real"` | `"synthetic"`).
+`src/evaluation/make_eval_set.py` (the synthetic generator) **refuses to run**
+if `labels.json` already contains any `source: "real"` entry — real data costs
+thousands of rate-limited NCBI requests to rebuild, and retracted papers have
+only ~0.7% OA PDF availability. The check runs *before* any PDF is generated,
+so a blocked run writes nothing at all:
+
+```console
+$ python -m src.evaluation.make_eval_set
+ERROR: refusing to overwrite 'data/evaluation_set/labels.json': it contains 25
+REAL evaluation entries downloaded from PMC. ... re-run with --force.
+$ echo $?
+2
+```
+
+Pass `--force` to deliberately replace real data with synthetic. Both the
+guard and the `--force` escape hatch are covered by tests.
+
+### Known constraint: PMC OA rarely exposes PDFs for retracted papers
+
+Measured on the live data (2026-07): of ~2,300 image-fraud papers resolved to a
+PMCID, **only ~0.7% offered a downloadable OA PDF** — retracted articles are
+largely withdrawn from OA distribution. (Clean, recent papers hit ~20%.) The
+`.tar.gz` packages do *not* contain the article PDF either, only figures, XML and
+supplementary files. Building a large real fraud set therefore requires sweeping
+the full Retraction Watch image subset; the script's resumability is what makes
+that practical.
+
 ## Stage 2 — Copy-Move Forgery Detector
 
 Classical-CV detector that finds regions duplicated *within* a single figure

@@ -15,8 +15,10 @@ from __future__ import annotations
 
 import argparse
 import csv
+import math
 import os
 import time
+from statistics import NormalDist
 
 import numpy as np
 
@@ -331,6 +333,95 @@ def evaluate_ai_generation(
 # full-pipeline benchmark. These are pure math over predicted/true labels and
 # do not run any detector — they are unit-tested independently of the pipeline.
 # --------------------------------------------------------------------------
+def wilson_confidence_interval(successes: int, total: int,
+                               confidence: float = 0.95) -> tuple[float, float]:
+    """Wilson score interval for a binomial proportion, clamped to [0, 1].
+
+    Preferred over the normal (Wald) interval because at small n — and this
+    project's real evaluation set is n=15 fraud / n=10 clean — Wald produces
+    nonsense (zero-width intervals at p=0 or p=1, and bounds outside [0,1]).
+    Wilson stays sensible: 0/10 -> (0.000, 0.278), 15/15 -> (0.796, 1.000).
+
+    Pure stdlib (``statistics.NormalDist``) — no scipy dependency.
+    A ``total`` of 0 means the proportion is undefined; we return the
+    maximally-uncertain (0.0, 1.0) rather than a fake point estimate.
+    """
+    if total <= 0:
+        return (0.0, 1.0)
+    if not 0.0 < confidence < 1.0:
+        raise ValueError("confidence must be in (0, 1)")
+    if not 0 <= successes <= total:
+        raise ValueError("successes must be in [0, total]")
+
+    z = NormalDist().inv_cdf(1.0 - (1.0 - confidence) / 2.0)
+    p = successes / total
+    denominator = 1.0 + z * z / total
+    center = (p + z * z / (2.0 * total)) / denominator
+    margin = (z / denominator) * math.sqrt(
+        p * (1.0 - p) / total + z * z / (4.0 * total * total))
+    low, high = center - margin, center + margin
+
+    # At p=0 the lower bound is analytically exactly 0, and at p=1 the upper
+    # bound is analytically exactly 1 (the margin telescopes into the center).
+    # Pin them so floating-point noise can't report 0.9999999999999999.
+    if successes == 0:
+        low = 0.0
+    if successes == total:
+        high = 1.0
+    return (max(0.0, low), min(1.0, high))
+
+
+# The (successes, total) pair backing each rate, so each can carry a Wilson CI.
+# F1 is a harmonic mean of two proportions, NOT itself a binomial proportion —
+# it gets no Wilson interval, and we say so rather than inventing one.
+_RATE_COUNTS = {
+    "precision": lambda c: (c["tp"], c["tp"] + c["fp"]),
+    "recall": lambda c: (c["tp"], c["tp"] + c["fn"]),
+    "specificity": lambda c: (c["tn"], c["tn"] + c["fp"]),
+    "false_positive_rate": lambda c: (c["fp"], c["fp"] + c["tn"]),
+    "false_negative_rate": lambda c: (c["fn"], c["fn"] + c["tp"]),
+    "accuracy": lambda c: (c["tp"] + c["tn"],
+                           c["tp"] + c["tn"] + c["fp"] + c["fn"]),
+}
+
+
+def metrics_with_confidence(counts: dict, confidence: float = 0.95) -> dict:
+    """Point estimates plus Wilson CIs: {rate: {value, ci_low, ci_high, n}}.
+
+    ``value`` is None where the denominator is 0 (undefined, not zero), and the
+    CI is then the uninformative (0, 1).
+    """
+    out: dict = {}
+    for name, get_counts in _RATE_COUNTS.items():
+        successes, total = get_counts(counts)
+        low, high = wilson_confidence_interval(successes, total, confidence)
+        out[name] = {
+            "value": (round(successes / total, 4) if total > 0 else None),
+            "ci_low": round(low, 4), "ci_high": round(high, 4),
+            "n": total, "successes": successes,
+        }
+    out["f1"] = {"value": _f1(
+        (counts["tp"] / (counts["tp"] + counts["fp"])
+         if counts["tp"] + counts["fp"] else None),
+        (counts["tp"] / (counts["tp"] + counts["fn"])
+         if counts["tp"] + counts["fn"] else None)),
+        "ci_low": None, "ci_high": None, "n": None,
+        "note": "F1 is not a binomial proportion; no Wilson interval"}
+    out["confidence"] = confidence
+    return out
+
+
+def format_metric_with_ci(entry: dict, confidence: float = 0.95) -> str:
+    """Render one metric as e.g. ``0.600 (95% CI 0.36-0.80, n=15)``."""
+    if entry.get("value") is None:
+        return f"n/a (n={entry.get('n', 0)})"
+    if entry.get("ci_low") is None:  # F1 and friends
+        return f"{entry['value']:.3f}"
+    pct = int(round(confidence * 100))
+    return (f"{entry['value']:.3f} ({pct}% CI {entry['ci_low']:.2f}-"
+            f"{entry['ci_high']:.2f}, n={entry['n']})")
+
+
 def confusion_counts(y_true: list[bool], y_pred: list[bool]) -> dict:
     """Return {tp, fp, fn, tn} for aligned boolean label lists."""
     if len(y_true) != len(y_pred):

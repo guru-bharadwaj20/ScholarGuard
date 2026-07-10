@@ -76,6 +76,129 @@ def test_binary_metrics_handles_undefined_ratios():
     assert m["false_positive_rate"] == 0.0  # 0/(0+5)
 
 
+def test_wilson_interval_matches_reference_values():
+    """Verified against statsmodels' `proportion_confint(method='wilson')` and
+    published tables; z(0.975)=1.959963985 matches scipy.stats.norm.ppf."""
+    # 8 of 15 -> the canonical reference pair for this project's n=15 fraud set.
+    low, high = metrics.wilson_confidence_interval(8, 15)
+    assert low == pytest.approx(0.3012, abs=5e-4)
+    assert high == pytest.approx(0.7519, abs=5e-4)
+
+    # Zero successes: Wald would give a nonsensical zero-width (0, 0).
+    low, high = metrics.wilson_confidence_interval(0, 10)
+    assert low == pytest.approx(0.0, abs=1e-6)
+    assert high == pytest.approx(0.2775, abs=5e-4)
+
+    # Perfect score: upper bound pinned at 1, lower bound well below it.
+    low, high = metrics.wilson_confidence_interval(15, 15)
+    assert low == pytest.approx(0.7961, abs=5e-4)
+    assert high == 1.0
+
+
+def test_wilson_interval_edges_and_validation():
+    # Undefined proportion -> maximally uncertain, not a fake point estimate.
+    assert metrics.wilson_confidence_interval(0, 0) == (0.0, 1.0)
+    # Wider confidence -> wider interval.
+    lo95, hi95 = metrics.wilson_confidence_interval(8, 15, 0.95)
+    lo99, hi99 = metrics.wilson_confidence_interval(8, 15, 0.99)
+    assert lo99 < lo95 and hi99 > hi95
+    # Bounds always inside [0, 1].
+    for s in range(0, 11):
+        lo, hi = metrics.wilson_confidence_interval(s, 10)
+        assert 0.0 <= lo <= hi <= 1.0
+    with pytest.raises(ValueError):
+        metrics.wilson_confidence_interval(11, 10)
+    with pytest.raises(ValueError):
+        metrics.wilson_confidence_interval(1, 10, confidence=1.0)
+
+
+def test_metrics_with_confidence_attaches_intervals():
+    counts = {"tp": 8, "fp": 2, "fn": 7, "tn": 8}
+    out = metrics.metrics_with_confidence(counts)
+    # recall = 8/15 -> the reference interval above.
+    assert out["recall"]["n"] == 15
+    assert out["recall"]["value"] == pytest.approx(8 / 15, abs=1e-4)
+    assert out["recall"]["ci_low"] == pytest.approx(0.3012, abs=5e-4)
+    # F1 is explicitly given no interval.
+    assert out["f1"]["ci_low"] is None
+    assert "not a binomial proportion" in out["f1"]["note"]
+    rendered = metrics.format_metric_with_ci(out["recall"])
+    assert "95% CI" in rendered and "n=15" in rendered
+
+
+def test_format_metric_handles_undefined():
+    counts = {"tp": 0, "fp": 0, "fn": 0, "tn": 5}
+    out = metrics.metrics_with_confidence(counts)
+    assert out["precision"]["value"] is None
+    assert metrics.format_metric_with_ci(out["precision"]).startswith("n/a")
+
+
+def _fake_benchmark(figure_num, is_fraudulent=True, fired=True):
+    """One paper, one figure; copy_move fires. figure_num=None => unlabeled."""
+    return {"results": {"P1": {
+        "status": "ok",
+        "ground_truth": {
+            "paper_id": "P1", "is_fraudulent": is_fraudulent,
+            "label_confidence": "confirmed",
+            "figures": ([{"figure_num": figure_num, "fraud_type": "copy_move"}]
+                        if is_fraudulent else []),
+        },
+        "pipeline_report": {
+            "overall_risk": {"score": 40.0, "category": "moderate"},
+            "figures": [{
+                "figure": "Figure 1", "figure_num": figure_num, "image_path": None,
+                "detectors": {
+                    "copy_move": {"status": "ok", "forged": fired, "confidence": 0.9},
+                    "cross_figure": {"status": "ok", "n_exact": 0,
+                                     "n_region_reuse": 0, "n_visual_similar": 0},
+                    "ai_generation": {"status": "ok", "verdict": "likely_real",
+                                      "classifier_used": False},
+                    "claim_consistency": {"status": "skipped"},
+                }}]}}}}
+
+
+def test_unannotated_fraud_figures_are_unlabeled_not_negative():
+    """A confirmed-fraud paper with figure_num=null tells us the PAPER is
+    fraudulent, not WHICH figure. Its figures must be excluded from the
+    per-detector confusion matrix, never counted as ground-truth negatives
+    (which would turn a correct detection into a false positive)."""
+    from src.evaluation import error_analysis as ea
+
+    figs, _ = ea.build_records(_fake_benchmark(figure_num=None))
+    assert all(r["gt_known"] is False for r in figs)
+
+    dm = ea.per_detector_metrics(figs)["copy_move"]
+    assert dm["n_evaluated"] == 0            # nothing scoreable
+    assert dm["n_unlabeled"] == 1
+    assert dm["n_fired_on_unlabeled"] == 1
+    assert dm["confusion"] == {"tp": 0, "fp": 0, "fn": 0, "tn": 0}
+
+    errors = ea.categorize_errors(figs)
+    assert errors["false_positives"] == []   # NOT a false positive
+    assert len(errors["unlabeled_hits"]) == 1
+    assert "not annotated" in errors["unlabeled_hits"][0]["reason"]
+
+
+def test_annotated_fraud_figure_is_scored_normally():
+    from src.evaluation import error_analysis as ea
+
+    figs, _ = ea.build_records(_fake_benchmark(figure_num=1))
+    dm = ea.per_detector_metrics(figs)["copy_move"]
+    assert dm["n_unlabeled"] == 0
+    assert dm["confusion"]["tp"] == 1        # correctly credited as a hit
+    assert ea.categorize_errors(figs)["false_positives"] == []
+
+
+def test_clean_paper_figure_is_a_true_negative_or_false_positive():
+    from src.evaluation import error_analysis as ea
+
+    figs, _ = ea.build_records(_fake_benchmark(figure_num=1, is_fraudulent=False))
+    dm = ea.per_detector_metrics(figs)["copy_move"]
+    assert dm["n_unlabeled"] == 0
+    assert dm["confusion"]["fp"] == 1        # clean figure, detector fired
+    assert len(ea.categorize_errors(figs)["false_positives"]) == 1
+
+
 def test_threshold_sweep_monotonic_recall():
     y_true = [True, True, False, False]
     scores = [80.0, 40.0, 30.0, 10.0]
