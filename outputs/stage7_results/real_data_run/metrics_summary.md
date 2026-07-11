@@ -45,11 +45,11 @@ _FPR = of the CLEAN figures it was scored on, the fraction it wrongly flagged. P
 
 **Detections on unlabeled fraud-paper figures** (each is a lead for manual review, scoreable as neither hit nor miss): `copy_move`: 133, `cross_figure`: 54, `ai_generation`: 127
 
-## Synthetic vs. real: side-by-side
+## Side-by-side: synthetic vs. real
 
 Baseline: `scholarguard_synthetic_eval_v1` (N=8 fraud, N=6 clean). This run: N=15 fraud, N=10 clean.
 
-All values carry 95% Wilson CIs. **Read the intervals** — several 'findings' from the synthetic run rest on as few as 2 positive figures and were never as firm as their point estimates implied.
+All values carry 95% Wilson CIs. **Read the intervals** — at this sample size small-count point estimates on either side can look firmer than they are (some rest on as few as 2 positive figures).
 
 ### Per-detector, figure-level
 

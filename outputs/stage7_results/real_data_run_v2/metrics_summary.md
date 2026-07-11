@@ -45,15 +45,15 @@ _FPR = of the CLEAN figures it was scored on, the fraction it wrongly flagged. P
 
 **Detections on unlabeled fraud-paper figures** (each is a lead for manual review, scoreable as neither hit nor miss): `copy_move`: 95, `cross_figure`: 54, `ai_generation`: 8
 
-## Synthetic vs. real: side-by-side
+## Side-by-side: baseline run vs. this run
 
 Baseline: `scholarguard_real_eval_v1` (N=15 fraud, N=10 clean). This run: N=15 fraud, N=10 clean.
 
-All values carry 95% Wilson CIs. **Read the intervals** — several 'findings' from the synthetic run rest on as few as 2 positive figures and were never as firm as their point estimates implied.
+All values carry 95% Wilson CIs. **Read the intervals** — at this sample size small-count point estimates on either side can look firmer than they are (some rest on as few as 2 positive figures).
 
 ### Per-detector, figure-level
 
-| Detector | Metric | Synthetic | Real |
+| Detector | Metric | Baseline run | This run |
 |---|---|---|---|
 | `copy_move` | precision | _not measurable_ | _not measurable_ |
 | `copy_move` | recall | _not measurable_ | _not measurable_ |
@@ -70,7 +70,7 @@ All values carry 95% Wilson CIs. **Read the intervals** — several 'findings' f
 
 ### Combined pipeline, paper-level
 
-| Metric | Synthetic | Real |
+| Metric | Baseline run | This run |
 |---|---|---|
 | precision | 0.600 (95% CI 0.41-0.77, n=25) | 0.571 (95% CI 0.37-0.76, n=21) |
 | recall | 1.000 (95% CI 0.80-1.00, n=15) | 0.800 (95% CI 0.55-0.93, n=15) |

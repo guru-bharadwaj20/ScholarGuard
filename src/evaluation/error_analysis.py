@@ -340,23 +340,53 @@ def _cmp_cell(det_block: dict | None, rate: str) -> str:
     return M.format_metric_with_ci(det_block["ci"][rate])
 
 
+def _comparison_labels(base_name: str, cur_name: str) -> tuple[str, str]:
+    """Honest column labels for the side-by-side table.
+
+    The baseline is whatever prior benchmark ``comparison.baseline_benchmark``
+    points at — it is NOT necessarily the synthetic run. When the baseline and
+    the current run use the *same* dataset (e.g. a before/after comparison of a
+    detector change on the same real papers), label them "Baseline run" / "This
+    run"; when they differ, tag each by whether it is the synthetic or a real
+    set so the columns can never be silently mislabeled.
+    """
+    def tag(name: str) -> str:
+        nl = (name or "").lower()
+        if "synthetic" in nl:
+            return "Synthetic"
+        if "real" in nl:
+            return "Real"
+        return name or "baseline"
+
+    if (base_name or "") == (cur_name or "") and base_name:
+        return "Baseline run", "This run"
+    return tag(base_name), tag(cur_name)
+
+
 def render_comparison_section(baseline: dict, real_det: dict,
-                              real_comb: dict, n_fraud: int, n_clean: int) -> list[str]:
-    """Markdown for the synthetic-vs-real side-by-side comparison."""
+                              real_comb: dict, n_fraud: int, n_clean: int,
+                              base_label: str = "Baseline",
+                              cur_label: str = "This run") -> list[str]:
+    """Markdown for the baseline-vs-this-run side-by-side comparison.
+
+    ``base_label`` / ``cur_label`` name the two columns — derived from the two
+    runs' dataset names by :func:`_comparison_labels`, never hard-coded, so the
+    baseline column always reflects what the baseline actually is.
+    """
     L: list[str] = []
-    L.append("## Synthetic vs. real: side-by-side")
+    L.append(f"## Side-by-side: {base_label.lower()} vs. {cur_label.lower()}")
     L.append("")
     L.append(f"Baseline: `{baseline['dataset_name']}` "
              f"(N={baseline['n_fraud']} fraud, N={baseline['n_clean']} clean). "
              f"This run: N={n_fraud} fraud, N={n_clean} clean.")
     L.append("")
-    L.append("All values carry 95% Wilson CIs. **Read the intervals** — several "
-             "'findings' from the synthetic run rest on as few as 2 positive "
-             "figures and were never as firm as their point estimates implied.")
+    L.append("All values carry 95% Wilson CIs. **Read the intervals** — at this "
+             "sample size small-count point estimates on either side can look "
+             "firmer than they are (some rest on as few as 2 positive figures).")
     L.append("")
     L.append("### Per-detector, figure-level")
     L.append("")
-    L.append("| Detector | Metric | Synthetic | Real |")
+    L.append(f"| Detector | Metric | {base_label} | {cur_label} |")
     L.append("|---|---|---|---|")
     for det in DETECTOR_TO_FRAUD_TYPE:
         base = baseline["per_detector"].get(det)
@@ -369,7 +399,7 @@ def render_comparison_section(baseline: dict, real_det: dict,
 
     L.append("### Combined pipeline, paper-level")
     L.append("")
-    L.append("| Metric | Synthetic | Real |")
+    L.append(f"| Metric | {base_label} | {cur_label} |")
     L.append("|---|---|---|")
     bc, rc = baseline["combined"]["ci"], real_comb["ci"]
     for rate, label in [("precision", "precision"), ("recall", "recall"),
@@ -628,10 +658,13 @@ def _render_summary_md(benchmark, det_metrics, combined, sweep,
                  + ", ".join(f"`{d}`: {n}" for d, n in fired_unlabeled.items() if n))
         L.append("")
 
-    # -- synthetic vs real comparison ---------------------------------------
+    # -- baseline vs this-run comparison ------------------------------------
     if baseline:
+        base_label, cur_label = _comparison_labels(
+            baseline.get("dataset_name", ""), dataset)
         L.extend(render_comparison_section(baseline, det_metrics, combined,
-                                           n_fraud, n_clean))
+                                           n_fraud, n_clean,
+                                           base_label, cur_label))
 
     # -- threshold sweep + recommendation -----------------------------------
     L.append("## Threshold sweep & recommended operating point")
