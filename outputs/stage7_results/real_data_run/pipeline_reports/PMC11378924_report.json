@@ -1,0 +1,1333 @@
+{
+  "schema_version": "scholarguard/stage6/1.0",
+  "generated_at": "2026-07-10T08:52:37",
+  "paper": {
+    "path": "data/evaluation_set/fraud_cases/PMC11378924.pdf",
+    "filename": "PMC11378924.pdf",
+    "sections_found": [
+      "Conclusion",
+      "Introduction",
+      "Materials And Methods",
+      "References",
+      "Results And Discussion",
+      "_preamble"
+    ],
+    "n_figures": 20
+  },
+  "status": "completed",
+  "error": null,
+  "overall_risk": {
+    "score": 73.28,
+    "category": "high",
+    "n_figures": 20,
+    "worst_figure_score": 80.78,
+    "worst_figure_category": "critical"
+  },
+  "figures": [
+    {
+      "figure": "Figure 1",
+      "figure_num": 1,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img00.png",
+      "caption": "Schematic illustration of methodology. A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.5679,
+          "n_regions": 1
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.4799,
+          "noise_score": 0.473,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 29.88,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 19.88,
+            "note": "duplicated regions within figure (conf 0.5679)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 2",
+      "figure_num": 2,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img01.png",
+      "caption": "SEM images of ball milled powder at (a)5hrs (b)10 h and (c)15hrs, (d) 20hrs, (e) magnified image of powder morphology of 20hrs ball milled AlBeSiTiV HEA powder and (f)EDS spectra of AlBeSiTiV HEA powder after 20hrs ball milling.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9667,
+          "n_regions": 32
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3198,
+          "noise_score": 0.5785,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 43.83,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 33.83,
+            "note": "duplicated regions within figure (conf 0.9667)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 3",
+      "figure_num": 3,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img03.png",
+      "caption": "EDS mapping of 20 h ball milled AlBeSiTiV HEA powder representing HEA elements with corresponding XRD. A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9757,
+          "n_regions": 15
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 1
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.4095,
+          "noise_score": 0.5946,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 71.15,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 34.15,
+            "note": "duplicated regions within figure (conf 0.9757)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 4",
+      "figure_num": 4,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img02.png",
+      "caption": "XRD pattern of powder after (a)5hrs (b)10 h and (c)15hrs and (d) 20hrs ball milling.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9218,
+          "n_regions": 22
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 2,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3575,
+          "noise_score": 0.594,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 69.26,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 32.26,
+            "note": "duplicated regions within figure (conf 0.9218)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "2 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 5",
+      "figure_num": 5,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img05.png",
+      "caption": "SEM image of (a) AlBeSiTiV coated surface (b) EDS spectra of coating (c) cross-sectional view of substrate and coating (d) porosity analysis image and (e) XRD pattern of the coated surface. A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9727,
+          "n_regions": 16
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 1
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3564,
+          "noise_score": 0.26,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 34.04,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 34.04,
+            "note": "duplicated regions within figure (conf 0.9727)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 6",
+      "figure_num": 6,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img04.png",
+      "caption": "depicts the elemental mapping analysis of the AlBeSiTiV HEA coating. In spite of the contribution of major elements including Al, Be, Si, V, and Ti, a small amount of O is present due to the formation of some oxides during the spraying process and shows a more homogeneous distribution of elements. The oxide content was found to be 7 % which can significantly improve the coating\u2019s hardness [45]. The elemental line mapping is depicted in Fig. 7, the substrate revealed the presence of all the alloying el\u00ad ements present in SS316 (Fig. 7a). The cross-sectional mapping reveals the transition from the substrate elements to HEA elements traversing from the substrate to the coating, revealing the HEA elemental presence over the coated region (Fig. 7b). The smooth transition ensures improved metallurgical bonding between the substrate and coating, Fig. 7c reveals the HEA elemental presence across the coating along with the presence of oxides (element O is present). EBSD was employed for further microstructure analysis of the coating. Fig. 8a shows the microstructure of the AlBeSiTiV coating, the average grain size was observed to be 14.57 \u03bcm (Fig. 8d). Fig. 8b shows the IPF of AlBeSiTiV HEA coating, it was observed to be in FCC phase with an equiaxed grain structure with minor BCC. The inclusion of the Ti element altered the coating layer\u2019s grain development pattern, resulting in the formation of equiaxial crystals. This is mostly due to the Ti element\u2019s greater atomic radius (0.147 nm) compared to the other alloying elements (Al 0.143 nm, Si 0.132 nm, Be 0.112 nm, and V 0.134 nm), which increases the level of lattice distortion, hinders normal atom diffusion, and restricts the pattern of grain growth. Grain coarsening is prevented by the lattice distortion energy, which is greater than the grain boundary energy [46]. Fig. 8c depicts the phase map of the LWHEA coating revealing the FCC phase to be dominant with minor BCC phase. The misorientation angle distribution for the LWHEA coating could be observed in Fig. 8e. The low-angle grain boundary (1\u2070<LAGB> 15\u2070) is marked by red color and high angle grain boundary (HAGB>15\u2070) is marked by blue color. The result depicts that the AlBeSiTiV LWHEA coating contained a high proportion of HAGB. The increased content of HAGB resulted in micro-level grain refinement promoting equiaxed grains formation. The average direction difference between adjacent points is represented by kernel average misorientation (KAM). KAM diagrams, often referred to as local orientation difference diagrams, can be used to indicate the extent of material granular plastic deformation [47,48]. The green color line in KAM mapping (Fig. 9a) of the AlBeSiTiV coating can be interpreted as the dislocation. Due to the Ti element\u2019s high atomic radius, there would be significant lattice distortion and some degree of plastic deformation. Grain development in the coated layer was constrained by severe lattice distortion brought on by the Ti element and the quick condensation of the APS coating. As a result, the microstructure would have a lot of dislocations, and the dislocation has a high mobility ratio in the FCC phase,",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9915,
+          "n_regions": 15
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3636,
+          "noise_score": 0.5814,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 44.7,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 34.7,
+            "note": "duplicated regions within figure (conf 0.9915)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 7",
+      "figure_num": 7,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img06.png",
+      "caption": "EDS Line mapping of the (a)substrate, (b)Substrate, and coating, (c) Coating.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9937,
+          "n_regions": 25
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 2,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3569,
+          "noise_score": 0.5955,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 71.78,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 34.78,
+            "note": "duplicated regions within figure (conf 0.9937)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "2 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 8",
+      "figure_num": 8,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img08.png",
+      "caption": "EBSD results of AlBeSiTiV LWHEA coating: (a,b) inverse pole figure (IPF) map of the coated surface, (c) phase image of coating (d) graphical representation of grain size distribution along with coating microstructure and (e)LAGBs and HAGBs superimposed with histogram for LAGBs and HAGBs. A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.0628,
+          "n_regions": 23
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.4244,
+          "noise_score": 0.5941,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 45.0,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.0628)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 9",
+      "figure_num": 9,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img07.png",
+      "caption": "(a)KAM mapping, (b)Schmid factor diagram, (c,d) pole figure and inverse pole figures of AlBeSiTiV coating.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7,
+          "n_regions": 13
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3586,
+          "noise_score": 0.5854,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 34.5,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 24.5,
+            "note": "duplicated regions within figure (conf 0.7)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 10",
+      "figure_num": 10,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img10.png",
+      "caption": "illustrates the microhardness measured from the interface of the AlBeSiTiV HEA coating/substrate. The mean micro\u00ad hardness of the substrate 316 SS was 172.8 \u00b1 10 HV in the range of (\u221250 \u03bcm to \u2212150 \u03bcm). The average thickness recorded for the coating was 150 \u03bcm and the mean microhardness was observed to be 975 \u00b1 13 HV. Fig. 10 indicates that the microhardness of the",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.804,
+          "n_regions": 41
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3535,
+          "noise_score": 0.5899,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 38.14,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 28.14,
+            "note": "duplicated regions within figure (conf 0.804)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 11",
+      "figure_num": 11,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img09.png",
+      "caption": "(a) Main effect plot of means, (b) main effects plot of S/N ratio. A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.1962,
+          "n_regions": 25
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 1
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3654,
+          "noise_score": 0.4498,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 45.0,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.1962)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 12",
+      "figure_num": 12,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img11.png",
+      "caption": "The linear normal probability plot indicates that the residual errors of the model are normally distributed, and the model\u2019s coefficients are significant. The normal probability values were found to be closest to the average line. The versus fits plot showed that the values were closer to the average line. The histogram produced a bell-type distribution. No discernible pattern was observed when evaluating the independence of the data by plotting a graph of the residuals against the run order for a particular wear rate. This is because all the residual values were found to be on or between the levels [64]. 3.7. Worn surface analysis The worn surfaces of the specimens subjected to wear tests were analyzed to understand the wear mechanisms and to obtain a clear representation of wear morphologies. Furthermore, the corresponding wear debris was collected and subjected to microstructural characterization.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9776,
+          "n_regions": 43
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3761,
+          "noise_score": 0.5417,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 44.22,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 34.22,
+            "note": "duplicated regions within figure (conf 0.9776)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 13",
+      "figure_num": 13,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img13.png",
+      "caption": "depicts the SEM images of the worn surface at 15N and 35N, keeping velocity 2 m/s and distance 1000 m constant. It was observed that when a low load of 15N was applied, the worn surface displayed shallow grooves and small pits, as depicted in Fig. 13a, indicating the occurrence of wear mechanisms involving both adhesion and abrasion. The reason behind this can be explained by the relatively small levels of contact stresses generated by the load applied, as well as the obstructive properties of components like Al and Ti. At a high load(35N), flaking was observed at the surface of the material with some cracks which reveal the transformation to greater wear (Fig. 13b). The magnified view in Fig. 13c provides evidence of delamination occurring at a higher load. The main reason for the delamination is the robust interaction between the surface and the applied high pressure, which leads to plastic deformation and an increase in the removal rate. Fig. 14a displays the wear debris collected under high load conditions (35 N), while Fig. 14b illustrates the EDS analysis of the collected debris. The latter reveals the presence of HEA elements, along with Fe, C, and Cr, which can be attributed to the generation of substantial contact stresses from the pin on the disc configuration. These forces caused the material to peel off from the sliding disc, leading to the observed wear debris. The wear surface analysis indicates that the dominant wear mechanisms operating in the APS coating at 15N and 35N were adhesive wear, with abrasive wear. At lower load when pin comes to contact with the rotating disc, the surface asperities of the pin and disc undergoes a minor wear and gets stick with coating surface due to the applied load. But at higher load these adhered asperities get peeled off from the coating surface due to higher pressure resulting in coating degeneration. The formation of deep groves due the generated wear debris as well as flaking/delamination of the surfaces can be observed (Fig. 14c and d) [65,66]. A decrease in the interlamellar bonding ratio between splats within APS coatings can lead to the development of adhesive wear. According to a study, the bonding ratio between flattened splats in thermal sprayed coatings was reported to be lower than one-third [67]. The wear profile of the coating, as depicted in Fig. 13d, shows shallow grooves with a depth of 11.4 \u03bcm. However, with an increase in load and excessive abrasion, the groove depth increased to 21.2 \u03bcm. The SEM images depicted in Fig. 15a\u2013c exhibit the worn surfaces of the sliding pin specifically at 1 m/s, 2 m/s, and 3 m/s respectively. At the initial velocity of 1 m/s, flake formation was observed which is shown in Fig. 15a. At the velocity of 2 m/s spallation was observed with few micro-cracks along with flake formation (Fig. 15b). The elemental presence of Ti contributes to solution strengthening, thereby amplifying the likelihood of brittle fracture. Similarly, the worn surface of the CoCr2.5FeNi2Ti1.5 coating also displayed substantial cracking and flaking resulting from brittle fracture due to external loading [53]. An increase in velocity to 3 m/s formed an oxygen-rich layer or MML, leading to the detection of minor delamination in the presence of metallic Table 5 Experimental and predicted wear rate of confirmation experiments. Exp.no. Load (N) Velocity (m/s) Distance (m) Exp. wear rate (mm3/m) Reg. wear rate (mm3/m) %Error 1 19 1.1 512 0.074269043 0.0760515 2.40 2 27 2.1 903 0.133094297 0.1367677 2.76 3 33 2.8 1365 0.184276377 0.1900258 3.12 A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9999,
+          "n_regions": 70
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3509,
+          "noise_score": 0.5041,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 45.0,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 0.9999)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 14",
+      "figure_num": 14,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img12.png",
+      "caption": "(a) SEM image of wear debris, (b) corresponding EDS at 35 N, (c, d) schematic representation of wear mechanism. A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7231,
+          "n_regions": 24
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 2,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3442,
+          "noise_score": 0.5923,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 62.31,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 25.31,
+            "note": "duplicated regions within figure (conf 0.7231)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "2 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 15",
+      "figure_num": 15,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img14.png",
+      "caption": "Worn surface micrographs of coated samples at (a)1 m/s, (b)2 m/s, (c) 3 m/s.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9766,
+          "n_regions": 23
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 1
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3567,
+          "noise_score": 0.5953,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 71.18,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 34.18,
+            "note": "duplicated regions within figure (conf 0.9766)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 16",
+      "figure_num": 16,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img16.png",
+      "caption": "(a) SEM image of wear debris and (b) corresponding EDS at 3 m/s. A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 1.4933,
+          "n_regions": 10
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 2,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3474,
+          "noise_score": 0.5886,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 72.0,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 35.0,
+            "note": "duplicated regions within figure (conf 1.4933)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "2 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 17",
+      "figure_num": 17,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img15.png",
+      "caption": "Worn surface micrographs of coated samples at (a)500m, (b)1000m, (c) 1500m, (d) Raman spectra of oxide layer developed. A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9651,
+          "n_regions": 14
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 1
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_ai_generated",
+          "freq_score": 0.6215,
+          "noise_score": 0.5962,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 80.78,
+        "category": "critical",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 33.78,
+            "note": "duplicated regions within figure (conf 0.9651)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 20.0,
+            "note": "AI-generation verdict: likely_ai_generated (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 18",
+      "figure_num": 18,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img17.png",
+      "caption": "(a) SEM image of wear debris, (b) corresponding EDS at 1500m, (c) schematic representation of MML formation. A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.998,
+          "n_regions": 22
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 2,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3538,
+          "noise_score": 0.5926,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 71.93,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 34.93,
+            "note": "duplicated regions within figure (conf 0.998)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "2 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 19",
+      "figure_num": 19,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img18.png",
+      "caption": "Elemental mapping of wear debris at 1500m. A. Singh et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9585,
+          "n_regions": 30
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 1
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3582,
+          "noise_score": 0.5905,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 70.55,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 33.55,
+            "note": "duplicated regions within figure (conf 0.9585)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "(uncaptioned figure, page 19)",
+      "figure_num": null,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11378924_img19.png",
+      "caption": "",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9595,
+          "n_regions": 20
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 2,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.3652,
+          "noise_score": 0.5961,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 70.58,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 33.58,
+            "note": "duplicated regions within figure (conf 0.9595)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "2 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    }
+  ],
+  "pipeline_warnings": [
+    "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+    "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+  ],
+  "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic."
+}

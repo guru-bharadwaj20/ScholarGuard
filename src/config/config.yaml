@@ -85,7 +85,23 @@ risk_scoring:
     max_figure_weight: 0.7
     mean_figure_weight: 0.3
   # Score -> category. A figure/paper gets the highest category whose
-  # threshold it meets or exceeds.
+  # threshold it meets or exceeds. `moderate` (25) is the screening trigger:
+  # a paper at or above it is surfaced as a lead for human review.
+  #
+  # REAL-DATA CALIBRATION — 2026-07-11, N=15 retracted-fraud / N=10 clean PMC-OA.
+  # Deliberately LEFT UNCHANGED, and here is the honest reason. On this real set
+  # the fraud and clean paper-score distributions OVERLAP almost entirely
+  # (fraud 37.5-75.9, median 56.3; clean 43.3-66.8, median 62.9 — clean scores
+  # *higher* on average). No cutoff separates them cleanly. The threshold sweep's
+  # auto-pick of 67.5 ("zero false positives") is OVERFIT: it clears the top clean
+  # paper by 0.7 pts, catches only 5/15 fraud (recall 0.33), and its zero-FP claim
+  # rests on 10 controls (95% Wilson upper bound on FPR ~0.28). Adopting it would
+  # flatter the metrics while gutting recall, so we keep 25 for high-recall triage.
+  # The real problem is detector FALSE-POSITIVE RATE on real figures
+  # (copy_move FPR 0.72, ai_generation FPR 0.52 on clean controls), not the cutoff
+  # — real Western blots / micrographs / dose-response panels trip the detectors.
+  # RECALIBRATE with a larger, figure-annotated real set before trusting any
+  # numeric threshold change. See outputs/stage7_results/real_data_run/metrics_summary.md.
   categories:
     low: 0
     moderate: 25
