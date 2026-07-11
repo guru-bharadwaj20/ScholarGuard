@@ -16,6 +16,17 @@ detectors:
     min_inliers: 3                  # RANSAC inliers to accept a cluster
     sift_contrast_threshold: 0.008  # low, because figures are smooth
     max_dim: 1600                   # downscale longest side (CPU speed)
+    # Confidence model (observed-vs-expected; see copy_move_detector._score).
+    # Redesigned 2026-07-11: the old confidence was a weighted sum of raw
+    # counts whose correlation term was unbounded (flat-pixel ZNCC drove it
+    # past 13 on real figures) and which rewarded sheer quantity of self-
+    # similarity. It now scores how SURPRISING the inlier count is vs a chance
+    # baseline, damped by how localized and well-correlated the patch is.
+    surprise_midpoint: 12.0         # inlier z-score mapping to surprise 0.5
+    surprise_width: 5.0             # logistic width of the surprise term
+    localization_scale: 0.05        # patch area fraction where localization ~1/e
+    localization_floor: 0.4         # a strong, localized hit still counts if
+                                    # somewhat spread (loc multiplies in [floor,1])
 
   cross_figure:                     # Stage 3 — a figure reusing another figure
     enabled: true
@@ -34,6 +45,15 @@ detectors:
     # Optional fine-tuned classifier weights. If the file is absent the
     # pipeline runs on frequency + noise forensics only and says so.
     weights_path: src/models/weights/artifact_classifier.pt
+    # Forensic-score bands, RECALIBRATED 2026-07-11 on the real eval set.
+    # Real clean PMC figures score forensic mean 0.357, sd 0.107 (n=83); the
+    # old synthetic-tuned 0.35 line sat at that mean and fired on ~half of them
+    # (FPR 0.518). These bands are ~mean+2sd (suspicious) and ~mean+3sd
+    # (likely_ai) — "flag only when unusually far above the real baseline".
+    # ⚠ Tuned ON the eval set (only real data available) -> post-fix FPR is
+    # OPTIMISTIC, not unbiased. Recalibrate on a fresh real set. See README.
+    forensic_suspicious_threshold: 0.57
+    forensic_ai_threshold: 0.68
 
   claim_consistency:                # Stage 5 — text claims vs. figure content
     enabled: true
@@ -89,19 +109,26 @@ risk_scoring:
   # a paper at or above it is surfaced as a lead for human review.
   #
   # REAL-DATA CALIBRATION — 2026-07-11, N=15 retracted-fraud / N=10 clean PMC-OA.
-  # Deliberately LEFT UNCHANGED, and here is the honest reason. On this real set
-  # the fraud and clean paper-score distributions OVERLAP almost entirely
-  # (fraud 37.5-75.9, median 56.3; clean 43.3-66.8, median 62.9 — clean scores
-  # *higher* on average). No cutoff separates them cleanly. The threshold sweep's
-  # auto-pick of 67.5 ("zero false positives") is OVERFIT: it clears the top clean
-  # paper by 0.7 pts, catches only 5/15 fraud (recall 0.33), and its zero-FP claim
-  # rests on 10 controls (95% Wilson upper bound on FPR ~0.28). Adopting it would
-  # flatter the metrics while gutting recall, so we keep 25 for high-recall triage.
-  # The real problem is detector FALSE-POSITIVE RATE on real figures
-  # (copy_move FPR 0.72, ai_generation FPR 0.52 on clean controls), not the cutoff
-  # — real Western blots / micrographs / dose-response panels trip the detectors.
+  # Deliberately LEFT UNCHANGED at 25, and here is the honest reason.
+  #
+  # BEFORE the 2026-07-11 detector fixes, fraud and clean paper scores were
+  # INVERTED (fraud median 56.3 < clean median 62.2). AFTER the fixes (copy-move
+  # confidence redesign + AI-generation recalibration; see real_data_run_v2) the
+  # inversion is essentially gone (fraud median 47.0 vs clean 47.6, gap -0.7) and
+  # the false-positive count fell 126 -> 72 — a real improvement. BUT the
+  # distributions still OVERLAP almost entirely: the best accuracy achievable at
+  # ANY single cutoff is 0.60, exactly the 15/25 base rate. No threshold
+  # separates real fraud from real clean papers yet.
+  #
+  # So we keep 25 for high-recall triage rather than chase a flattering cutoff.
+  # The auto-sweep pick (67.5 before, 22.5 after) swings with noise and would
+  # trade recall for a fake-precise "zero-FP" that rests on only 10 controls
+  # (95% Wilson upper bound on FPR ~0.28). The residual problem is detector
+  # FALSE-POSITIVE RATE on real figures — copy_move still 0.57 (legit repeated
+  # structure: scale bars, replicate panels, geometrically identical to a copy)
+  # and cross_figure 0.28 (untouched) — NOT the cutoff.
   # RECALIBRATE with a larger, figure-annotated real set before trusting any
-  # numeric threshold change. See outputs/stage7_results/real_data_run/metrics_summary.md.
+  # numeric threshold change. See outputs/stage7_results/real_data_run_v2/metrics_summary.md.
   categories:
     low: 0
     moderate: 25

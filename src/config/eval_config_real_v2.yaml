@@ -1,0 +1,42 @@
+# ScholarGuard — Stage 7 REAL-data re-run AFTER the 2026-07-11 detector fixes
+# (copy-move confidence redesign + AI-generation recalibration).
+#
+# Kept separate again so all three result sets are preserved:
+#   outputs/stage7_results/               <- synthetic run
+#   outputs/stage7_results/real_data_run/ <- real run, BEFORE the fixes
+#   outputs/stage7_results/real_data_run_v2/ <- real run, AFTER the fixes (this)
+#
+# Same 25 real papers, same operating point and sweep as before, so the only
+# thing that changed between real_data_run and real_data_run_v2 is the detector
+# logic — the comparison is apples-to-apples.
+
+pipeline_config: src/config/config.yaml
+
+evaluation_set:
+  labels_path: data/evaluation_set/labels.json
+
+output:
+  dir: outputs/stage7_results/real_data_run_v2
+
+decision:
+  paper_score_threshold: 25.0
+
+detector_fire_rules:
+  copy_move: forged_true
+  cross_figure: any_reuse
+  ai_generation: not_real
+  claim_consistency: inconsistent
+
+threshold_sweep:
+  start: 0.0
+  stop: 100.0
+  step: 2.5
+
+error_analysis:
+  max_examples_per_category: 15
+
+# Baseline = the real run BEFORE the fixes, so metrics_summary.md renders a
+# real-before vs real-after side-by-side automatically. Nothing in that
+# directory is modified.
+comparison:
+  baseline_benchmark: outputs/stage7_results/real_data_run/benchmark_report.json

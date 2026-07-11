@@ -122,3 +122,29 @@ def test_classifier_returns_none_without_weights(sample_pair):
     real_path, _ = sample_pair
     assert weights_available("no/such/file.pt") is False
     assert classify_artifact(real_path, "no/such/file.pt") is None
+
+
+def test_forensic_bands_recalibrated_to_real_baseline():
+    """Lock the 2026-07-11 real-data recalibration of the forensic bands.
+
+    Real clean PMC figures score forensic mean 0.357, sd 0.107. A score of
+    ~0.45 (about 1 sd above the real mean) is well within the real-figure
+    range and used to be wrongly called 'suspicious' under the old synthetic
+    band (0.35); it must now read 'likely_real'. Scores only fire once they
+    are clearly above the real baseline (~mean+2sd and ~mean+3sd).
+    """
+    from src.detectors.ai_generation_detector import (
+        _forensic_verdict, LIKELY_REAL, SUSPICIOUS, LIKELY_AI,
+        REAL_CLEAN_FORENSIC_MEAN, REAL_CLEAN_FORENSIC_STD,
+        FORENSIC_LOW, FORENSIC_HIGH,
+    )
+    # A typical real figure (~mean, and ~mean+1sd) is not flagged any more.
+    assert _forensic_verdict(REAL_CLEAN_FORENSIC_MEAN) == LIKELY_REAL
+    assert _forensic_verdict(0.45) == LIKELY_REAL
+    # The bands sit ~2 sd and ~3 sd above the measured real-clean mean.
+    two_sd = REAL_CLEAN_FORENSIC_MEAN + 2 * REAL_CLEAN_FORENSIC_STD
+    three_sd = REAL_CLEAN_FORENSIC_MEAN + 3 * REAL_CLEAN_FORENSIC_STD
+    assert abs(FORENSIC_LOW - two_sd) < 0.03
+    assert abs(FORENSIC_HIGH - three_sd) < 0.03
+    assert _forensic_verdict(two_sd + 0.005) == SUSPICIOUS
+    assert _forensic_verdict(three_sd + 0.02) == LIKELY_AI

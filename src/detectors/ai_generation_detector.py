@@ -57,20 +57,47 @@ LIKELY_REAL = "likely_real"
 SUSPICIOUS = "suspicious"
 LIKELY_AI = "likely_ai_generated"
 
-# Forensic-only thresholds (calibrated on the Stage 4 sample set).
-FORENSIC_LOW = 0.35
-FORENSIC_HIGH = 0.55
-# Classifier-blended thresholds.
+# Forensic-only thresholds.
+#
+# RECALIBRATED 2026-07-11 against the REAL Stage-7 evaluation set.
+# --------------------------------------------------------------------------
+# The original thresholds (0.35 / 0.55) were calibrated on the small Stage-4
+# *synthetic* sample, where "real" images scored a forensic ~0.17. On genuine
+# published figures that assumption is wrong: real clean PMC figures score
+# forensic mean 0.357, sd 0.107 (n=83) — the old 0.35 "suspicious" line sat
+# essentially AT the mean of real clean images, so ~half of them tripped it
+# (measured false-positive rate 0.518). Publisher figures are JPEG-compressed
+# and downsampled, which weakens their sensor-noise residual and inflates the
+# forensic score for reasons unrelated to AI generation.
+#
+# The bands below are now set by how far a score sits ABOVE the real clean
+# baseline (a z-score), the same "observed vs. expected" logic the frequency
+# detector uses internally: flag `suspicious` at ~2 sd above the real mean and
+# `likely_ai_generated` at ~3 sd. mean + 2*sd = 0.571; mean + 3*sd = 0.678.
+#
+# ⚠ OVERFITTING CAVEAT: this baseline was measured on the SAME 25 papers the
+# pipeline is evaluated against — the only real data available right now. That
+# makes the post-recalibration false-positive numbers OPTIMISTIC, not an
+# unbiased estimate. A genuine, unbiased figure requires a fresh real paper set
+# the thresholds were NOT tuned on. See README "Recalibration & overfitting".
+REAL_CLEAN_FORENSIC_MEAN = 0.357
+REAL_CLEAN_FORENSIC_STD = 0.107
+FORENSIC_LOW = 0.57   # ~ mean + 2*sd : below this reads as a normal real figure
+FORENSIC_HIGH = 0.68  # ~ mean + 3*sd : unusually far above the real baseline
+# Classifier-blended thresholds (unchanged; only used when weights exist, which
+# is not the case in the current forensic-only deployment).
 COMBINED_LOW = 0.40
 COMBINED_HIGH = 0.60
 # |p_ai - forensic| above this counts as a strong disagreement.
 DISAGREEMENT_MARGIN = 0.5
 
 
-def _forensic_verdict(forensic: float) -> str:
-    if forensic < FORENSIC_LOW:
+def _forensic_verdict(forensic: float,
+                      low: float = FORENSIC_LOW,
+                      high: float = FORENSIC_HIGH) -> str:
+    if forensic < low:
         return LIKELY_REAL
-    if forensic < FORENSIC_HIGH:
+    if forensic < high:
         return SUSPICIOUS
     return LIKELY_AI
 
@@ -83,8 +110,15 @@ def _combined_verdict(combined: float) -> str:
     return LIKELY_AI
 
 
-def detect_ai_generation(image_path: str, weights_path: str | None = None) -> dict:
+def detect_ai_generation(image_path: str, weights_path: str | None = None,
+                         forensic_low: float = FORENSIC_LOW,
+                         forensic_high: float = FORENSIC_HIGH) -> dict:
     """Assess whether ``image_path`` is AI-generated.
+
+    ``forensic_low`` / ``forensic_high`` are the suspicious / likely-AI bands on
+    the forensic score; they default to the real-data-recalibrated constants
+    above but can be overridden from config (see the module header for the
+    baseline and its overfitting caveat).
 
     Returns:
     {
@@ -106,17 +140,17 @@ def detect_ai_generation(image_path: str, weights_path: str | None = None) -> di
     reasons: list[str] = []
 
     # Describe the forensic signals in words.
-    if freq_score >= FORENSIC_HIGH:
+    if freq_score >= forensic_high:
         reasons.append(f"frequency spectrum is anomalous ({freq_score:.2f}): "
                        f"periodicity={freq['periodicity']:.2f}, "
                        f"falloff_gap={freq['high_freq_falloff']:.1f}")
-    if noise_score >= FORENSIC_HIGH:
+    if noise_score >= forensic_high:
         reasons.append(f"noise residual is unnatural ({noise_score:.2f}): "
                        f"autocorr={noise['autocorrelation']:.2f}, "
                        f"flatness={noise['spectral_flatness']:.2f}")
 
     if classifier is None:
-        verdict = _forensic_verdict(forensic)
+        verdict = _forensic_verdict(forensic, forensic_low, forensic_high)
         classifier_score = None
         if not reasons:
             reasons.append(f"frequency ({freq_score:.2f}) and noise "

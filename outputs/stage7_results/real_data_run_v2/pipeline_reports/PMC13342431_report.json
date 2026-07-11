@@ -1,0 +1,483 @@
+{
+  "schema_version": "scholarguard/stage6/1.0",
+  "generated_at": "2026-07-12T00:49:54",
+  "paper": {
+    "path": "data/evaluation_set/clean_control_papers/PMC13342431.pdf",
+    "filename": "PMC13342431.pdf",
+    "sections_found": [
+      "Abstract",
+      "Conclusion",
+      "Discussion",
+      "Introduction",
+      "Methods",
+      "References",
+      "Results",
+      "_preamble"
+    ],
+    "n_figures": 7
+  },
+  "status": "completed",
+  "error": null,
+  "overall_risk": {
+    "score": 45.27,
+    "category": "moderate",
+    "n_figures": 7,
+    "worst_figure_score": 55.22,
+    "worst_figure_category": "high"
+  },
+  "figures": [
+    {
+      "figure": "Figure 1",
+      "figure_num": 1,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342431_img00.png",
+      "caption": "Overview of study selection process.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7155,
+          "n_regions": 119
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3861,
+          "noise_score": 0.4113,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 25.04,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 25.04,
+            "note": "duplicated regions within figure (conf 0.7155)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 2",
+      "figure_num": 2,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342431_img01.png",
+      "caption": "Risk-of-bias. (a) Traffic light plots for quality assessment of RCTs. (b) Summary plot for quality assessment of RCTs. (c) Traffic light plots for quality assessment of cohort studies. (d) Summary plot for quality assessment of cohort studies. RCT, randomized controlled trials.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.8459,
+          "n_regions": 39
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3671,
+          "noise_score": 0.5561,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 29.61,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 29.61,
+            "note": "duplicated regions within figure (conf 0.8459)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 3",
+      "figure_num": 3,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342431_img02.png",
+      "caption": "Forest plot of Helicobacter pylori eradication rate (pairwise meta-analysis). (a) Forest plot of the ITT analysis of H. pylori eradication rate (pairwise meta-analysis). (b) Forest plot of the PP analysis of H. pylori eradication rate (pairwise meta-analysis). ITT, intention-to-treat; PP, per-protocol.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7039,
+          "n_regions": 78
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.384,
+          "noise_score": 0.5204,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 24.64,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 24.64,
+            "note": "duplicated regions within figure (conf 0.7039)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 4",
+      "figure_num": 4,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342431_img03.png",
+      "caption": "Sensitivity analysis plot of Helicobacter pylori (H. pylori) eradication rate (pairwise meta-analysis). (a) Sensitivity analysis plot of the ITT analysis of H. pylori eradication rate (pairwise meta-analysis). (b) Sensitivity analysis plot of the PP analysis of H. pylori eradication rate (pairwise meta-analysis). ITT, intention-to-treat; PP, per-protocol.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.8063,
+          "n_regions": 49
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 3
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3928,
+          "noise_score": 0.3521,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 55.22,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 28.22,
+            "note": "duplicated regions within figure (conf 0.8063)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 5",
+      "figure_num": 5,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342431_img04.png",
+      "caption": "Forest plot and sensitivity analysis plot of Helicobacter pylori (H. pylori) eradication rate (meta-analysis of proportions). (a) Forest plot of the ITT analysis of H. pylori eradication rate (meta-analysis of proportions). (b) Forest plot of the PP analysis of H. pylori eradication rate (meta-analysis of proportions). (c) Sensitivity analysis plot of the ITT analysis of H. pylori eradication rate (meta-analysis of proportions). (d) Sensitivity analysis plot of the PP analysis of H. pylori eradication rate (meta-analysis of proportions). ITT, intention-to-treat; PP, per-protocol.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.5642,
+          "n_regions": 37
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 3
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3749,
+          "noise_score": 0.3486,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 19.75,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 19.75,
+            "note": "duplicated regions within figure (conf 0.5642)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 6",
+      "figure_num": 6,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342431_img05.png",
+      "caption": "Funnel plot of Helicobacter pylori (H. pylori) eradication rate. (a) Funnel plot for the ITT analysis of H. pylori eradication rate (pairwise meta-analysis). (b) Funnel plot for the PP analysis of H. pylori eradication rate (pairwise meta-analysis). (c) Funnel plot for the ITT analysis of H. pylori eradication rate (meta-analysis of proportions). (d) Funnel plot for the PP analysis of H. pylori eradication rate (meta-analysis of proportions). ITT, intention-to-treat; PP, per-protocol. CI: 91%\u201396%). This suggests that minocycline may serve as an alternative treatment for H. pylori infection, offering an acceptable eradication rate while reducing the incidence of adverse reactions and ensuring good patient compliance. Application of different minocycline-based eradication regimens Bismuth quadruple therapy.\u2002 Among the 33 stud- ies included in this research, 30 utilized bismuth quadruple therapy. The most prevalent combina- tion was bismuth quadruple therapy with mino- cycline and amoxicillin (13 studies), particularly for patients receiving both first-line and rescue therapies. ITT analysis revealed H. pylori eradica- tion rates between 79.4%73 and 94.7%,44 while PP analysis indicated eradication rates spanning 84.1%73\u201397.3%,44 with adverse reaction rates varying from 5.50%70 to 51%64 and patient com- pliance rates between 82.5%67 and 99.1%.44 Amoxicillin demonstrates low and stable resis- tance rates, which are essential for the treatment of H. pylori infection. However, its use is contrain- dicated in penicillin-allergic patients, posing challenges for their treatment. Consequently, minocycline-metronidazole quadruple therapy is frequently employed (10 studies), particularly as a first-line treatment for penicillin-allergic patients. ITT analysis showed H. pylori eradica- tion rates ranging from 71.4%62 to 90.3%,43 while PP analysis indicated rates from 83.6%51 to 98.0%.42 Adverse reaction rates were reported between 34.9%41 and 55.4%,42 with patient com- pliance rates ranging from 88%42 to 96.5%.43 The quadruple therapy may also include minocycline",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.4469,
+          "n_regions": 24
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3625,
+          "noise_score": 0.3199,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 0.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 7",
+      "figure_num": 7,
+      "image_path": null,
+      "caption": "Heterogeneity between studies was low (I2\u2009=\u200925%, and p\u2009=\u20090.17). A meta-analysis of proportions from 15 studies showed that the pooled adverse reaction rate for minocycline-containing regimens was 0.29, 95% CI: 0.23\u20130.36, p\u2009<\u20090.05, as illustrated in Supplemental Figure 8. There was a substantial heterogeneity among the studies (I2\u2009=\u200991.49%, and p\u2009<\u20090.05); sensitivity analyses failed to iden- tify the source of this heterogeneity, as illustrated in Supplemental Figure 9. Compliance rate.\u2002 A pairwise meta-analysis showed that minocycline-containing regimens did not differ significantly from the control group in terms of compliance rate (RR\u2009=\u20091.01, 95% CI: 1.00\u20131.03, p\u2009=\u20090.15), as illustrated in Supplemen- tal Figure 10. Heterogeneity between studies was low (I2\u2009=\u200928%, and p\u2009=\u20090.16). A meta-analysis of proportions from 9 studies showed that minocycline-containing regimens the pooled compliance rate for minocycline-contain- ing regimens was 0.94, 95% CI: 0.91\u20130.96, p\u2009<\u20090.05, as illustrated in Supplemental Figure 11. There was substantial heterogeneity among the studies (I2\u2009=\u200970.88%, and p\u2009<\u20090.05); sensitivity analyses failed to identify the source of this hetero- geneity, as illustrated in Supplemental Figure 12. Publication bias and quality of evidence.\u2002 Funnel plots were constructed to assess publication bias in the H. pylori eradication rates obtained from the two meta-analyses; the funnel plots appeared visually symmetrical (Figure 6(a)\u2013(d)). Further- more, both the Egger\u2019s test and the Begg\u2019s test indicated that p\u2009>\u20090.05, suggesting no statistically significant evidence of publication bias. The fun- nel plots showing the incidence of adverse reac- tions and compliance are presented in Supplemental Figures 13\u201316. According to the GRADE system, the evidence for H. pylori eradi- cation rates in both the ITT and PP analyses was of low certainty, while the evidence for the inci- dence of adverse reactions was of high certainty, and the evidence for compliance was of moderate certainty, as illustrated in Supplemental Table 6. Discussion Resistance to minocycline The 18 studies reported data on H. pylori resist- ance to minocycline; however, differences in sus- ceptibility testing methods and resistance breakpoints may affect the comparability of the results. Specifically, seven studies used the E-t est,36,37,40\u201344 nine employed the agar dilution met hod,27\u201334,39 and two utilized the Kirby-Bauer disc diffusion method.35,38 The E-test combines ease of use with quantitative accuracy; the agar dilu- tion method is a traditional reference method but requires a high degree of standardization; the disc diffusion method has the lowest level of standard- ization, is most susceptible to laboratory condi- tions, and does not explicitly report MIC breakpoints, thus limiting direct comparability. Furthermore, resistance breakpoint standards are inconsistent: Chinese studies predominantly use >8\u2009\u03bcg/mL36,37,40,41 and >1\u2009\u03bcg/mL.42\u201344 The observed differences in resistance rates primarily reflect the baseline MIC distribution characteris- tics of different regions and populations, rather than selection effects arising from the breakpoint standards themselves. Given the aforementioned methodological heterogeneity, this study did not perform a pooled analysis of resistance rates, instead presenting descriptive summaries. Overall, the resistance rate for minocycline remains rela- tively low compared to other antibiotics. Future studies should standardize antimicrobial suscepti- bility testing methods and breakpoint criteria, pri- oritizing the use of E-tests or standardized agar dilution methods to enhance the cross-study comparability of resistance surveillance data. Clinical application of eradication regimens containing minocycline This meta-analysis included 33 studies. Based on pairwise meta-analysis, both the ITT and PP analyses showed no significant difference in H. pylori eradication rates between the minocy- cline-containing eradication regimen and the con- trol group; however, the overall incidence of adverse reactions was significantly lower, while compliance rate was comparable to those of the control group. Based on meta-analysis of proportions, the ITT analysis indicated the H. pylori eradication rate was 83% (95% CI: 79%\u201387%), while the PP analysis showed eradication rates of 88% (95% CI: 83%\u2013 92%), adverse reaction incidence of 29% (95% CI: 23%\u201336%), and compliance rates of 94% (95%",
+      "detectors": {
+        "copy_move": {
+          "status": "skipped",
+          "reason": "no image extracted for this figure"
+        },
+        "cross_figure": {
+          "status": "skipped",
+          "reason": "no image extracted for this figure"
+        },
+        "ai_generation": {
+          "status": "skipped",
+          "reason": "no image extracted for this figure"
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 0.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "skipped",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "copy-move skipped"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "skipped",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "cross-figure skipped"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "skipped",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "ai-generation skipped"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    }
+  ],
+  "pipeline_warnings": [
+    "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+    "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+  ],
+  "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic."
+}

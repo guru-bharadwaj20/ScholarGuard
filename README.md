@@ -813,6 +813,49 @@ pipeline would hand a reviewer several clean-but-flagged figures, so the UI
 (Stage 8) must present flags as *prompts to look*, with the evidence and its
 uncertainty, never as verdicts.
 
+## Real-data evaluation & recalibration (2026-07-11)
+
+Stage 7 was re-run on a **real** set — 15 formally-retracted image-fraud papers
+(Retraction Watch × PMC OA) + 10 clean PMC controls. It exposed problems the
+synthetic set never could, which were then root-caused and fixed. Full write-up:
+`outputs/stage7_results/real_data_run/metrics_summary.md` (before) and
+`outputs/stage7_results/real_data_run_v2/metrics_summary.md` (after the fixes).
+
+**What real data revealed**
+
+- On real figures the clean and fraud **paper scores overlapped** — clean papers
+  scored *higher* on average (clean median 62.9 vs fraud 56.3). The pipeline did
+  not discriminate.
+- **copy-move confidence was unbounded** — it hit 13.4 (the contract says [0,1]).
+  Root cause: a flat-region ZNCC term (division by ~0) that was never clamped,
+  and a score that rewarded the raw *quantity* of self-similarity. Real
+  multi-panel figures (replicate microscopy, tiled markers) tripped it → FPR
+  0.72 vs 0.10 on synthetic.
+- **AI-generation FPR was 0.52** on real clean figures: the forensic threshold
+  (0.35, tuned on synthetic "real" images scoring ~0.17) sat right at the *real*
+  clean mean (0.357), so half of real figures crossed it.
+
+**What was fixed**
+
+- copy-move confidence is now an **observed-vs-expected** statistic (chance-match
+  z-score → logistic, damped by patch localization and grown-region correlation)
+  — bounded [0,1], monotonic, explainable. See `copy_move_detector._score`.
+- AI-generation bands **recalibrated to the real clean baseline** (~mean+2 sd /
+  +3 sd): forensic FPR on real clean figures drops 0.52 → ~0.02.
+
+### ⚠ Recalibration & overfitting — read this before trusting the numbers
+
+**The recalibration was done ON the same 25-paper evaluation set**, because it is
+the only real data available right now. That means the *after* false-positive
+numbers are **optimistic, in-sample estimates — NOT an unbiased measurement on
+unseen data.** They show the fixes behave as intended; they do **not** prove the
+thresholds generalize. Any copy-move that couldn't be geometrically distinguished
+from legitimate repeated structure is still a false positive (that limitation is
+semantic, not a tuning problem, and remains). **A genuine, unbiased number
+requires re-running on a fresh real paper set the thresholds were never tuned on.**
+This caveat is repeated at every calibration constant in `config.yaml` and in the
+detector source, on purpose.
+
 ### Roadmap
 
 - **Stage 1** — data collection (synthetic forgeries + real fraud cases) ✅

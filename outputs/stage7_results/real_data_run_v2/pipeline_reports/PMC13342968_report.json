@@ -1,0 +1,879 @@
+{
+  "schema_version": "scholarguard/stage6/1.0",
+  "generated_at": "2026-07-11T23:55:31",
+  "paper": {
+    "path": "data/evaluation_set/clean_control_papers/PMC13342968.pdf",
+    "filename": "PMC13342968.pdf",
+    "sections_found": [
+      "Acknowledgments",
+      "Conclusions",
+      "Discussion",
+      "Introduction",
+      "References",
+      "Results",
+      "_preamble"
+    ],
+    "n_figures": 13
+  },
+  "status": "completed",
+  "error": null,
+  "overall_risk": {
+    "score": 43.01,
+    "category": "moderate",
+    "n_figures": 13,
+    "worst_figure_score": 52.52,
+    "worst_figure_category": "high"
+  },
+  "figures": [
+    {
+      "figure": "Figure 1",
+      "figure_num": 1,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img01.png",
+      "caption": "Menaquinone-7 (MK-7) increases bone mass in aged mice. (A) Schematic diagram illustrating experimental design. (B, C) Micro-computed tomography (micro-CT) reconstructed representative images (B) and quantification (C) of trabecular bone volume fraction (Tb.BV/TV), trabecular number (Tb.N), trabecular thickness (Tb.Th), trabecular separation (Tb.Sp), cortical thickness (Ct.Th), and bone mineral density (BMD) of the cortical and trabecular bone in the femora in young (3-month) and old (20-month) mice treated with MK-7 or vehicle as control. (D, E) Hematoxylin and eosin (H&E) (D) and Masson (E) staining of femora sections in femora in mice of different groups. (F) Immu- nohistochemistry (IHC) staining for osteocalcin (Ocn) and quantification of the number of Ocn-positive (Ocn+, brown) osteoblasts (N. OBs) on the trabecular bone surface (BS) in femora in mice of different groups. Nuclei were stained blue with hematoxylin. (G) Calcein (green) labeling of trabecular bones in femora in mice of different groups and Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 5",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.0,
+          "n_regions": 0
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3591,
+          "noise_score": 0.4008,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 0.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 2",
+      "figure_num": 2,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img00.png",
+      "caption": "Menaquinone-7 (MK-7) rescues cellular senescence and promotes osteogenic differentiation in old primary bone marrow mesenchymal stem cells (BMSCs). (A) Repre- sentative images and quantitative analysis of Alizarin Red S staining for mineralization deposit in primary BMSCs extracted from young (3-month) or old (20-month) mice treated with or without MK-7 under osteogenic induction conditions. (B, C) Western blot (B) and reverse transcription quantitative polymerase chain reaction (RT-qPCR) (C) for osteogenic-related proteins/genes in primary BMSCs of different groups. (D) Representative images and quantitative analysis of immunofluorescence staining for runt-related transcription factor 2 (Runx2, red) in primary BMSCs of different groups, and nuclei were stained with 4\u2032,6-diamidino-2-phenylindole (DAPI, blue). (E, F) The volcano plot presented the differentially expressed genes (DEGs) as determined by RNA sequencing (RNA-Seq) in the femora of old mice treated with MK-7 or vehicle as control (E) and gene ontology (GO) enrichment analysis (F) of the 54 DEGs shown in E for biological processes. (G) Western blot for senescence-related proteins in primary BMSCs of different groups. (H) Representative images and quantification of senescence-associated \u03b2-galactosidase positive (SA-\u03b2-Gal+, blue) primary BMSCs of different groups. (I) RT-qPCR for cycle arrest- and senescence-associated secretory phenotype (SASP)-related genes in primary BMSCs of different groups. n = 4 mice (E, F) for each group or 4 independent repeats for in vitro experiments (A\u2013D, G\u2013I). Data were means \u00b1 standard error of the mean (SEM). *P < 0.05, **P < 0.01, ***P < 0.001 by one-way analysis of variance (ANOVA). Sp7/Sp7: the protein and Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 7",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.2112,
+          "n_regions": 3
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.2974,
+          "noise_score": 0.173,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 0.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 3",
+      "figure_num": 3,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img02.png",
+      "caption": "Menaquinone-7 (MK-7) restores mitochondrial integrity and function in old primary bone marrow mesenchymal stem cells (BMSCs). (A) Representative images of MitoTracker Green staining for mitochondria and quantification of mitochondrial length in primary BMSCs of different groups. (B, C) Mitochondrial membrane potential mea- surement by 5,5\u2032,6,6\u2032-Tetrachloro-1,1\u2032,3,3\u2032-tetraethylbenzimidazolylcarbocyanine iodide (JC-1) aggregates (red) and monomers (green) by confocal fluorescence microscopy (B) and Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 9",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.0,
+          "n_regions": 0
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.4278,
+          "noise_score": 0.799,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 10.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 4",
+      "figure_num": 4,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img03.png",
+      "caption": "Cellular communication network factor 2 (Ccn2) knockdown inhibits osteogenic differentiation and aggravates cellular senescence in old primary bone marrow mesenchymal stem cells (BMSCs). (A) The Venn diagram presented the overlapping differentially expressed genes (DEGs) identified by RNA sequencing (RNA-Seq) in the femora among different groups. (B) The heatmap showed the 31 DEGs as indicated by Venn analysis in (A). Pseudo color from blue to red indicates the relative expression level of the genes from low to high. (C) Reverse transcription quantitative polymerase chain reaction (RT-qPCR) for Ccn2 and forkhead box protein C2 (Foxc2) in various bone-related cells. (D) Expression levels of Ccn2 and Foxc2 by RNA-Seq in the femora tissues among different groups. (E) Representative images and quantification of mineralization deposit by Alizarin Red staining in primary BMSCs of different groups under osteogenic induction conditions. (F) Western blot for Ccn2 and osteogenic-related proteins in primary BMSCs of different groups. (G) Representative images and quantitative analysis of immunofluorescence staining for runt-related transcription factor 2 (Runx2, red) in primary BMSCs of different Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 11",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.3678,
+          "n_regions": 27
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 6
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3533,
+          "noise_score": 0.2239,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 0.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 5",
+      "figure_num": 5,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img04.png",
+      "caption": "The multidirectional beneficial effect of menaquinone-7 (MK-7) on mitochondria is retarded by cellular communication network factor 2 (Ccn2) knockdown in old primary bone marrow mesenchymal stem cells (BMSCs). (A) Representative images of MitoTracker Green staining for mitochondria and quantification of mitochondrial length in primary Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 13",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.3776,
+          "n_regions": 47
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 2,
+          "n_visual_similar": 6
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3627,
+          "noise_score": 0.3343,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 27.0,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "2 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 6",
+      "figure_num": 6,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img05.png",
+      "caption": "Cellular communication network factor 2 (Ccn2) overexpression enhanced menaquinone-7 (MK-7)'s advantageous effect in old primary bone marrow mesenchymal stem cells (BMSCs). (A) Representative images and quantification of mineralization deposit by Alizarin Red staining in primary BMSCs of different groups under osteogenic induction conditions. (B, C) Western blot for Ccn2, osteogenic- (B) and cell cycle arrest- (C) related proteins in primary BMSCs of different groups. (D) Representative images of MitoTracker Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 15",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7323,
+          "n_regions": 29
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 5
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3548,
+          "noise_score": 0.29,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 25.63,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 25.63,
+            "note": "duplicated regions within figure (conf 0.7323)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 7",
+      "figure_num": 7,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img06.png",
+      "caption": "The therapeutic effect of menaquinone-7 (MK-7) on senile osteoporosis relies on cellular communication network factor 2 (Ccn2). (A, B) Micro-computed tomography (micro-CT) reconstructed representative images (A) and quantification (B) of trabecular bone volume fraction (Tb.BV/TV), trabecular number (Tb.N), trabecular thickness (Tb.Th), trabecular separation (Tb.Sp), cortical thickness (Ct.Th), and bone mineral density (BMD) of the cortical and trabecular bone in the femora in old mice of different groups. (C) Hematoxylin and eosin (H&E) staining of femora sections in femora in mice of different groups. (D) Immunohistochemistry (IHC) staining for osteocalcin (Ocn) and quantification of the number of Ocn+ (brown) osteoblasts (N. OBs) on the trabecular bone surface (BS) in femora in mice of different groups. Nuclei were stained blue with hematoxylin. (E, F) micro-CT reconstructed representative images (E) and quantification (F) of Tb.BV/TV, Tb.N, Tb.Th, Tb.Sp, Ct.Th., and BMD of the cortical and trabecular bone in the femora in old mice under different treatments. (G) Masson staining of femora sections for collagen distribution in femora in mice of different groups. (H) IHC staining for Ocn and quantification of the number of Ocn-positive (Ocn+, brown) osteoblasts (N. OBs) on the trabecular bone surface (BS) in femora in mice of different groups. Nuclei were stained blue with hematoxylin. n = 8 mice for each group. Data were means \u00b1 standard error of the mean (SEM). Not significant (ns) P > 0.05, *P < 0.05, **P < 0.01, ***P < 0.001 by one-way analysis of variance (ANOVA). shNC and AAV-NC: adeno-associated virus for negative control; shCcn2 and AAV-Ccn2: adeno-associated virus for Ccn2 knockdown and expression, respectively.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.3779,
+          "n_regions": 40
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 7
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3702,
+          "noise_score": 0.4178,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 27.0,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 8",
+      "figure_num": 8,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img07.png",
+      "caption": "Pregnane X receptor (PXR) is the nuclear receptor of menaquinone-7 (MK-7) in primary bone marrow mesenchymal stem cells (BMSCs). (A) Western blot for PXR after the total lysate of primary BMSCs was digested by different doses of protease with or without the pre-incubation of MK-7. (B) Western blot for PXR after the total lysate of primary BMSC was denatured under different temperatures and quantification of the temperature at which 50% of the relative band intensity is reduced (Tm50) for the binding of MK-7 to its target PXR in primary BMSCs. (C) Western blot for PXR after the total lysate of primary BMSC was denatured under temperature 51 \u25e6C with different dose of MK-7 and the quantification of half-maximal effective concentration (EC50) for the binding of MK-7 to PXR in primary BMSCs. (D) The molecular docking of MK-7 with mus musculus PXR protein. MK-7 is displayed in Cyan. The surrounding residues in the binding pocket are shown in green and pink. The backbone of the receptor is depicted as gray. (E) Schematic view of PXR receptor domain organizations and localization of the site-specific mutations generated for the following assessment. (F) Drug affinity responsive target stability Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 18",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7,
+          "n_regions": 48
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 5
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.366,
+          "noise_score": 0.3139,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 24.5,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 24.5,
+            "note": "duplicated regions within figure (conf 0.7)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 9",
+      "figure_num": 9,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img08.png",
+      "caption": "Pregnane X receptor (PXR) is essential for the menaquinone-7 (MK-7)-induced activation of the extracellular signal-regulated kinases 1/2 (ERK1/2)/cyclic AMP-responsive element-binding protein (CREB) pathway in old primary bone marrow mesenchymal stem cells (BMSCs). (A) Kyoto Encyclopedia of Genes and Genomes (KEGG) enrichment Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 19",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7292,
+          "n_regions": 28
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 7
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3548,
+          "noise_score": 0.3214,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 52.52,
+        "category": "high",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 25.52,
+            "note": "duplicated regions within figure (conf 0.7292)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 10",
+      "figure_num": 10,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img09.png",
+      "caption": "Schematic diagram demonstrating menaquinone-7 (MK-7) restores mitochondrial function and determines the fate of bone marrow mesenchymal stem cells (BMSCs) via mitophagy pathways. Upon the binding of MK-7 to its nuclear receptor pregnane X receptor (PXR), the extracellular signal-regulated kinases 1/2 (ERK1/2)/cyclic AMP-responsive element-binding protein (CREB) pathway is activated, leading to an elevation expression in cellular communication network factor 2 (Ccn2). Subsequently, the Ccn2 drives PTEN- induced kinase 1 (PINK1)-dependent mitophagy, which eliminates mitochondrial DNA (mtDNA) and mitigates mitochondrial reactive oxygen species (mtROS). Thereby, cellular senescence is reversed and osteogenic differentiation in primary BMSCs of aged bones is enhanced. The schematic diagram was created by BioRender.com. ATP: adenosine triphosphate; LC3: microtubule-associated protein 1 light chain 3; MMP: mitochondrial membrane potential; p-CREB: phosphorylated cAMP response element binding protein; p-ERK1/2: phosphorylated extracellular signal-regulated kinases 1/2; SASP: senescence-associated secretory phenotype. Y. Xu, W. Zhang, W. Xu et al. Journal of Pharmaceutical Analysis 16 (2026) 101432 20",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.3904,
+          "n_regions": 51
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 3
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3609,
+          "noise_score": 0.4367,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 0.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "(uncaptioned figure, page 18)",
+      "figure_num": null,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img10.png",
+      "caption": "",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.8985,
+          "n_regions": 45
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3598,
+          "noise_score": 0.5516,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 31.45,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 31.45,
+            "note": "duplicated regions within figure (conf 0.8985)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "(uncaptioned figure, page 19)",
+      "figure_num": null,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img11.png",
+      "caption": "",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.5736,
+          "n_regions": 39
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 1,
+          "n_visual_similar": 3
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3576,
+          "noise_score": 0.3815,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 47.08,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 20.08,
+            "note": "duplicated regions within figure (conf 0.5736)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 27.0,
+            "note": "1 reused region(s) from another figure"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "(uncaptioned figure, page 20)",
+      "figure_num": null,
+      "image_path": "outputs/stage6_results\\_figures\\PMC13342968_img12.png",
+      "caption": "",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7303,
+          "n_regions": 39
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3089,
+          "noise_score": 0.1353,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 25.56,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 25.56,
+            "note": "duplicated regions within figure (conf 0.7303)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    }
+  ],
+  "pipeline_warnings": [
+    "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+    "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+  ],
+  "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic."
+}

@@ -49,6 +49,8 @@ class Settings:
         return _apply(DetectorConfig(), cfg, [
             "confidence_threshold", "ratio_threshold", "min_inliers",
             "sift_contrast_threshold", "max_dim",
+            "surprise_midpoint", "surprise_width",
+            "localization_scale", "localization_floor",
         ])
 
     def cross_figure_config(self):
@@ -65,6 +67,19 @@ class Settings:
     @property
     def ai_weights_path(self) -> str | None:
         return self._detector("ai_generation").get("weights_path")
+
+    def ai_forensic_bands(self, default_low: float,
+                          default_high: float) -> tuple[float, float]:
+        """Forensic (suspicious, likely-AI) thresholds for the AI detector.
+
+        Falls back to the detector's real-data-recalibrated module defaults
+        when config.yaml does not override them.
+        """
+        cfg = self._detector("ai_generation")
+        low = cfg.get("forensic_suspicious_threshold")
+        high = cfg.get("forensic_ai_threshold")
+        return (float(low) if low is not None else default_low,
+                float(high) if high is not None else default_high)
 
     @property
     def panel_count_tolerance(self) -> float:

@@ -15,8 +15,11 @@ Detects regions duplicated *within* a single image using classical CV:
        the verified transform and a local zero-mean normalized cross
        correlation (ZNCC) map is thresholded to grow the sparse keypoint
        seeds into full pixel masks for both the source and the duplicate.
-    6. A confidence score in [0, 1] combining inlier count, RANSAC inlier
-       ratio, grown-region area and correlation strength.
+    6. A confidence score in [0, 1] built as an *observed vs. expected*
+       statistic: how surprising the matched-inlier count is versus a chance
+       baseline (z-score -> logistic), damped by how localized the patch is
+       and how well the grown region actually correlates. See
+       :meth:`CopyMoveDetector._score` — bounded, monotonic, explainable.
 
 Designed to run fast on CPU-only machines (no deep learning). All heavy
 per-pixel work is done with vectorized OpenCV/NumPy operations.
@@ -30,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 from dataclasses import dataclass, field
 
@@ -89,6 +93,23 @@ class DetectorConfig:
     seed_radius: int = 14         # px stamped around each inlier keypoint
     min_region_area: int = 250    # px^2; smaller grown regions are discarded
 
+    # -- confidence model (see CopyMoveDetector._score) ---------------------
+    # The confidence is an "observed vs. expected" statistic, the same pattern
+    # the AI-generation frequency detector uses. It combines, per verified
+    # cluster: (1) SURPRISE — how many standard deviations the matched-inlier
+    # count exceeds what pure chance would put in one offset cell; (2)
+    # LOCALIZATION — a real forgery is a compact patch, legitimate repeated
+    # structure spreads out (lower match density per unit area); (3)
+    # CORRELATION — mean ZNCC over the grown region (how well the copy actually
+    # matches). All three are squashed into [0, 1] with a logistic, so the
+    # confidence is bounded, monotonic and explainable — never a raw count.
+    surprise_midpoint: float = 12.0   # inlier z-score that maps to surprise 0.5
+    surprise_width: float = 5.0       # logistic width of the surprise term
+    localization_scale: float = 0.05  # patch area fraction where localization ~ 1/e
+    localization_floor: float = 0.4   # a strong, well-correlated hit still counts
+                                      # even if somewhat spread (loc multiplies
+                                      # in [floor, 1], never fully zeroes)
+
     # -- decision -----------------------------------------------------------
     confidence_threshold: float = 0.45  # >= this => forged
 
@@ -131,7 +152,7 @@ class CopyMoveDetector:
         clusters = self._cluster_and_verify(matches, keypoints)
 
         mask, labeled_mask, regions, grow_stats = self._grow_regions(gray, clusters)
-        confidence = self._score(clusters, mask, gray, grow_stats)
+        confidence = self._score(clusters, mask, gray, grow_stats, len(matches))
         forged = bool(confidence >= cfg.confidence_threshold and len(regions) > 0)
 
         # Rescale outputs back to the original resolution if we downscaled.
@@ -331,6 +352,7 @@ class CopyMoveDetector:
         labeled = np.zeros((h, w), np.uint8)   # 1 = source, 2 = duplicate
         regions: list[dict] = []
         corr_means: list[float] = []
+        per_cluster: list[dict] = []           # feeds the confidence model
 
         close_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
         open_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
@@ -365,7 +387,27 @@ class CopyMoveDetector:
             mask = cv2.bitwise_or(mask, cv2.bitwise_or(dup, src))
             labeled[src > 0] = 1
             labeled[dup > 0] = 2
-            corr_means.append(float(corr[dup > 0].mean()))
+
+            # Correlation quality: mean ZNCC over the grown region, but ONLY on
+            # pixels where the local std is high enough for ZNCC to be defined.
+            # The morphological CLOSE above can pull flat pixels into `dup`, and
+            # on flat pixels ZNCC divides by ~0 and blows up (values in the
+            # thousands) — masking by std_ok keeps the mean a true [-1, 1]
+            # correlation instead of an unbounded number.
+            grown = (dup > 0) & std_ok
+            corr_mean = float(np.clip(corr[grown].mean(), -1.0, 1.0)) if grown.any() else 0.0
+            corr_means.append(corr_mean)
+
+            per_cluster.append({
+                "n_inliers": int(len(cluster.src_pts)),
+                # localization: bounding-box area of the inlier keypoints on the
+                # more-spread side, as a fraction of the image. A real copy-move
+                # is a compact patch (small fraction); legitimate repeated
+                # structure that happens to align spreads over a larger area.
+                "spread_frac": float(max(_bbox_area_frac(cluster.src_pts, h, w),
+                                         _bbox_area_frac(cluster.dst_pts, h, w))),
+                "corr_mean": corr_mean,
+            })
 
             regions.append({
                 "source_bbox": cv2.boundingRect(src),      # (x, y, w, h)
@@ -375,31 +417,65 @@ class CopyMoveDetector:
                 "inlier_ratio": float(round(cluster.inlier_ratio, 4)),
             })
 
-        stats = {"mean_corr": float(np.mean(corr_means)) if corr_means else 0.0}
+        stats = {
+            "mean_corr": float(np.mean(corr_means)) if corr_means else 0.0,
+            "clusters": per_cluster,
+        }
         return mask, labeled, regions, stats
 
     # ----------------------------------------------------------- scoring
-    def _score(self, clusters, mask, gray, grow_stats) -> float:
-        """Combine match evidence into a single confidence in [0, 1].
+    def _score(self, clusters, mask, gray, grow_stats, n_matches) -> float:
+        """Confidence in [0, 1] as an *observed vs. expected* statistic.
 
-        Components:
-          * inlier support   — saturates at ~40 verified inlier matches
-          * inlier ratio     — geometric consistency of the best transform
-          * region area      — grown mask area relative to the image
-          * correlation      — mean ZNCC over the grown duplicate region
+        This replaces the earlier weighted sum of raw counts, whose
+        correlation term was unbounded (a flat-pixel ZNCC blow-up drove
+        "confidence" past 13 on real figures) and whose inlier term rewarded
+        the sheer *quantity* of self-similarity — which legitimate multi-panel
+        scientific figures have in abundance. Instead, each grown cluster is
+        judged on three bounded, independently-explainable factors, exactly the
+        "is this surprising vs. a chance baseline?" logic the AI-generation
+        frequency detector already uses:
+
+          1. SURPRISE. Under the null hypothesis of *no* copy-move, the matches
+             are chance coincidences scattered uniformly over offset space, so
+             the number landing in any one DBSCAN offset cell is ~Poisson(mu).
+             We score how many standard deviations the observed inlier count
+             exceeds that chance mean (a z-score), then squash it with a
+             logistic. A handful of coincidental matches is unremarkable; a
+             tight pile of them is not.
+          2. LOCALIZATION. A real forgery is a compact copied patch. Legitimate
+             repeated structure (replicate panels, tiled markers) that happens
+             to align tends to spread its keypoints over a larger area — lower
+             match density. We damp the score for spread-out clusters.
+          3. CORRELATION. Mean ZNCC over the grown region (now std-gated, so it
+             is a true [-1, 1] correlation) — how faithfully the copy matches.
+
+        confidence = max over clusters of  surprise * corr * localization,
+        every factor in [0, 1], so the result is bounded, monotonic in each
+        piece of evidence, and can be read off as "surprising AND well-matched
+        AND localized".
         """
-        if not clusters or cv2.countNonZero(mask) == 0:
+        cfg = self.config
+        clusters_stats = grow_stats.get("clusters", [])
+        if not clusters_stats or cv2.countNonZero(mask) == 0:
             return 0.0
-        total_inliers = sum(len(c.src_pts) for c in clusters)
-        inlier_score = min(total_inliers / 40.0, 1.0)
-        ratio_score = max(c.inlier_ratio for c in clusters)
-        area_frac = cv2.countNonZero(mask) / mask.size
-        area_score = min(area_frac / 0.005, 1.0)   # saturates at 0.5% of image
-        corr_score = max(grow_stats["mean_corr"], 0.0)
-        return float(
-            0.35 * inlier_score + 0.20 * ratio_score
-            + 0.15 * area_score + 0.30 * corr_score
-        )
+
+        h, w = gray.shape
+        # Expected matches in one offset cell by pure chance: total matches
+        # times the fraction of offset space a single DBSCAN cell occupies.
+        chance_mu = _chance_cell_matches(n_matches, w, h, cfg.cluster_eps)
+
+        best = 0.0
+        for cs in clusters_stats:
+            n = cs["n_inliers"]
+            # Poisson std ~ sqrt(mu); guard the tiny-mu case with +1.
+            z = (n - chance_mu) / math.sqrt(chance_mu + 1.0)
+            surprise = _logistic((z - cfg.surprise_midpoint) / cfg.surprise_width)
+            corr = max(0.0, cs["corr_mean"])
+            localization = cfg.localization_floor + (1.0 - cfg.localization_floor) * \
+                math.exp(-cs["spread_frac"] / cfg.localization_scale)
+            best = max(best, surprise * corr * localization)
+        return float(best)
 
     # ------------------------------------------------------------- helpers
     @staticmethod
@@ -415,6 +491,45 @@ class CopyMoveDetector:
             "dup_bbox": tuple(int(round(v * factor)) for v in (dx, dy, dw, dh)),
             "transform": transform.tolist(),
         }
+
+
+def _logistic(x: float) -> float:
+    """Numerically-stable standard logistic squashing any real x into (0, 1)."""
+    if x >= 0:
+        return 1.0 / (1.0 + math.exp(-x))
+    ex = math.exp(x)
+    return ex / (1.0 + ex)
+
+
+def _bbox_area_frac(pts: np.ndarray, h: int, w: int) -> float:
+    """Area of the axis-aligned bounding box of ``pts``, as a fraction of the image.
+
+    Used as the localization measure: a compact copied patch covers a small
+    fraction; keypoints spread across a whole panel cover a large one.
+    """
+    if pts is None or len(pts) < 2:
+        return 0.0
+    bw = float(np.ptp(pts[:, 0]))
+    bh = float(np.ptp(pts[:, 1]))
+    return (bw * bh) / float(h * w)
+
+
+def _chance_cell_matches(n_matches: int, w: int, h: int, eps: float) -> float:
+    """Expected number of matches falling in one DBSCAN offset cell by chance.
+
+    Under the null of no copy-move, matches are coincidences whose offset
+    vectors (dx, dy) scatter roughly uniformly over the reachable offset space
+    ``[-w, w] x [-h, h]`` (area ``4*w*h``). A DBSCAN cluster occupies about a
+    disc of radius ``eps`` (area ``pi*eps^2``). So the chance count per cell is
+    ``n_matches * pi*eps^2 / (4*w*h)`` — the Poisson mean the observed inlier
+    count is compared against. This is a deliberately simple, defensible
+    baseline, not a precise model of SIFT's match distribution.
+    """
+    if n_matches <= 0:
+        return 0.0
+    offset_space = 4.0 * float(w) * float(h)
+    cell = math.pi * float(eps) * float(eps)
+    return max(float(n_matches) * cell / offset_space, 1e-6)
 
 
 def _local_zncc(a: np.ndarray, b: np.ndarray, window: int, min_std: float):

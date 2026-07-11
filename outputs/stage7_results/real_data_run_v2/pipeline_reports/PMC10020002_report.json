@@ -1,0 +1,554 @@
+{
+  "schema_version": "scholarguard/stage6/1.0",
+  "generated_at": "2026-07-12T00:32:33",
+  "paper": {
+    "path": "data/evaluation_set/fraud_cases/PMC10020002.pdf",
+    "filename": "PMC10020002.pdf",
+    "sections_found": [
+      "Conclusions",
+      "Discussion",
+      "Introduction",
+      "Materials And Methods",
+      "References",
+      "Results",
+      "_preamble"
+    ],
+    "n_figures": 8
+  },
+  "status": "completed",
+  "error": null,
+  "overall_risk": {
+    "score": 25.06,
+    "category": "moderate",
+    "n_figures": 8,
+    "worst_figure_score": 29.16,
+    "worst_figure_category": "moderate"
+  },
+  "figures": [
+    {
+      "figure": "Figure 1",
+      "figure_num": 1,
+      "image_path": "outputs/stage6_results\\_figures\\PMC10020002_img00.png",
+      "caption": "Significant gene functions and signaling pathways enriched for differentially expressed genes. (A) Significant gene functions of DP/ HC differential gene enrichment; (B) Significant gene functions of KXS/DP differential gene enrichment; (C) Significant signaling pathways of DP/ HC differential gene enrichment; (D) Significant signaling pathways of KXS/DP differential gene enrichment. C. Chen et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.1064,
+          "n_regions": 1
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.4799,
+          "noise_score": 0.473,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 0.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 2",
+      "figure_num": 2,
+      "image_path": "outputs/stage6_results\\_figures\\PMC10020002_img01.png",
+      "caption": "Verification of the expression levels of eight differentially expressed miRNAs in three groups of serum samples by PCR. (A) Quantitative real-time PCR was used to detect the expression levels of several differentially expressed miRNAs obtained from the previous microarray screening in healthy controls, depressed patients, and the KXS-treated groups after 8 weeks of administration. The relative expression levels of miRNAs in serum samples were calculated by the 2-\u0394\u0394Ct method with Ce_miR-39_1 as the internal reference gene. (B) A microRNA\u2013gene- pathway network analysis of 4 preselected target miRNAs. Compared between groups, *P < 0.05; **P < 0.01; ***P < 0.001; ****P < 0.0001. C. Chen et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.0,
+          "n_regions": 0
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "suspicious",
+          "freq_score": 0.4344,
+          "noise_score": 0.7492,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 10.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 10.0,
+            "note": "AI-generation verdict: suspicious (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 3",
+      "figure_num": 3,
+      "image_path": "outputs/stage6_results\\_figures\\PMC10020002_img02.png",
+      "caption": "Effects of miR-1281 on the expression levels of wild-type and mutant ADCY1/DVL1-transfected cells. (A\u2013B) ADCY1 and DVL1 mutation sites. (C\u2013D) The miR-1281 overexpression plasmid was cotransfected with the ADCY1 or DVL1 wild-type/mutant reporter plasmid into HEK293 human embryonic kidney cells. A dual-luciferase reporter assay was used to detect the levels of the ADCY1 or DVL1 reporter after transfection. Compared with the miR-1281-NC-ADCY1/DVL1 wild-type group and miR-1281-mimics-ADCY1/DVL1 wild-type group, ####P < 0.0001, Compared with the miR-1281-mimics-ADCY1/DVL1 mutant type group and miR-1281-mimics-ADCY1/DVL1 wild-type group, ***P < 0.001, ****P < 0.0001. C. Chen et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.4731,
+          "n_regions": 42
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3889,
+          "noise_score": 0.4917,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 16.56,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 16.56,
+            "note": "duplicated regions within figure (conf 0.4731)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 4",
+      "figure_num": 4,
+      "image_path": "outputs/stage6_results\\_figures\\PMC10020002_img03.png",
+      "caption": "Expression levels of miR-1281, ADCY1 and DVL1 in corticosterone-injured SH-SY5Y cells and after KXS treatment. Compared with the control group, #P < 0.05, ##P < 0.01, ###P < 0.001, ####P < 0.0001 compared with the corticosterone-injured group, *P < 0.05, **P < 0.01, ***P < 0.001, ****P < 0.0001. C. Chen et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.349,
+          "n_regions": 43
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3559,
+          "noise_score": 0.5013,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 0.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 5",
+      "figure_num": 5,
+      "image_path": "outputs/stage6_results\\_figures\\PMC10020002_img04.png",
+      "caption": "Effects of KXS on the viability and apoptosis of miR-1281-overexpressing SH-SY5Y cells and the relative expression levels of miR- 1281 and target genes. (A) A-1 is a virus-infected cell; A-2 is a DAPI-labeled nucleus, and the image magnification is 200X. The expression levels of miR-1281 in the negative control vector and the miR-1281 lentiviral expression vector after transfection and in each group of cells after drug administration were determined by PCR and are shown in A-3. U6 was used as an internal control, and the relative expression level of miR-1281 was calculated using the 2\u2212\u0394\u0394Ct formula. The expression of the negative control (NC) group in the experiment was set as 1, and the relative expression levels of the other groups were compared to that of the NC group. (B\u2013D) Effect of overexpressing miR-1281 on the phenotype of SH-SY5Y cells and the effect of KXS treatment. The CCK-8 method and flow cytometry were used to detect cell proliferation and apoptosis after miR-1281 was upregulated in SH-SY5Y cells and after treatment with KXS. (E) The effects of overexpressing miR-1281 on the expression levels of ADCY1 and DVL1. GAPDH was used as an internal reference, and the relative expression of each gene was compared using the 2\u2212\u0394\u0394Ct formula. Compared with NC, ##P < 0.01, ###P < 0.001; compared with the OE group, *P < 0.05. C. Chen et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.6993,
+          "n_regions": 42
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 1
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3686,
+          "noise_score": 0.3008,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 24.48,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 24.48,
+            "note": "duplicated regions within figure (conf 0.6993)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 6",
+      "figure_num": 6,
+      "image_path": "outputs/stage6_results\\_figures\\PMC10020002_img05.png",
+      "caption": "Effects of KXS on the cAMP/PKA/ERK/CREB and Wnt/\u03b2-catenin signaling pathways in cells after miR-1281 overexpression. Western blot was used to detect the effects of miR-1281 overexpression on cAMP/PKA/ERK/CREB and Wnt/\u03b2-catenin signal transduction pathways. (A\u2013F) The effects of KXS on the expression levels of PKA, pERK1/2, CREB, p-CREB and BDNF proteins in the cAMP signaling pathway in cells after miR- 1281 overexpression.(G\u2013J) The effects of KXS on the expression levels of GSK-3\u03b2, pGSK-3\u03b2 and \u03b2-catenin proteins in the Wnt signaling pathway in cells after miR-1281 overexpression. The expression of the negative control (NC) group in the experiment was set as 1, and the relative expression levels of the other groups were compared to that of the NC group. Compared with NC, ##P < 0.01; compared with the OE group, *P < 0.05, **P < 0.01. C. Chen et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.4715,
+          "n_regions": 49
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3555,
+          "noise_score": 0.4758,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 16.5,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 16.5,
+            "note": "duplicated regions within figure (conf 0.4715)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "(uncaptioned figure, page 11)",
+      "figure_num": null,
+      "image_path": "outputs/stage6_results\\_figures\\PMC10020002_img06.png",
+      "caption": "",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.8331,
+          "n_regions": 63
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 3
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3641,
+          "noise_score": 0.455,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 29.16,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 29.16,
+            "note": "duplicated regions within figure (conf 0.8331)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "(uncaptioned figure, page 12)",
+      "figure_num": null,
+      "image_path": "outputs/stage6_results\\_figures\\PMC10020002_img07.png",
+      "caption": "",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.7789,
+          "n_regions": 48
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 2
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3658,
+          "noise_score": 0.333,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 27.26,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 27.26,
+            "note": "duplicated regions within figure (conf 0.7789)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    }
+  ],
+  "pipeline_warnings": [
+    "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+    "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+  ],
+  "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic."
+}

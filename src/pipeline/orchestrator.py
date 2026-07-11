@@ -274,10 +274,13 @@ class Pipeline:
         if not self.settings.enabled("ai_generation"):
             return {"status": "disabled"}
         try:
-            from src.detectors.ai_generation_detector import detect_ai_generation
+            from src.detectors.ai_generation_detector import (
+                detect_ai_generation, FORENSIC_LOW, FORENSIC_HIGH)
             weights = self.settings.ai_weights_path
             weights = weights if (weights and os.path.isfile(weights)) else None
-            r = detect_ai_generation(image_path, weights_path=weights)
+            low, high = self.settings.ai_forensic_bands(FORENSIC_LOW, FORENSIC_HIGH)
+            r = detect_ai_generation(image_path, weights_path=weights,
+                                     forensic_low=low, forensic_high=high)
             image_flags["ai_generated"] = r["combined_verdict"] == "likely_ai_generated"
             return {"status": "ok", "verdict": r["combined_verdict"],
                     "freq_score": r["frequency_anomaly_score"],

@@ -1,0 +1,554 @@
+{
+  "schema_version": "scholarguard/stage6/1.0",
+  "generated_at": "2026-07-11T23:31:50",
+  "paper": {
+    "path": "data/evaluation_set/fraud_cases/PMC11388766.pdf",
+    "filename": "PMC11388766.pdf",
+    "sections_found": [
+      "Conclusions",
+      "Discussion",
+      "Introduction",
+      "Materials And Methods",
+      "References",
+      "Results",
+      "_preamble"
+    ],
+    "n_figures": 8
+  },
+  "status": "completed",
+  "error": null,
+  "overall_risk": {
+    "score": 30.35,
+    "category": "moderate",
+    "n_figures": 8,
+    "worst_figure_score": 33.04,
+    "worst_figure_category": "moderate"
+  },
+  "figures": [
+    {
+      "figure": "Figure 1",
+      "figure_num": 1,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img00.png",
+      "caption": "Construction of extrahepatic cholangiocarcinoma organoids and TAMs co-culture system. (A) Study design used to create co-culture system from eCCA patients. (B) Morphology of eCCA organoids with TAMs in bright field. Organoids had a round structure (red arrow), and TAMs had a spindle structure. (magnification, 100\u00d7). Y. Guo et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": false,
+          "confidence": 0.1064,
+          "n_regions": 1
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.4799,
+          "noise_score": 0.473,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 0.0,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 0.0,
+            "note": "no in-figure duplication"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 2",
+      "figure_num": 2,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img01.png",
+      "caption": "Histopathological characterization comparing eCCA organoids from mono-culture and co-culture models and corresponding specimens. (A\u2013B) Representative H&E staining of eCCA specimens and organoids (specimen magnification, 200\u00d7; organoid magnification, 400\u00d7). (C\u2013D) Representative immunohistochemistry staining for CK7, MUC-1, and EPCAM in eCCA specimens and organoids (specimen magnification, 200\u00d7; organoid magnification, 400\u00d7). Y. Guo et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.9294,
+          "n_regions": 16
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3518,
+          "noise_score": 0.4579,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 32.53,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 32.53,
+            "note": "duplicated regions within figure (conf 0.9294)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 3",
+      "figure_num": 3,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img02.png",
+      "caption": "General genetic alterations in two original specimens and organoids. (A) Number of SNP in different regions of the genome (left) and number of different types of SNP in the coding region (right) from patients 4. (B) Number of INDEL in different regions of the genome (left) and number of different types of INDEL in the coding region (right) from patients 4. (C) Number of SNP in different regions of the genome (left) and number of different types of SNP in the coding region (right) from patients 6. (D) Number of INDEL in different regions of the genome (left) and number of different types of INDEL in the coding region (right) from patients 6. Y. Guo et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.944,
+          "n_regions": 24
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3567,
+          "noise_score": 0.5936,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 33.04,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 33.04,
+            "note": "duplicated regions within figure (conf 0.944)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 4",
+      "figure_num": 4,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img03.png",
+      "caption": "Detailed genetic profiles of six original specimens and organoids. (A) Representative driver genes of the specimens and organoids are presented. The horizontal coordinate is the sample (P: specimens; Mo: monocultured organoids; Co: co-cultured organoids); the vertical coordinate is the gene; the top is the number of gene mutations in each sample; the right is the number of mutations in each gene in these samples presented. (B) Representative mutation spectrum in the specimens and organoids are presented. (C) Representative cancer predisposition genes in the specimens and organoids are presented. (D) Mutation characteristics of the specimens and organoids are presented. Y. Guo et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.6498,
+          "n_regions": 30
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3057,
+          "noise_score": 0.4355,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 22.74,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 22.74,
+            "note": "duplicated regions within figure (conf 0.6498)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 5",
+      "figure_num": 5,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img04.png",
+      "caption": "Organoids response to gemcitabine and cisplatin. (A) Representative images showing patient 2 organoids from the two models response to gemcitabine (magnification, 100\u00d7). (B) Dose-response curves of organoids chemosensitivity to gemcitabine. Data are expressed as means \u00b1 SD. (C) Representative MR Images of patient 2 during follow-up. (D) Representative images showing patient 6 organoids from the two models response to cisplatin (magnification, 100\u00d7). (E) Dose-response curves of organoids chemosensitivity to cisplatin. Data are expressed as means \u00b1 SD. (F) Representative MR Images of patient 6 during follow-up. Y. Guo et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.6099,
+          "n_regions": 31
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3586,
+          "noise_score": 0.5222,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 21.35,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 21.35,
+            "note": "duplicated regions within figure (conf 0.6099)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 6",
+      "figure_num": 6,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img05.png",
+      "caption": "Organoids response to 5-fluorouracil and paclitaxel. (A) Representative images showing patient 6 organoids from the two models response to 5-fluorouracil(magnification, 100\u00d7). (B\u2013D) Dose-response curves of organoids chemosensitivity to 5-fluorouracil. Data are expressed as means \u00b1 SD. (E) Representative images showing patient 8 organoids from the two models response to paclitaxel(magnification, 100\u00d7). (F\u2013H) Dose-response curves of organoids chemosensitivity to paclitaxel. Data are expressed as means \u00b1 SD. Y. Guo et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.6901,
+          "n_regions": 18
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3559,
+          "noise_score": 0.5919,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 24.15,
+        "category": "low",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 24.15,
+            "note": "duplicated regions within figure (conf 0.6901)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "Figure 7",
+      "figure_num": 7,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img06.png",
+      "caption": "TAMs promotes the growth of eCCA organoids in vitro and in vivo. (A) Representative images of eCCA organoids in mono-culture and co- culture(magnification, 40\u00d7). (B) Diameters of eCCA organoids cultured with or without TAMs(n = 6, 3 organoids for each well randomly were measured, **P < 0.01, ***P < 0.001). Data are expressed as means \u00b1 SD. (C) Cell viability of eCCA organoids cultured with or without TAMs(n = 6 experimental settings with 3 biological replicates for each; **P < 0.01, ***P < 0.001). Data are expressed as means \u00b1 SD. (D) Representative images of the tumors from mono-transplantation and co-transplantation. (E\u2013F) Weights and volumes of tumors from mono-transplantation and co-trans- plantation(n = 5, **P < 0.01, ***P < 0.001). Data are expressed as means \u00b1 SD. (G) Representative H&E staining of tumors from specimens, mono- transplantation, and co-transplantation. (H) Representative immunohistochemistry staining for CK7, MUC-1, and EPCAM in tumors from specimens, mono-transplantation and co-transplantation (magnification, 200\u00d7). Y. Guo et al.",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.8122,
+          "n_regions": 33
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3583,
+          "noise_score": 0.5222,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 28.43,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 28.43,
+            "note": "duplicated regions within figure (conf 0.8122)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    },
+    {
+      "figure": "(uncaptioned figure, page 10)",
+      "figure_num": null,
+      "image_path": "outputs/stage6_results\\_figures\\PMC11388766_img07.png",
+      "caption": "",
+      "detectors": {
+        "copy_move": {
+          "status": "ok",
+          "forged": true,
+          "confidence": 0.8668,
+          "n_regions": 39
+        },
+        "cross_figure": {
+          "status": "ok",
+          "n_exact": 0,
+          "n_region_reuse": 0,
+          "n_visual_similar": 0
+        },
+        "ai_generation": {
+          "status": "ok",
+          "verdict": "likely_real",
+          "freq_score": 0.3543,
+          "noise_score": 0.5831,
+          "classifier_used": false
+        },
+        "claim_consistency": {
+          "status": "skipped",
+          "reason": "no LLM client (missing ANTHROPIC_API_KEY)"
+        }
+      },
+      "risk": {
+        "score": 30.34,
+        "category": "moderate",
+        "breakdown": [
+          {
+            "detector": "copy_move",
+            "status": "ok",
+            "max_points": 35.0,
+            "points": 30.34,
+            "note": "duplicated regions within figure (conf 0.8668)"
+          },
+          {
+            "detector": "cross_figure",
+            "status": "ok",
+            "max_points": 30.0,
+            "points": 0.0,
+            "note": "only low-confidence visual-similarity leads"
+          },
+          {
+            "detector": "ai_generation",
+            "status": "ok",
+            "max_points": 20.0,
+            "points": 0.0,
+            "note": "AI-generation verdict: likely_real (forensics-only, no classifier)"
+          },
+          {
+            "detector": "claim_consistency",
+            "status": "skipped",
+            "max_points": 15.0,
+            "points": 0.0,
+            "note": "claim-consistency skipped"
+          }
+        ]
+      }
+    }
+  ],
+  "pipeline_warnings": [
+    "claim-consistency will be SKIPPED for all figures: ANTHROPIC_API_KEY is not set. Export your Claude API key, e.g.\n  export ANTHROPIC_API_KEY=sk-ant-...      (bash)\n  $env:ANTHROPIC_API_KEY = 'sk-ant-...'    (PowerShell)\nor place it in a .env file (python-dotenv is loaded automatically). (set ANTHROPIC_API_KEY to enable text/claim checking)",
+    "AI-generation running in FORENSICS-ONLY mode: classifier weights not found at 'src/models/weights/artifact_classifier.pt' (train via the Stage 4 Colab notebook to enable the learned signal)"
+  ],
+  "disclaimer": "All findings are leads for human review, not proof of misconduct. The visual lane/panel count is an approximate screening heuristic."
+}
