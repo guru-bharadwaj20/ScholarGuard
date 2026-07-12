@@ -856,6 +856,73 @@ requires re-running on a fresh real paper set the thresholds were never tuned on
 This caveat is repeated at every calibration constant in `config.yaml` and in the
 detector source, on purpose.
 
+## Stage 8 — Web UI (Next.js) + API bridge (FastAPI)
+
+A reviewer-facing interface that treats the measured limitations as part of
+the product: every detector name carries its real false-alarm rate, the risk
+gauge has a permanent 60%-ceiling note, and the methodology page tells the
+full Stage 1–7 story (including the ZNCC bug) with the real numbers.
+
+```
+server/   FastAPI bridge — thin transport ONLY, zero pipeline logic
+web/      Next.js 14 (App Router) + TypeScript + Tailwind + Framer Motion
+          + react-three-fiber + Recharts
+```
+
+### Run it (two terminals, from the repo root)
+
+```bash
+# 1. API bridge on :8000 (pip install -r server/requirements.txt once)
+uvicorn server.main:app --port 8000
+
+# 2. Web app on :3000 (cd web && npm install once)
+cd web && npm run dev
+```
+
+Open http://localhost:3000. The navbar pill shows whether the bridge is
+reachable. `/api/*` is proxied to :8000 by `next.config.js`, so the browser
+stays same-origin.
+
+### What the bridge does (and deliberately does not do)
+
+| Endpoint | Behavior |
+|---|---|
+| `POST /analyze` | save the uploaded PDF, call the **existing, unchanged** `src.pipeline.orchestrator.run_pipeline()` on a worker thread |
+| `GET /analyze/{id}/stream` | Server-Sent Events — real progress parsed from the orchestrator's own `scholarguard` log lines, never fabricated steps |
+| `GET /analyze/{id}/result` | the Stage 6 JSON report, untouched, plus API URLs for figure images |
+| `GET /analyze/{id}/figures/{i}/image` | the figure PNG the pipeline extracted |
+| `GET /analyze/{id}/figures/{i}/overlay` | the Stage 2 copy-move visualization (drawn by the existing `detect_copy_move()` — offered only where that detector fired) |
+| `POST /analyze/example/{id}` / `GET /examples` | two bundled REAL papers from the Stage 7 eval set |
+| `GET /health` | liveness for the navbar pill |
+
+No detector, scoring, or report logic is reimplemented anywhere in `server/`
+or `web/` — verified by the demo runs producing byte-identical risk scores to
+the Stage 7 benchmark (e.g. PMC13343144 → 21.82 in both).
+
+### Honesty requirements, enforced in code
+
+- `web/lib/constants.ts` is the **single source** of every reliability
+  number; components import it, never hardcode a percentage.
+- The reliability badge (2.4% / 56.6% / 27.7% / unvalidated) renders beside a
+  detector's name **everywhere** it appears — never in a tooltip.
+- The risk gauge's 60%-accuracy-ceiling note is permanent text, not
+  dismissible.
+- Severity colors are muted by design (soft amber / muted teal / neutral
+  slate); no saturated alarm red, no pulsing, anywhere.
+- The bundled clean example is deliberately one that scores *moderately* from
+  copy-move's known over-triggering, and its card says so.
+- Unflagged figures read "no signals fired here" — never "authentic".
+
+### Manual testing checklist
+
+- [x] Valid PDF end-to-end (upload → SSE progress → report → figure images)
+- [x] Non-PDF upload → friendly 415; corrupt `%PDF` → graceful `failed` report
+- [x] Both example papers start and stream
+- [x] Copy-move overlay endpoint (offered only where the detector fired)
+- [x] Production build passes type-checking (`next build`, 6/6 pages)
+- [ ] Reduced-motion mode (OS setting: drift/3D freeze — poster fallback) — verify in a browser
+- [x] Every displayed reliability number traces to `web/lib/constants.ts`
+
 ### Roadmap
 
 - **Stage 1** — data collection (synthetic forgeries + real fraud cases) ✅
