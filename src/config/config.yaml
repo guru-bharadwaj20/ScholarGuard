@@ -128,7 +128,7 @@ risk_scoring:
   # structure: scale bars, replicate panels, geometrically identical to a copy)
   # and cross_figure 0.28 (untouched) — NOT the cutoff.
   # RECALIBRATE with a larger, figure-annotated real set before trusting any
-  # numeric threshold change. See outputs/stage7_results/real_data_run_v2/metrics_summary.md.
+  # numeric threshold change. See the "How honest is it?" section of README.md.
   categories:
     low: 0
     moderate: 25

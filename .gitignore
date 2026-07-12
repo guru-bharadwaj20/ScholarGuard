@@ -22,10 +22,15 @@ data/*.bak
 # Model weights (trained on Colab, not versioned)
 src/models/weights/*.pt
 
-# Stage 8 web UI + API bridge
+# Pipeline working outputs (regenerable; headline results live in the README)
+outputs/
+
+# Web UI + API bridge
 web/node_modules/
 web/.next/
 web/next-env.d.ts
 server/jobs/
 server/uploads/
 server/__pycache__/
+
+# README screenshots in images/ are intentionally tracked (do not ignore).

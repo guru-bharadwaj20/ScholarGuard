@@ -1,48 +1,37 @@
-# Core (Stage 2)
+# ScholarGuard pipeline (CPU-only). For the web UI backend see server/requirements.txt.
+
+# Core CV + numerics
 opencv-python==4.13.0.92
 numpy==2.5.0
 scikit-learn==1.7.1
 scipy==1.16.1
 matplotlib==3.10.6
-pytest==8.4.2
+pillow==12.0.0
 
-# Stage 3: cross-figure duplicate detection
+# Cross-figure duplicate detection
 imagehash==4.3.2
 faiss-cpu==1.14.3
 tqdm==4.67.1
-pillow==12.0.0
 
-# Stage 4: AI-generation detection
-# scipy/numpy (above) cover the FFT; PyWavelets drives the PRNU-style
-# wavelet noise-residual denoiser. torch/torchvision (below, from Stage 3)
-# are reused for the optional artifact classifier — inference runs on CPU;
-# training happens on GPU in colab/train_artifact_classifier.ipynb.
+# AI-generation forensics (frequency + wavelet noise residual)
 PyWavelets==1.9.0
-# torch/torchvision: install the CPU-only wheels (no GPU on target machine).
-# Plain `pip install torch` may pull large CUDA builds on some platforms —
-# prefer:  pip install torch==2.9.0 torchvision==0.24.0 \
-#              --index-url https://download.pytorch.org/whl/cpu
+# Install the CPU-only torch wheels:
+#   pip install torch==2.9.0 torchvision==0.24.0 --index-url https://download.pytorch.org/whl/cpu
 torch==2.9.0
 torchvision==0.24.0
 
-# Stage 6: unified pipeline — config-driven orchestration
-# PyYAML parses the single config.yaml source of truth.
+# Pipeline config
 PyYAML==6.0.3
 
-# Data acquisition: fetch real figures from PubMed Central Open Access.
-# tqdm + pillow are already listed above; requests is the HTTP client.
-# pandas reads the 63 MB Retraction Watch CSV. The repo is cloned with the
-# `git` CLI via subprocess -- deliberately NO gitpython dependency.
+# Data acquisition (PubMed Central Open Access + Retraction Watch)
 requests==2.32.4
 pandas==2.3.1
 
-# Stage 5: NLP claim-consistency checking
-# pymupdf (fitz) parses PDFs and extracts embedded figure images; anthropic is
-# the Claude API SDK (the LLM claim extractor); python-dotenv lets the API key
-# live in a local .env. ANTHROPIC_API_KEY is read from the environment — never
-# hardcode it. sentence-transformers is the CPU-friendly local fallback for
-# text-similarity work that shouldn't burn API calls.
+# NLP claim-consistency (PDF parsing + Claude API; key read from env, never hardcoded)
 pymupdf==1.28.0
 anthropic==0.116.0
 python-dotenv==1.1.1
 sentence-transformers==5.1.2
+
+# Tests
+pytest==8.4.2
