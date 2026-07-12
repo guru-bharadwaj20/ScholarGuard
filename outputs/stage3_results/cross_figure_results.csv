@@ -1,8 +1,0 @@
-query,expected_source,reuse_type,found_by_phash,found_by_embedding,region_reuse_verified,found_any,n_candidates_flagged,runtime_sec
-dup00_of_paper07_fig1.png,paper07_fig1.png,whole_recompress,True,False,True,True,9,11.77
-dup01_of_paper06_fig0.png,paper06_fig0.png,whole_brightness,True,False,True,True,12,3.2
-dup02_of_paper05_fig0.png,paper05_fig0.png,whole_rotate_crop,False,True,True,True,10,2.86
-reuse00_from_paper07_fig0.png,paper07_fig0.png,panel,False,True,True,True,14,4.06
-reuse01_from_paper02_fig1.png,paper02_fig1.png,panel,False,True,True,True,15,4.5
-reuse02_from_paper01_fig1.png,paper01_fig1.png,panel,False,True,True,True,13,3.64
-reuse03_from_paper01_fig2.png,paper01_fig2.png,panel,False,True,True,True,15,4.45
