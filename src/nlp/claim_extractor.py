@@ -12,8 +12,22 @@ from src.llm.client import LLMClient
 from src.llm.prompts import (
     CLAIM_EXTRACTION_SCHEMA,
     CLAIM_EXTRACTION_SYSTEM,
+    FIGURE_VISION_SCHEMA,
+    FIGURE_VISION_SYSTEM,
     build_claim_extraction_prompt,
+    build_figure_vision_prompt,
 )
+
+# The shape returned when the vision model can't be reached, so consistency
+# checking always has a well-formed observation dict.
+EMPTY_OBSERVATIONS: dict = {
+    "observed_panel_count": None,
+    "panel_letters": [],
+    "observed_lane_count": None,
+    "techniques": [],
+    "visible_text_labels": [],
+    "notable_observations": None,
+}
 
 # The shape returned when no text is available or the LLM can't be reached, so
 # downstream consistency checking always has a well-formed dict to work with.
@@ -56,3 +70,28 @@ def extract_claims(
     )
     # Defensive: guarantee all keys exist even if a future schema drifts.
     return {**EMPTY_CLAIMS, **claims}
+
+
+def observe_figure(
+    image_path: str,
+    figure_caption: str = "",
+    figure_label: str = "the figure",
+    client: LLMClient | None = None,
+) -> dict:
+    """Observe what a figure image actually shows, via the vision model.
+
+    Returns a dict matching ``FIGURE_VISION_SCHEMA`` (panel/lane counts,
+    techniques, visible labels, notable observations). This replaces the
+    coarse classical-CV blob/lane heuristic as the primary observation
+    source for claim-consistency checking. ``client`` is injectable so
+    tests can supply a mock and CI never spends API credits.
+    """
+    client = client or LLMClient()
+    prompt = build_figure_vision_prompt(figure_label, figure_caption)
+    obs = client.extract_json(
+        prompt,
+        schema=FIGURE_VISION_SCHEMA,
+        system=FIGURE_VISION_SYSTEM,
+        image_path=image_path,
+    )
+    return {**EMPTY_OBSERVATIONS, **obs}

@@ -29,6 +29,7 @@ least `high`.
 from __future__ import annotations
 
 from src.config.settings import RISK_CATEGORIES, Settings
+from src.pipeline.evidence_fusion import FusionConfig, fuse_figure, fuse_paper
 
 
 def _category_for(score: float, categories: dict) -> str:
@@ -129,7 +130,18 @@ def score_figure(detectors: dict, settings: Settings) -> dict:
 
     score = round(min(100.0, total), 2)
     category = _category_for(score, risk.get("categories", {}))
-    return {"score": score, "category": category, "breakdown": breakdown}
+    # Additive probabilistic layer: a calibrated posterior that discounts
+    # detectors whose fire rate barely differs between fraud and clean (see
+    # src.pipeline.evidence_fusion). Does NOT change the point score above —
+    # it augments it, and drives the paper-level probability.
+    fusion = fuse_figure(detectors, _fusion_config(settings))
+    return {"score": score, "category": category, "breakdown": breakdown,
+            "fraud_probability": fusion["fraud_probability"],
+            "evidence": fusion}
+
+
+def _fusion_config(settings: Settings) -> FusionConfig:
+    return FusionConfig.from_settings_dict(settings.raw.get("evidence_fusion"))
 
 
 def score_paper(figure_scores: list[dict], settings: Settings) -> dict:
@@ -155,6 +167,11 @@ def score_paper(figure_scores: list[dict], settings: Settings) -> dict:
         + agg.get("mean_figure_weight", 0.3) * mean, 2)
     category = _category_for(paper_score, categories)
 
+    # Probabilistic aggregate: noisy-OR over per-figure fraud probabilities
+    # (additive; the point score/category above are unchanged).
+    fig_probs = [f.get("fraud_probability", 0.0) for f in figure_scores]
+    paper_fraud_probability = fuse_paper(fig_probs) if any(fig_probs) else 0.0
+
     # Floor the paper category at the worst single figure's category — a
     # critical figure must never be diluted below "high" by clean figures.
     worst_cat = _category_for(worst, categories)
@@ -171,4 +188,5 @@ def score_paper(figure_scores: list[dict], settings: Settings) -> dict:
         "n_figures": len(figure_scores),
         "worst_figure_score": worst,
         "worst_figure_category": worst_cat,
+        "fraud_probability": paper_fraud_probability,
     }

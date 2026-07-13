@@ -280,7 +280,8 @@ class Pipeline:
             weights = weights if (weights and os.path.isfile(weights)) else None
             low, high = self.settings.ai_forensic_bands(FORENSIC_LOW, FORENSIC_HIGH)
             r = detect_ai_generation(image_path, weights_path=weights,
-                                     forensic_low=low, forensic_high=high)
+                                     forensic_low=low, forensic_high=high,
+                                     baselines=self.settings.ai_compression_baselines())
             image_flags["ai_generated"] = r["combined_verdict"] == "likely_ai_generated"
             return {"status": "ok", "verdict": r["combined_verdict"],
                     "freq_score": r["frequency_anomaly_score"],
@@ -324,14 +325,31 @@ class Pipeline:
                            figure["label"], exc)
             return {"status": "error", "error": str(exc)}
 
-        ve = count_visual_elements(image_path) if image_path else None
+        # Multimodal observation: let the vision model actually look at the
+        # figure. Far more reliable than the CV heuristic; degrade to it on
+        # any failure so a vision hiccup never aborts the check.
+        observations = None
+        if image_path and self.settings.use_vision_observation:
+            try:
+                from src.nlp.claim_extractor import observe_figure
+                observations = observe_figure(image_path, caption,
+                                              figure["label"],
+                                              client=self._llm_client)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("figure vision observation failed on %s: %s",
+                               figure["label"], exc)
+
+        ve = (count_visual_elements(image_path)
+              if image_path and observations is None else None)
         result = check_consistency(
             claims, image_path, prior_detector_flags=image_flags,
-            visual_elements=ve,
-            panel_count_tolerance=self.settings.panel_count_tolerance)
+            visual_elements=ve, vision_observations=observations,
+            panel_count_tolerance=self.settings.panel_count_tolerance,
+            fold_prior_flags=False)  # risk scorer already scores those detectors
         return {"status": "ok", "consistent": result["consistent"],
                 "mismatches": result["mismatches"], "confidence": result["confidence"],
-                "claims": claims}
+                "detector_context": result.get("detector_context", []),
+                "observations": observations, "claims": claims}
 
 
 def _load(image_path: str):

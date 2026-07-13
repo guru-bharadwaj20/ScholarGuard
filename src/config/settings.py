@@ -51,6 +51,8 @@ class Settings:
             "sift_contrast_threshold", "max_dim",
             "surprise_midpoint", "surprise_width",
             "localization_scale", "localization_floor",
+            "use_analysis_mask", "residual_independent_factor",
+            "residual_inconclusive_factor",
         ])
 
     def cross_figure_config(self):
@@ -61,6 +63,8 @@ class Settings:
         return _apply(CrossFigureConfig(), cfg, [
             "phash_max_distance", "embed_review", "embed_high",
             "min_inliers", "min_region_area", "top_k",
+            "use_analysis_mask", "min_content_entropy",
+            "residual_independent_factor", "residual_inconclusive_factor",
         ])
 
     # -- Stage 4 / 5 --------------------------------------------------------
@@ -87,8 +91,26 @@ class Settings:
             "panel_count_tolerance", 0.5))
 
     @property
+    def use_vision_observation(self) -> bool:
+        """Whether to attach the figure image to the LLM call (multimodal)."""
+        return bool(self._detector("claim_consistency").get(
+            "use_vision_observation", True))
+
+    @property
     def cross_figure_corpus_dir(self) -> str | None:
         return self._detector("cross_figure").get("corpus_dir")
+
+    def ai_compression_baselines(self) -> dict | None:
+        """Compression-conditioned AI-forensic baselines, or None if disabled.
+
+        Returns the ``{stratum: {mean, std}}`` map when
+        ``condition_on_compression`` is on, else None (fall back to the
+        absolute forensic bands).
+        """
+        cfg = self._detector("ai_generation")
+        if not cfg.get("condition_on_compression", True):
+            return {}   # empty dict = conditioning explicitly disabled
+        return cfg.get("compression_baselines") or None
 
     # -- LLM ----------------------------------------------------------------
     @property

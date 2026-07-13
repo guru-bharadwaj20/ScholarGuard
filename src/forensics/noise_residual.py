@@ -71,7 +71,11 @@ def extract_noise_residual(gray: np.ndarray, method: str = "wavelet") -> np.ndar
 
     # Wavelet denoise: threshold detail coefficients (VisuShrink-style),
     # reconstruct the smooth image, residual = original - reconstruction.
-    coeffs = pywt.wavedec2(gray, "db4", level=4)
+    # Cap the level so small crops (region-local clone tests) don't request
+    # more decomposition levels than their size supports.
+    max_level = pywt.dwtn_max_level(gray.shape, "db4")
+    level = max(1, min(4, max_level))
+    coeffs = pywt.wavedec2(gray, "db4", level=level)
     detail = np.concatenate([c.ravel() for c in coeffs[1][:]])
     sigma = np.median(np.abs(detail)) / 0.6745 + 1e-6  # robust noise estimate
     threshold = sigma * np.sqrt(2 * np.log(gray.size))

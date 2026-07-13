@@ -512,6 +512,142 @@ def _frange(start: float, stop: float, step: float):
         v += step
 
 
+# --------------------------------------------------------------------------
+# Threshold-free ranking metrics + honest (LOOCV) threshold selection.
+#
+# With a 60% base rate and n=25, "accuracy at the best threshold" is almost
+# all noise (the auto-swept cutoff jumped 67.5 -> 22.5 between runs). ROC-AUC
+# and average precision rank the scores without committing to a cutoff, and
+# are directly comparable across runs; and any cutoff we DO report is chosen
+# by leave-one-out CV so it is not fit on the same papers it is scored on.
+# --------------------------------------------------------------------------
+def roc_auc(y_true: list[bool], scores: list[float]) -> float | None:
+    """Area under the ROC curve via the Mann-Whitney U statistic.
+
+    Equals the probability a random fraud paper outranks a random clean
+    one; ties count as half. Returns None if one class is absent (AUC
+    undefined). Pure stdlib — no sklearn dependency.
+    """
+    pos = [s for t, s in zip(y_true, scores) if t]
+    neg = [s for t, s in zip(y_true, scores) if not t]
+    if not pos or not neg:
+        return None
+    wins = 0.0
+    for p in pos:
+        for n in neg:
+            if p > n:
+                wins += 1.0
+            elif p == n:
+                wins += 0.5
+    return round(wins / (len(pos) * len(neg)), 4)
+
+
+def average_precision(y_true: list[bool], scores: list[float]) -> float | None:
+    """Average precision (area under the precision-recall curve).
+
+    More informative than ROC-AUC when positives are the minority and the
+    cost of false positives is high — which is the screening setting here.
+    Computed as the recall-weighted mean of precision at each threshold
+    where a new true positive is retrieved.
+    """
+    pairs = sorted(zip(scores, y_true), key=lambda t: t[0], reverse=True)
+    total_pos = sum(1 for _, t in pairs if t)
+    if total_pos == 0:
+        return None
+    tp = 0
+    fp = 0
+    ap = 0.0
+    for _, t in pairs:
+        if t:
+            tp += 1
+            ap += tp / (tp + fp)   # precision at this recall step
+        else:
+            fp += 1
+    return round(ap / total_pos, 4)
+
+
+def ranking_metrics(y_true: list[bool], scores: list[float]) -> dict:
+    """Threshold-free summary: ROC-AUC + average precision + support."""
+    return {
+        "roc_auc": roc_auc(y_true, scores),
+        "average_precision": average_precision(y_true, scores),
+        "n_positive": sum(1 for t in y_true if t),
+        "n_negative": sum(1 for t in y_true if not t),
+    }
+
+
+def loocv_threshold_accuracy(y_true: list[bool], scores: list[float],
+                             thresholds: list[float] | None = None) -> dict:
+    """Honest accuracy: pick the cutoff on all-but-one, score the held-out one.
+
+    For each paper i, the best-accuracy threshold is chosen on the other
+    n-1 papers, then applied to paper i alone. The reported accuracy is the
+    mean over held-out papers — an (almost) unbiased estimate, unlike the
+    in-sample "best threshold accuracy" that made the numbers look better
+    than the tool is. Also returns the modal chosen threshold for reference.
+
+    Ties in the training sweep are broken toward the *lower* threshold
+    (higher recall — the screening priority).
+    """
+    n = len(y_true)
+    if n < 3:
+        return {"loocv_accuracy": None, "n": n,
+                "note": "too few papers for leave-one-out"}
+    if thresholds is None:
+        lo, hi = min(scores), max(scores)
+        thresholds = [round(t, 3) for t in _frange(lo, hi, (hi - lo) / 50 or 1.0)]
+
+    correct = 0
+    chosen: list[float] = []
+    for i in range(n):
+        tr_true = [y_true[j] for j in range(n) if j != i]
+        tr_scores = [scores[j] for j in range(n) if j != i]
+        best_acc = -1.0
+        best_thrs: list[float] = []
+        for thr in thresholds:
+            pred = [s >= thr for s in tr_scores]
+            acc = sum(p == t for p, t in zip(pred, tr_true)) / len(tr_true)
+            if acc > best_acc:
+                best_acc, best_thrs = acc, [thr]
+            elif acc == best_acc:
+                best_thrs.append(thr)
+        # Midpoint of the optimal band = the max-margin cutoff, so a held-out
+        # point near the class boundary is not misclassified by a threshold
+        # that happened to sit on the training margin.
+        best_thr = best_thrs[len(best_thrs) // 2]
+        chosen.append(best_thr)
+        if (scores[i] >= best_thr) == y_true[i]:
+            correct += 1
+
+    modal = max(set(chosen), key=chosen.count)
+    return {
+        "loocv_accuracy": round(correct / n, 4),
+        "modal_threshold": modal,
+        "chosen_thresholds": chosen,
+        "n": n,
+    }
+
+
+def estimate_fire_calibration(fired_flags: list[bool],
+                              labels: list[bool]) -> dict:
+    """P(signal fires | fraud) and | clean) with Laplace smoothing.
+
+    Feeds src.pipeline.evidence_fusion. ``fired_flags[i]`` is whether the
+    detector fired on item i; ``labels[i]`` is that item's true fraud
+    status. +1/+2 Laplace smoothing keeps the ratio finite on the tiny
+    real sets (a 0/10 clean fire rate must not become an infinite LR).
+    """
+    fraud_fire = sum(1 for f, y in zip(fired_flags, labels) if y and f)
+    fraud_tot = sum(1 for y in labels if y)
+    clean_fire = sum(1 for f, y in zip(fired_flags, labels) if not y and f)
+    clean_tot = sum(1 for y in labels if not y)
+    return {
+        "p_fire_fraud": round((fraud_fire + 1) / (fraud_tot + 2), 4),
+        "p_fire_clean": round((clean_fire + 1) / (clean_tot + 2), 4),
+        "n_fraud": fraud_tot, "n_clean": clean_tot,
+    }
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="evaluate ScholarGuard detectors")
     parser.add_argument("--data", default="data/synthetic",

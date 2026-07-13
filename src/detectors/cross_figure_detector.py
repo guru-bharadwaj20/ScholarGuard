@@ -41,7 +41,13 @@ from src.detectors.copy_move_detector import (
     keep_seeded_components,
     local_zncc,
 )
+from src.forensics.residual_similarity import clone_factor, residual_clone_test
 from src.indexing.feature_extractor import FeatureExtractor
+from src.preprocessing.panel_segmentation import (
+    PanelSegConfig,
+    build_analysis_mask,
+    content_entropy,
+)
 from src.indexing.similarity_index import SimilarityIndex
 from src.utils.image_io import load_image, save_image
 from src.utils.visualization import draw_cross_figure_match
@@ -98,6 +104,26 @@ class CrossFigureConfig:
     highpass_sigma: float = 3.0
     zncc_threshold: float = 0.55
 
+    # -- content gating + junk filtering ------------------------------------
+    # Keypoints are restricted to continuous-tone panels minus text/scale
+    # bars (see src.preprocessing.panel_segmentation): shared axis labels
+    # and plot furniture between two different figures verify geometrically
+    # just like reuse does, and were a systematic false-positive source.
+    use_analysis_mask: bool = True
+    # Images whose intensity-histogram entropy falls below this are treated
+    # as publisher furniture (logos, rules, badges) and never matched.
+    min_content_entropy: float = 1.0
+
+    # -- confidence model (observed-vs-expected; mirrors Stage 2's) ----------
+    # Replaces the earlier ad-hoc weighted blend of raw counts. Confidence =
+    # inlier-surprise (logistic in the inlier count) * correlation quality *
+    # noise-residual clone factor, all bounded in [0, 1].
+    inlier_midpoint: float = 25.0   # inlier count mapping to surprise 0.5
+    inlier_width: float = 8.0       # logistic width of the surprise term
+    corr_norm: float = 0.70         # high-passed ZNCC that counts as "perfect"
+    residual_independent_factor: float = 0.25
+    residual_inconclusive_factor: float = 0.85
+
     # Stage 2 feature/ZNCC settings are reused as-is.
     stage2: DetectorConfig = field(default_factory=DetectorConfig)
 
@@ -116,18 +142,31 @@ class CrossImageRegionMatcher:
         self.config = config or CrossFigureConfig()
         self._stage2 = CopyMoveDetector(self.config.stage2)
 
-    def match(self, image_a: np.ndarray, image_b: np.ndarray) -> dict:
+    def match(self, image_a: np.ndarray, image_b: np.ndarray,
+              mask_a: np.ndarray | None = None,
+              mask_b: np.ndarray | None = None) -> dict:
         """Check whether a region of ``image_a`` re-appears in ``image_b``.
 
+        ``mask_a``/``mask_b`` optionally restrict keypoints to forensically
+        meaningful regions (255 = analyze); when omitted and
+        ``config.use_analysis_mask`` is set, masks are built automatically.
+
         Returns {"reused": bool, "n_inliers", "transform", "bbox_a",
-        "bbox_b", "mask_a", "mask_b", "mean_corr", "confidence"}.
+        "bbox_b", "mask_a", "mask_b", "mean_corr", "noise_residual",
+        "confidence"}.
         """
         cfg = self.config
         gray_a = cv2.cvtColor(image_a, cv2.COLOR_BGR2GRAY) if image_a.ndim == 3 else image_a
         gray_b = cv2.cvtColor(image_b, cv2.COLOR_BGR2GRAY) if image_b.ndim == 3 else image_b
 
-        kps_a, des_a = self._stage2.extract_keypoints(gray_a)
-        kps_b, des_b = self._stage2.extract_keypoints(gray_b)
+        if cfg.use_analysis_mask:
+            if mask_a is None:
+                mask_a, _ = build_analysis_mask(gray_a, PanelSegConfig())
+            if mask_b is None:
+                mask_b, _ = build_analysis_mask(gray_b, PanelSegConfig())
+
+        kps_a, des_a = self._stage2.extract_keypoints(gray_a, mask_a)
+        kps_b, des_b = self._stage2.extract_keypoints(gray_b, mask_b)
         no_match = {"reused": False, "n_inliers": 0, "confidence": 0.0}
         if des_a is None or des_b is None or len(kps_a) < 2 or len(kps_b) < 2:
             return no_match
@@ -184,30 +223,45 @@ class CrossImageRegionMatcher:
         for x, y in dst[inlier_flags]:
             cv2.circle(seeds, (int(round(x)), int(round(y))),
                        cfg.stage2.seed_radius, 255, -1)
-        mask_b = keep_seeded_components(dup, seeds, cfg.min_region_area)
-        if cv2.countNonZero(mask_b) == 0:
+        # Note: mask_region_b is the *grown reuse region*; mask_a/mask_b above
+        # are the content-gating analysis masks — distinct things.
+        mask_region_b = keep_seeded_components(dup, seeds, cfg.min_region_area)
+        if cv2.countNonZero(mask_region_b) == 0:
             return no_match
 
         # Map the verified region back into A's frame.
         h_a, w_a = gray_a.shape
         inv = cv2.invertAffineTransform(transform)
-        mask_a = cv2.warpAffine(mask_b, inv, (w_a, h_a), flags=cv2.INTER_NEAREST)
+        region_a = cv2.warpAffine(mask_region_b, inv, (w_a, h_a),
+                                  flags=cv2.INTER_NEAREST)
 
-        mean_corr = float(corr[mask_b > 0].mean())
-        confidence = float(
-            0.45 * min(n_inliers / 30.0, 1.0)
-            + 0.40 * max(mean_corr, 0.0)
-            + 0.15 * min(cv2.countNonZero(mask_b) / (0.01 * mask_b.size), 1.0)
-        )
+        # Noise-residual clone test: two different figures can share
+        # correlated *structure* (same protocol, same equipment), but only a
+        # pixel clone shares one capture's noise field. Runs on the raw
+        # (not high-passed) intensities in B's frame.
+        residual = residual_clone_test(gray_b, warped, mask_region_b)
+        noise_factor = clone_factor(
+            residual,
+            independent_factor=cfg.residual_independent_factor,
+            inconclusive_factor=cfg.residual_inconclusive_factor)
+
+        mean_corr = float(corr[mask_region_b > 0].mean())
+        # Bounded observed-vs-expected confidence (mirrors Stage 2's design):
+        # surprise in the inlier count * correlation quality * noise verdict.
+        surprise = 1.0 / (1.0 + np.exp(-(n_inliers - cfg.inlier_midpoint)
+                                       / cfg.inlier_width))
+        corr_term = min(max(mean_corr, 0.0) / cfg.corr_norm, 1.0)
+        confidence = float(surprise * corr_term * noise_factor)
         return {
             "reused": True,
             "n_inliers": n_inliers,
             "transform": transform.tolist(),
-            "bbox_a": cv2.boundingRect(mask_a),   # (x, y, w, h) in query image
-            "bbox_b": cv2.boundingRect(mask_b),   # (x, y, w, h) in matched image
-            "mask_a": mask_a,
-            "mask_b": mask_b,
+            "bbox_a": cv2.boundingRect(region_a),        # (x, y, w, h) in query image
+            "bbox_b": cv2.boundingRect(mask_region_b),   # (x, y, w, h) in matched image
+            "mask_a": region_a,
+            "mask_b": mask_region_b,
             "mean_corr": round(mean_corr, 4),
+            "noise_residual": residual,
             "confidence": round(confidence, 4),
         }
 
@@ -230,12 +284,36 @@ class CrossFigureDetector:
             corpus_dir, extractor=self.extractor, show_progress=show_progress
         )
         self._region_matcher = CrossImageRegionMatcher(self.config)
+        self._mask_cache: dict[str, np.ndarray | None] = {}
+
+    def _analysis_mask_for(self, path: str, image: np.ndarray) -> np.ndarray | None:
+        """Cached content-gating mask per image path (None = no gating)."""
+        if not self.config.use_analysis_mask:
+            return None
+        if path not in self._mask_cache:
+            mask, _ = build_analysis_mask(image, PanelSegConfig())
+            self._mask_cache[path] = mask
+        return self._mask_cache[path]
 
     def detect(self, query_image_path: str, verify_regions: bool = True) -> dict:
         """Run the three-tier duplicate search for one query image."""
         cfg = self.config
         query_abs = os.path.abspath(query_image_path)
         query_image = load_image(query_image_path)
+
+        # Publisher-furniture guard: logos, license badges and rules recur
+        # across figures/papers and match each other *exactly* — flagging
+        # them as reuse is noise. Low-entropy content is skipped outright.
+        query_gray = cv2.cvtColor(query_image, cv2.COLOR_BGR2GRAY)
+        if content_entropy(query_gray) < cfg.min_content_entropy:
+            return {
+                "query": query_abs,
+                "exact_or_near_duplicate_matches": [],
+                "visual_similarity_matches": [],
+                "suspected_region_reuse": [],
+                "skipped_reason": "low-entropy content (likely publisher "
+                                  "furniture, not a data figure)",
+            }
 
         # ---- tier 1: pHash (near-exact whole-image duplicates) -----------
         query_hash = str(self.extractor.phash(query_image_path))
@@ -271,9 +349,16 @@ class CrossFigureDetector:
         # ---- tier 3: keypoint verification of every candidate -------------
         region_matches = []
         if verify_regions:
+            query_mask = self._analysis_mask_for(query_abs, query_image)
             for candidate in hash_matches + embed_matches:
                 other = load_image(candidate["matched_image_path"])
-                verdict = self._region_matcher.match(query_image, other)
+                other_gray = cv2.cvtColor(other, cv2.COLOR_BGR2GRAY)
+                if content_entropy(other_gray) < cfg.min_content_entropy:
+                    continue  # furniture in the corpus; never verify against it
+                other_mask = self._analysis_mask_for(
+                    candidate["matched_image_path"], other)
+                verdict = self._region_matcher.match(
+                    query_image, other, mask_a=query_mask, mask_b=other_mask)
                 if verdict["reused"]:
                     region_matches.append({
                         "matched_image_path": candidate["matched_image_path"],
@@ -287,6 +372,7 @@ class CrossFigureDetector:
                         "mask_query": verdict["mask_a"],
                         "mask_matched": verdict["mask_b"],
                         "mean_corr": verdict["mean_corr"],
+                        "noise_residual": verdict.get("noise_residual"),
                     })
 
         return {

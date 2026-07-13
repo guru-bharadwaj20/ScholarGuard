@@ -2,11 +2,16 @@
 
 Detects regions duplicated *within* a single image using classical CV:
 
+    0. Content gating: an analysis mask (continuous-tone panels minus
+       text/scale bars, from src.preprocessing.panel_segmentation) keeps
+       legitimate repetition — axis labels, plot markers, scale bars —
+       out of the matcher entirely.
     1. SIFT keypoints/descriptors (ORB fallback) extracted from the image.
-    2. Self-matching of descriptors with a ratio test (generalized Lowe test,
-       skipping trivial self-matches and spatially-near neighbours).
-    3. DBSCAN clustering of matched pairs in (x1, y1, x2, y2) space so that
-       only *dense, spatially coherent* groups of matches survive — a real
+    2. Self-matching of descriptors with a g2NN generalized ratio test
+       (multi-copy aware; skips trivial self-matches and spatially-near
+       neighbours).
+    3. DBSCAN clustering of matched pairs in offset space so that only
+       *dense, spatially coherent* groups of matches survive — a real
        copy-move shows many keypoints mapping consistently from one region
        to another, whereas noise matches are scattered.
     4. Per-cluster geometric verification with a RANSAC-estimated partial
@@ -15,11 +20,16 @@ Detects regions duplicated *within* a single image using classical CV:
        the verified transform and a local zero-mean normalized cross
        correlation (ZNCC) map is thresholded to grow the sparse keypoint
        seeds into full pixel masks for both the source and the duplicate.
-    6. A confidence score in [0, 1] built as an *observed vs. expected*
-       statistic: how surprising the matched-inlier count is versus a chance
-       baseline (z-score -> logistic), damped by how localized the patch is
-       and how well the grown region actually correlates. See
-       :meth:`CopyMoveDetector._score` — bounded, monotonic, explainable.
+    6. Noise-residual clone test: the aligned regions' wavelet noise
+       residuals are correlated — identical noise is the physical
+       signature of duplication, independent noise marks a legitimate
+       look-alike (src.forensics.residual_similarity).
+    7. A confidence score in [0, 1] built as an *observed vs. expected*
+       statistic: how surprising the matched-inlier count is versus an
+       empirical leave-cluster-out chance baseline (z-score -> logistic),
+       damped by localization, grown-region correlation, and the noise
+       verdict. See :meth:`CopyMoveDetector._score` — bounded, monotonic,
+       explainable.
 
 Designed to run fast on CPU-only machines (no deep learning). All heavy
 per-pixel work is done with vectorized OpenCV/NumPy operations.
@@ -41,6 +51,8 @@ import cv2
 import numpy as np
 from sklearn.cluster import DBSCAN
 
+from src.forensics.residual_similarity import clone_factor, residual_clone_test
+from src.preprocessing.panel_segmentation import PanelSegConfig, build_analysis_mask
 from src.utils.image_io import load_image, save_image, save_mask
 from src.utils.visualization import draw_detection
 
@@ -110,6 +122,20 @@ class DetectorConfig:
                                       # even if somewhat spread (loc multiplies
                                       # in [floor, 1], never fully zeroes)
 
+    # -- content gating (the systematic false-positive fix) ------------------
+    # When True, an analysis mask (continuous-tone panels minus text/scale
+    # bars — see src.preprocessing.panel_segmentation) gates the keypoints:
+    # duplicated axis labels, tiled plot markers and scale bars stop feeding
+    # the matcher. Callers can also pass an explicit mask to detect().
+    use_analysis_mask: bool = True
+
+    # -- noise-residual clone test (see src.forensics.residual_similarity) ---
+    # A verified region pair is additionally tested for *identical* sensor
+    # noise. Independent noise => legitimate look-alike => damp hard;
+    # inconclusive (compressed/flat) => damp mildly; clone => full score.
+    residual_independent_factor: float = 0.25
+    residual_inconclusive_factor: float = 0.85
+
     # -- decision -----------------------------------------------------------
     confidence_threshold: float = 0.45  # >= this => forged
 
@@ -123,6 +149,7 @@ class _VerifiedCluster:
     transform: np.ndarray         # 2x3 partial affine mapping src -> dst
     inlier_ratio: float
     kp_sizes: np.ndarray = field(default_factory=lambda: np.array([]))
+    chance_mu: float = 0.0        # expected matches in this offset cell by chance
 
 
 class CopyMoveDetector:
@@ -133,8 +160,14 @@ class CopyMoveDetector:
         self._feature, self._norm = self._build_feature_extractor(self.config)
 
     # ------------------------------------------------------------------ API
-    def detect(self, image: np.ndarray) -> dict:
+    def detect(self, image: np.ndarray,
+               analysis_mask: np.ndarray | None = None) -> dict:
         """Run the full pipeline on a BGR or grayscale image array.
+
+        ``analysis_mask`` (optional, image-sized, 255 = analyze) restricts
+        keypoints to forensically meaningful regions; when omitted and
+        ``config.use_analysis_mask`` is True one is built automatically
+        (continuous-tone panels minus text/scale bars).
 
         Returns the result dict described in :func:`detect_copy_move`.
         """
@@ -147,9 +180,16 @@ class CopyMoveDetector:
         work, scale = self._maybe_downscale(bgr)
         gray = cv2.cvtColor(work, cv2.COLOR_BGR2GRAY)
 
-        keypoints, descriptors = self._extract_features(gray)
+        # Content gating: legitimate repetition (text, scale bars, plot
+        # furniture) must never reach the matcher — it is geometrically
+        # indistinguishable from forgery and was the dominant real-data
+        # false-positive source.
+        gate = self._resolve_analysis_mask(work, analysis_mask, scale,
+                                           (orig_h, orig_w))
+
+        keypoints, descriptors = self._extract_features(gray, gate)
         matches = self._self_match(keypoints, descriptors, gray.shape)
-        clusters = self._cluster_and_verify(matches, keypoints)
+        clusters = self._cluster_and_verify(matches, keypoints, gray.shape)
 
         mask, labeled_mask, regions, grow_stats = self._grow_regions(gray, clusters)
         confidence = self._score(clusters, mask, gray, grow_stats, len(matches))
@@ -202,8 +242,28 @@ class CopyMoveDetector:
                              interpolation=cv2.INTER_AREA)
         return resized, scale
 
-    def _extract_features(self, gray: np.ndarray):
-        keypoints, descriptors = self._feature.detectAndCompute(gray, None)
+    def _resolve_analysis_mask(self, work: np.ndarray,
+                               analysis_mask: np.ndarray | None,
+                               scale: float,
+                               orig_shape: tuple[int, int]) -> np.ndarray | None:
+        """Return a work-resolution gate mask, or None (= analyze everything)."""
+        cfg = self.config
+        wh, ww = work.shape[:2]
+        if analysis_mask is not None:
+            mask = analysis_mask
+            if mask.shape[:2] != (wh, ww):
+                mask = cv2.resize(mask, (ww, wh), interpolation=cv2.INTER_NEAREST)
+            return mask
+        if not cfg.use_analysis_mask:
+            return None
+        mask, _ = build_analysis_mask(work, PanelSegConfig())
+        return mask
+
+    def _extract_features(self, gray: np.ndarray,
+                          analysis_mask: np.ndarray | None = None):
+        # OpenCV's detectAndCompute accepts a mask directly: keypoints are
+        # only detected where mask != 0.
+        keypoints, descriptors = self._feature.detectAndCompute(gray, analysis_mask)
         if descriptors is None:
             return [], None
         # Keep only the strongest keypoints — matching is O(N^2)-ish.
@@ -214,10 +274,11 @@ class CopyMoveDetector:
             descriptors = descriptors[order]
         return keypoints, descriptors
 
-    def extract_keypoints(self, gray: np.ndarray):
+    def extract_keypoints(self, gray: np.ndarray,
+                          analysis_mask: np.ndarray | None = None):
         """Public alias of the feature stage for reuse by other detectors
         (Stage 3 cross-figure matching runs the same SIFT configuration)."""
-        return self._extract_features(gray)
+        return self._extract_features(gray, analysis_mask)
 
     # ------------------------------------------------------ matching stage
     def _self_match(self, keypoints, descriptors, shape) -> list[tuple[int, int]]:
@@ -225,8 +286,13 @@ class CopyMoveDetector:
 
         Trivial self-matches (same index / ~zero distance) and matches whose
         endpoints are spatially too close (textured neighbourhoods matching
-        their own neighbours) are discarded, then a generalized Lowe ratio
-        test keeps only distinctive matches.
+        their own neighbours) are discarded, then a **g2NN** generalized
+        ratio test (Amerini et al.) keeps distinctive matches. Unlike the
+        plain 2-NN Lowe test — which *discards* a region copied more than
+        once, because its second-nearest neighbour is another true copy and
+        the ratio saturates at ~1 — g2NN walks the sorted neighbour
+        distances and accepts every neighbour up to the first ratio jump,
+        so multi-clone forgeries keep all their matches.
         """
         cfg = self.config
         if descriptors is None or len(keypoints) < 2 * cfg.cluster_min_samples:
@@ -250,19 +316,29 @@ class CopyMoveDetector:
                 candidates.append(m)
             if len(candidates) < 2:
                 continue
-            # Lowe ratio test between the best and second-best *valid* match.
-            best, second = candidates[0], candidates[1]
-            if second.distance <= 1e-9:  # duplicate descriptors; ambiguous
-                continue
-            if best.distance / second.distance < cfg.ratio_threshold:
-                i, j = best.queryIdx, best.trainIdx
+            # g2NN: accept candidate i while d_i / d_{i+1} < ratio — every
+            # accepted neighbour is a distinct plausible copy of this patch.
+            for idx in range(len(candidates) - 1):
+                nxt = candidates[idx + 1].distance
+                if nxt <= 1e-9:  # duplicate descriptors; ambiguous
+                    break
+                if candidates[idx].distance / nxt >= cfg.ratio_threshold:
+                    break
+                i, j = candidates[idx].queryIdx, candidates[idx].trainIdx
                 pairs.add((min(i, j), max(i, j)))  # dedupe (i,j)/(j,i)
 
         return sorted(pairs)
 
     # ---------------------------------------------- clustering/verification
-    def _cluster_and_verify(self, matches, keypoints) -> list[_VerifiedCluster]:
-        """DBSCAN the matches in offset space, then RANSAC-verify clusters."""
+    def _cluster_and_verify(self, matches, keypoints,
+                            shape) -> list[_VerifiedCluster]:
+        """DBSCAN the matches in offset space, then RANSAC-verify clusters.
+
+        Each verified cluster also records ``chance_mu`` — the number of
+        matches expected in its offset cell under the no-copy-move null —
+        estimated *empirically* (see :func:`_empirical_chance_mu`) rather
+        than from a uniform-offset assumption.
+        """
         cfg = self.config
         if len(matches) < cfg.cluster_min_samples:
             return []
@@ -322,6 +398,7 @@ class CopyMoveDetector:
                 continue
 
             kp_idx = members[inlier_flags][:, 4:6].astype(int).ravel()
+            member_mask = labels == label
             verified.append(
                 _VerifiedCluster(
                     src_pts=src[inlier_flags],
@@ -329,6 +406,8 @@ class CopyMoveDetector:
                     transform=transform,
                     inlier_ratio=n_inliers / len(src),
                     kp_sizes=sizes[kp_idx],
+                    chance_mu=_empirical_chance_mu(
+                        offsets, member_mask, cfg.cluster_eps, shape),
                 )
             )
         return verified
@@ -398,6 +477,12 @@ class CopyMoveDetector:
             corr_mean = float(np.clip(corr[grown].mean(), -1.0, 1.0)) if grown.any() else 0.0
             corr_means.append(corr_mean)
 
+            # Noise-residual clone test: intensity ZNCC above cannot tell a
+            # pixel clone from an honest look-alike; identical sensor noise
+            # can (see src.forensics.residual_similarity). Residuals are
+            # extracted locally on the grown region there.
+            residual = residual_clone_test(gray, warped, dup)
+
             per_cluster.append({
                 "n_inliers": int(len(cluster.src_pts)),
                 # localization: bounding-box area of the inlier keypoints on the
@@ -407,6 +492,8 @@ class CopyMoveDetector:
                 "spread_frac": float(max(_bbox_area_frac(cluster.src_pts, h, w),
                                          _bbox_area_frac(cluster.dst_pts, h, w))),
                 "corr_mean": corr_mean,
+                "chance_mu": float(cluster.chance_mu),
+                "residual": residual,
             })
 
             regions.append({
@@ -415,6 +502,8 @@ class CopyMoveDetector:
                 "transform": cluster.transform.tolist(),
                 "n_inliers": int(len(cluster.src_pts)),
                 "inlier_ratio": float(round(cluster.inlier_ratio, 4)),
+                "noise_residual_verdict": residual["verdict"],
+                "noise_residual_correlation": residual["correlation"],
             })
 
         stats = {
@@ -436,45 +525,54 @@ class CopyMoveDetector:
         "is this surprising vs. a chance baseline?" logic the AI-generation
         frequency detector already uses:
 
-          1. SURPRISE. Under the null hypothesis of *no* copy-move, the matches
-             are chance coincidences scattered uniformly over offset space, so
-             the number landing in any one DBSCAN offset cell is ~Poisson(mu).
-             We score how many standard deviations the observed inlier count
-             exceeds that chance mean (a z-score), then squash it with a
-             logistic. A handful of coincidental matches is unremarkable; a
-             tight pile of them is not.
+          1. SURPRISE. Under the null hypothesis of *no* copy-move, the number
+             of matches landing in one DBSCAN offset cell is ~Poisson(mu),
+             where mu now comes from an **empirical leave-cluster-out density
+             estimate** (see :func:`_empirical_chance_mu`) rather than a
+             uniform-offset assumption — chance matches concentrate at small
+             offsets, and pretending they don't inflates the surprise exactly
+             on legitimately repetitive figures. We score how many standard
+             deviations the observed inlier count exceeds the chance mean,
+             squashed with a logistic.
           2. LOCALIZATION. A real forgery is a compact copied patch. Legitimate
              repeated structure (replicate panels, tiled markers) that happens
              to align tends to spread its keypoints over a larger area — lower
              match density. We damp the score for spread-out clusters.
-          3. CORRELATION. Mean ZNCC over the grown region (now std-gated, so it
+          3. CORRELATION. Mean ZNCC over the grown region (std-gated, so it
              is a true [-1, 1] correlation) — how faithfully the copy matches.
+          4. NOISE IDENTITY. The residual clone test
+             (src.forensics.residual_similarity): independent sensor noise
+             means the regions are honest look-alikes (damp hard),
+             identical noise is the physical signature of duplication
+             (full factor), and an unrunnable test (compression/flatness)
+             damps only mildly.
 
-        confidence = max over clusters of  surprise * corr * localization,
+        confidence = max over clusters of
+            surprise * corr * localization * noise_factor,
         every factor in [0, 1], so the result is bounded, monotonic in each
         piece of evidence, and can be read off as "surprising AND well-matched
-        AND localized".
+        AND localized AND noise-corroborated".
         """
         cfg = self.config
         clusters_stats = grow_stats.get("clusters", [])
         if not clusters_stats or cv2.countNonZero(mask) == 0:
             return 0.0
 
-        h, w = gray.shape
-        # Expected matches in one offset cell by pure chance: total matches
-        # times the fraction of offset space a single DBSCAN cell occupies.
-        chance_mu = _chance_cell_matches(n_matches, w, h, cfg.cluster_eps)
-
         best = 0.0
         for cs in clusters_stats:
             n = cs["n_inliers"]
+            chance_mu = cs.get("chance_mu", 0.0)
             # Poisson std ~ sqrt(mu); guard the tiny-mu case with +1.
             z = (n - chance_mu) / math.sqrt(chance_mu + 1.0)
             surprise = _logistic((z - cfg.surprise_midpoint) / cfg.surprise_width)
             corr = max(0.0, cs["corr_mean"])
             localization = cfg.localization_floor + (1.0 - cfg.localization_floor) * \
                 math.exp(-cs["spread_frac"] / cfg.localization_scale)
-            best = max(best, surprise * corr * localization)
+            noise_factor = clone_factor(
+                cs.get("residual", {}),
+                independent_factor=cfg.residual_independent_factor,
+                inconclusive_factor=cfg.residual_inconclusive_factor)
+            best = max(best, surprise * corr * localization * noise_factor)
         return float(best)
 
     # ------------------------------------------------------------- helpers
@@ -514,22 +612,56 @@ def _bbox_area_frac(pts: np.ndarray, h: int, w: int) -> float:
     return (bw * bh) / float(h * w)
 
 
-def _chance_cell_matches(n_matches: int, w: int, h: int, eps: float) -> float:
-    """Expected number of matches falling in one DBSCAN offset cell by chance.
+def _uniform_chance_mu(n_matches: int, w: int, h: int, eps: float) -> float:
+    """Uniform-offset floor for the chance model (see _empirical_chance_mu).
 
-    Under the null of no copy-move, matches are coincidences whose offset
-    vectors (dx, dy) scatter roughly uniformly over the reachable offset space
-    ``[-w, w] x [-h, h]`` (area ``4*w*h``). A DBSCAN cluster occupies about a
-    disc of radius ``eps`` (area ``pi*eps^2``). So the chance count per cell is
-    ``n_matches * pi*eps^2 / (4*w*h)`` — the Poisson mean the observed inlier
-    count is compared against. This is a deliberately simple, defensible
-    baseline, not a precise model of SIFT's match distribution.
+    Under a uniform null, offset vectors scatter over ``[-w, w] x [-h, h]``
+    (area ``4*w*h``) and a DBSCAN cell occupies a disc of radius ``eps``
+    (area ``pi*eps^2``), giving ``n_matches * pi*eps^2 / (4*w*h)``.
     """
     if n_matches <= 0:
         return 0.0
     offset_space = 4.0 * float(w) * float(h)
     cell = math.pi * float(eps) * float(eps)
     return max(float(n_matches) * cell / offset_space, 1e-6)
+
+
+# Backwards-compatible alias (the uniform model is now a floor for the
+# empirical estimate; kept so existing tests/importers keep working).
+_chance_cell_matches = _uniform_chance_mu
+
+
+def _empirical_chance_mu(offsets: np.ndarray, member_mask: np.ndarray,
+                         eps: float, shape) -> float:
+    """Expected matches in one offset cell under the *empirical* null.
+
+    The uniform model above understates the null exactly where false
+    positives live: chance matches are not uniform over offset space — they
+    concentrate at small displacements and along texture axes (repeated
+    structure in rows/columns of panels). So the "surprise" z-score built on
+    the uniform mean over-fires on legitimately repetitive figures.
+
+    Leave-cluster-out local density estimate instead: count the *non-member*
+    matches within radius ``R = 4*eps`` of the cluster centroid; the local
+    null density is ``count / (pi R^2)`` and the expected count inside the
+    cluster's own disc of radius ``eps`` is ``count * (eps/R)^2 = count/16``.
+    The uniform value acts as a floor so an empty neighbourhood cannot make
+    tiny clusters look infinitely surprising.
+    """
+    h, w = shape[:2]
+    uniform = _uniform_chance_mu(len(offsets), w, h, eps)
+    members = offsets[member_mask]
+    others = offsets[~member_mask]
+    if len(members) == 0:
+        return max(uniform, 1e-6)
+    if len(others) == 0:
+        return max(uniform, 1e-6)
+    centroid = members.mean(axis=0)
+    radius = 4.0 * float(eps)
+    dist = np.linalg.norm(others - centroid, axis=1)
+    local = int((dist <= radius).sum())
+    empirical = local / 16.0  # = local * (eps/R)^2 with R = 4*eps
+    return max(empirical, uniform, 1e-6)
 
 
 def _local_zncc(a: np.ndarray, b: np.ndarray, window: int, min_std: float):

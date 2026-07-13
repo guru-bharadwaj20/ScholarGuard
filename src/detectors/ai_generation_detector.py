@@ -49,8 +49,10 @@ import json
 import os
 
 from src.forensics.frequency_analysis import analyze_frequency_spectrum
+from src.forensics.jpeg_quality import compression_stratum
 from src.forensics.noise_residual import analyze_noise_residual
 from src.models.artifact_classifier import classify_artifact, weights_available
+from src.utils.image_io import load_image
 
 # Verdict labels.
 LIKELY_REAL = "likely_real"
@@ -84,6 +86,29 @@ REAL_CLEAN_FORENSIC_MEAN = 0.357
 REAL_CLEAN_FORENSIC_STD = 0.107
 FORENSIC_LOW = 0.57   # ~ mean + 2*sd : below this reads as a normal real figure
 FORENSIC_HIGH = 0.68  # ~ mean + 3*sd : unusually far above the real baseline
+
+# COMPRESSION-CONDITIONED baselines (preferred over the absolute bands above).
+# --------------------------------------------------------------------------
+# The +2σ hike above exists because publisher JPEG compression destroys the
+# sensor noise and high frequencies the forensics measure — real *compressed*
+# figures score high for reasons unrelated to AI generation, and one global
+# threshold must either flag half of them (old behaviour, FPR 0.518) or give
+# up sensitivity on uncompressed images (current behaviour). Conditioning on
+# an estimated compression stratum (src.forensics.jpeg_quality) turns that
+# confound into a lookup: each image is z-scored against real figures at
+# SIMILAR compression, and flagged only when unusually far above *that*
+# baseline (z >= 2 suspicious, z >= 3 likely-AI).
+#
+# ⚠ PROVISIONAL NUMBERS: high_compression mean/std are the values measured on
+# the (mostly JPEG) real PMC evaluation figures; low_compression comes from
+# the small Stage-4 uncompressed sample. Both must be re-measured on a fresh
+# figure set (and again after any change to the forensic sub-scores).
+DEFAULT_BASELINES = {
+    "high_compression": {"mean": 0.357, "std": 0.107},
+    "low_compression": {"mean": 0.20, "std": 0.10},
+}
+Z_SUSPICIOUS = 2.0
+Z_LIKELY_AI = 3.0
 # Classifier-blended thresholds (unchanged; only used when weights exist, which
 # is not the case in the current forensic-only deployment).
 COMBINED_LOW = 0.40
@@ -112,13 +137,16 @@ def _combined_verdict(combined: float) -> str:
 
 def detect_ai_generation(image_path: str, weights_path: str | None = None,
                          forensic_low: float = FORENSIC_LOW,
-                         forensic_high: float = FORENSIC_HIGH) -> dict:
+                         forensic_high: float = FORENSIC_HIGH,
+                         baselines: dict | None = None) -> dict:
     """Assess whether ``image_path`` is AI-generated.
 
-    ``forensic_low`` / ``forensic_high`` are the suspicious / likely-AI bands on
-    the forensic score; they default to the real-data-recalibrated constants
-    above but can be overridden from config (see the module header for the
-    baseline and its overfitting caveat).
+    Verdict logic (forensics-only mode): the image's estimated JPEG
+    compression stratum selects a real-figure baseline from ``baselines``
+    (default :data:`DEFAULT_BASELINES`); the forensic score is z-scored
+    against it and flagged at z >= 2 (suspicious) / z >= 3 (likely AI).
+    Passing ``baselines={}`` (empty) disables conditioning and falls back
+    to the absolute ``forensic_low`` / ``forensic_high`` bands.
 
     Returns:
     {
@@ -135,6 +163,22 @@ def detect_ai_generation(image_path: str, weights_path: str | None = None,
     freq_score = freq["anomaly_score"]
     noise_score = noise["anomaly_score"]
     forensic = 0.5 * freq_score + 0.5 * noise_score
+
+    # Compression conditioning: which real-figure baseline does this image
+    # get compared against?
+    if baselines is None:
+        baselines = DEFAULT_BASELINES
+    stratum, blockiness, forensic_z = None, None, None
+    if baselines:
+        gray = load_image(image_path, grayscale=True)
+        stratum, blockiness = compression_stratum(gray)
+        base = baselines.get(stratum) or baselines.get("high_compression") \
+            or next(iter(baselines.values()))
+        forensic_z = (forensic - float(base["mean"])) / max(float(base["std"]), 1e-6)
+        # Translate the z-bands into equivalent absolute bands so the
+        # downstream explanation/threshold code stays unchanged.
+        forensic_low = float(base["mean"]) + Z_SUSPICIOUS * float(base["std"])
+        forensic_high = float(base["mean"]) + Z_LIKELY_AI * float(base["std"])
 
     classifier = classify_artifact(image_path, weights_path)
     reasons: list[str] = []
@@ -158,6 +202,11 @@ def detect_ai_generation(image_path: str, weights_path: str | None = None,
                            if verdict == LIKELY_REAL else
                            f"forensic signals mildly elevated "
                            f"(freq {freq_score:.2f}, noise {noise_score:.2f})")
+        if stratum is not None:
+            reasons.append(
+                f"compared against the real-figure baseline for its "
+                f"compression level ({stratum}, blockiness {blockiness:.2f}): "
+                f"forensic z={forensic_z:+.1f}")
         reasons.append("no classifier weights loaded — verdict from forensic "
                        "signals only (train via colab notebook for stronger calls)")
     else:
@@ -186,6 +235,9 @@ def detect_ai_generation(image_path: str, weights_path: str | None = None,
         "explanation": "; ".join(reasons),
         "details": {
             "forensic_score": round(forensic, 4),
+            "forensic_z": (round(forensic_z, 2) if forensic_z is not None else None),
+            "compression_stratum": stratum,
+            "blockiness": (round(blockiness, 4) if blockiness is not None else None),
             "frequency": freq,
             "noise_residual": noise,
             "classifier_available": classifier is not None,

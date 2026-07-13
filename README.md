@@ -28,22 +28,34 @@ At the paper level, **recall is 80%** (12/15 real fraud caught), but the **best 
 
 > **Overfitting caveat:** detector thresholds were recalibrated on these same 25 papers — the only real data available — so the numbers above are optimistic in-sample estimates, **not** unbiased measurement on unseen data. A fresh, never-seen paper set is needed before trusting them further.
 
+> **These numbers predate the current detector architecture.** The table above measured the previous whole-figure detectors. The pipeline has since been rebuilt around panel-level content gating and a noise-residual clone test (see "How it works") that target the exact false-positive source those numbers exposed — legitimate repeated structure scoring identically to manipulation. The improvements are architectural and unit-tested, but the headline recall/false-alarm rates have **not** yet been re-measured on the benchmark, and are not claimed here. Re-running `src/evaluation` on a fresh, figure-annotated set is the required next step, and the evaluation now reports threshold-free **ROC-AUC / average precision** and **leave-one-out** accuracy rather than the in-sample best-threshold accuracy that made the old numbers look better than the tool was.
+
 **ScholarGuard is a screening prototype for human reviewers, not an autonomous accusation system. Every flag is a lead to be checked by a person.**
 
 ---
 
 ## How it works
 
-Four detectors run over every figure; a config-driven risk scorer combines them into a 0–100 paper score.
+Every figure is first **segmented into panels and content-typed**, then four detectors run over the parts where their signal is meaningful; a config-driven risk scorer combines them into a 0–100 paper score, and a calibrated likelihood-ratio layer produces a complementary fraud probability.
 
 | Detector | Signal | Technique |
 |---|---|---|
-| Copy-move | Regions duplicated within one figure | SIFT + offset-space clustering + RANSAC + ZNCC region growing |
-| Cross-figure | One figure reusing another | pHash + CNN embeddings + FAISS + geometric verification |
-| AI-generation | GAN/diffusion artifacts | FFT spectral falloff + PRNU wavelet noise residual (optional CNN) |
-| Claim-consistency | Text claims vs. figure content | PDF parsing + Claude API structured extraction |
+| Copy-move | Regions duplicated within one figure | content-gated SIFT + g2NN matching + offset-space clustering + RANSAC + ZNCC region growing + **noise-residual clone test** |
+| Cross-figure | One figure reusing another | pHash + CNN embeddings + FAISS + geometric verification + **noise-residual clone test**, with publisher-furniture filtering |
+| AI-generation | GAN/diffusion artifacts | FFT spectral falloff + azimuthal anisotropy + PRNU wavelet noise residual, **conditioned on JPEG compression** (optional CNN) |
+| Claim-consistency | Text claims vs. figure content | PDF parsing + Claude API structured extraction + **multimodal figure observation** |
 
-Everything runs CPU-only. The optional AI classifier trains on GPU in [colab/](colab/); inference is CPU. The Claude API key is read from the environment and never hardcoded — without it, claim-consistency is skipped and reported as such.
+### The two ideas doing the heavy lifting
+
+**Content gating (panel segmentation).** Scientific figures are collages. Repeated axis labels, tiled plot markers, and identical scale bars are *geometrically identical to forgery*, and running the matchers over the whole composite is what produced most of the false alarms. Before any detector runs, [src/preprocessing/panel_segmentation.py](src/preprocessing/panel_segmentation.py) splits the figure into panels (recursive X-Y cut), types each as continuous-tone / graphics / text / blank, and builds an **analysis mask** = continuous-tone panels minus detected text and scale bars. Copy-move and cross-figure only see the masked regions, so legitimate repetition no longer reaches them.
+
+**Noise-residual clone test.** Intensity correlation (ZNCC) answers "do these regions *look* alike?" — which is true for both a copy-paste and two honest replicate blots. It cannot separate them. [src/forensics/residual_similarity.py](src/forensics/residual_similarity.py) asks the physically decisive question instead: after alignment, do the two regions share **one exposure's sensor-noise field**? Photon/read noise is independent per capture, so a genuine look-alike scores ~0 residual correlation while a true clone carries its noise with it and correlates strongly (the per-region analogue of PRNU camera forensics). The verdict (`clone` / `independent` / `inconclusive`) multiplies detector confidence: independent noise suppresses a flag, a clone corroborates it, and — honestly — heavy JPEG compression that destroys the residual returns *inconclusive* rather than a false "independent".
+
+Everything runs CPU-only. The optional AI classifier trains on GPU in [colab/](colab/); inference is CPU. The Claude API key is read from the environment and never hardcoded — without it, claim-consistency (both the text extraction and the multimodal figure observation) is skipped and reported as such.
+
+### Evidence fusion
+
+The 0–100 point score is a transparent fixed-weight sum — good for *explaining* what fired, but it cannot down-weight a detector that fires almost as often on clean papers as on fraud. [src/pipeline/evidence_fusion.py](src/pipeline/evidence_fusion.py) adds a complementary layer that combines detectors by **calibrated likelihood ratios** (`P(signal|fraud) / P(signal|clean)`): a detector whose fire rate barely differs between classes has LR ≈ 1 and contributes ~0 evidence *automatically*, with no hand-tuned weight. Per-figure evidence is a naive-Bayes sum of log-LRs turned into a fraud probability; papers aggregate by noisy-OR. **The calibration numbers must be fit on held-out data** (`src.evaluation.metrics.estimate_fire_calibration` + leave-one-out CV) — the shipped defaults are deliberately weak so an uncalibrated install cannot over-claim, and the probability is only trustworthy once calibrated.
 
 ---
 
@@ -80,10 +92,11 @@ Open http://localhost:3000. Upload a PDF or run a bundled real example; progress
 
 ```
 src/              CV + NLP pipeline
+  ├─ preprocessing/   panel segmentation + content typing + text/scale-bar masking
   ├─ detectors/       copy-move, cross-figure, ai-generation, claim-consistency
-  ├─ forensics/       frequency + noise-residual analysis
-  ├─ pipeline/        orchestrator, risk scorer, report builder
-  ├─ evaluation/      benchmark runner, metrics (Wilson CIs), error analysis
+  ├─ forensics/       frequency, noise-residual, residual clone test, JPEG blockiness
+  ├─ pipeline/        orchestrator, risk scorer, evidence fusion (LLR), report builder
+  ├─ evaluation/      benchmark runner, metrics (Wilson CIs, ROC/PR-AUC, LOOCV), error analysis
   └─ config/          config.yaml — single source of truth
 server/           FastAPI bridge (thin transport; zero pipeline logic)
 web/              Next.js 14 + Tailwind + Framer Motion + react-three-fiber
@@ -105,7 +118,7 @@ Both respect NCBI rate limits, skip already-fetched items via a resumable manife
 ## Tests
 
 ```bash
-pytest -q      # 97 passed, 1 skipped
+pytest -q      # 119 passed, 1 skipped
 ```
 
 ---

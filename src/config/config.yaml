@@ -12,10 +12,21 @@ detectors:
   copy_move:                        # Stage 2 — duplicated regions within a figure
     enabled: true
     confidence_threshold: 0.45      # >= this => figure flagged "forged"
-    ratio_threshold: 0.78           # Lowe ratio for self-matching
+    ratio_threshold: 0.78           # g2NN generalized Lowe ratio (multi-copy aware)
     min_inliers: 3                  # RANSAC inliers to accept a cluster
     sift_contrast_threshold: 0.008  # low, because figures are smooth
     max_dim: 1600                   # downscale longest side (CPU speed)
+    # Content gating (src/preprocessing/panel_segmentation.py): restrict
+    # keypoints to continuous-tone panels minus text/scale bars, so
+    # legitimate repetition (axis labels, plot markers, scale bars) — which
+    # is geometrically identical to forgery and drove the 56.6% real-data
+    # false-alarm rate — never reaches the matcher.
+    use_analysis_mask: true
+    # Noise-residual clone test (src/forensics/residual_similarity.py):
+    # multiplies confidence by how strongly the aligned regions share one
+    # capture's sensor noise. Independent noise => legitimate look-alike.
+    residual_independent_factor: 0.25   # damp verified pair with independent noise
+    residual_inconclusive_factor: 0.85  # mild damp when the test can't run
     # Confidence model (observed-vs-expected; see copy_move_detector._score).
     # Redesigned 2026-07-11: the old confidence was a weighted sum of raw
     # counts whose correlation term was unbounded (flat-pixel ZNCC drove it
@@ -36,6 +47,14 @@ detectors:
     min_inliers: 10                 # RANSAC inliers to claim region reuse
     min_region_area: 2000           # px^2 of grown reused region
     top_k: 10                       # ANN candidates per query
+    # Same content gating + clone test as copy-move, plus a publisher-
+    # furniture guard: low-entropy images (logos, license badges, rules)
+    # are never matched — they used to duplicate each other EXACTLY and
+    # produce guaranteed false reuse flags worth 30 risk points.
+    use_analysis_mask: true
+    min_content_entropy: 1.0
+    residual_independent_factor: 0.25
+    residual_inconclusive_factor: 0.85
     # Optional external corpus of prior figures to check against. If null,
     # the paper's OWN figures form the corpus (catches within-paper reuse).
     corpus_dir: null
@@ -54,10 +73,25 @@ detectors:
     # OPTIMISTIC, not unbiased. Recalibrate on a fresh real set. See README.
     forensic_suspicious_threshold: 0.57
     forensic_ai_threshold: 0.68
+    # Compression-conditioned baselines (preferred over the absolute bands
+    # above): each image is z-scored against real figures at SIMILAR JPEG
+    # compression, so publisher compression stops masquerading as an AI tell.
+    # Flag at z>=2 (suspicious) / z>=3 (likely_ai). Set condition_on_compression
+    # false to use the fixed thresholds instead.
+    # ⚠ PROVISIONAL means/stds — re-measure on a fresh figure set (and after
+    # any change to the frequency/noise sub-scores). See README.
+    condition_on_compression: true
+    compression_baselines:
+      high_compression: {mean: 0.357, std: 0.107}   # JPEG'd publisher figures
+      low_compression: {mean: 0.20, std: 0.10}       # near-lossless captures
 
   claim_consistency:                # Stage 5 — text claims vs. figure content
     enabled: true
     panel_count_tolerance: 0.5      # fractional slack before flagging a count gap
+    # Attach the figure image to the Claude call so it counts panels/lanes by
+    # SEEING them (multimodal), replacing the coarse classical-CV heuristic as
+    # the primary observation. Set false to force the CV-only path.
+    use_vision_observation: true
 
 # ---------------------------------------------------------------------------
 # LLM (Claude API) settings for claim extraction. The API KEY is read from the
@@ -134,6 +168,30 @@ risk_scoring:
     moderate: 25
     high: 50
     critical: 75
+
+# ---------------------------------------------------------------------------
+# Evidence fusion (additive probabilistic layer over the point score).
+# Combines detectors by calibrated LIKELIHOOD RATIOS so a detector whose fire
+# rate is nearly the same on fraud and clean papers is discounted
+# automatically (LR ~ 1 => ~0 evidence), instead of always adding its fixed
+# weight. Produces a per-figure fraud probability; papers aggregate by
+# noisy-OR. See src/pipeline/evidence_fusion.py.
+#
+# calibration.*.p_fire_{fraud,clean} MUST be estimated on held-out data
+# (src.evaluation.metrics.estimate_fire_calibration + LOOCV) — the defaults
+# below are deliberately weak (LRs near 1) so an uncalibrated install cannot
+# over-claim. `prior` is the fraud base rate among screened papers.
+# ---------------------------------------------------------------------------
+evidence_fusion:
+  # Per-FIGURE prior of manipulation (low on purpose — most figures are
+  # genuine even in fraud papers, and the paper-level noisy-OR compounds
+  # across figures). Calibrate on data before trusting the posterior.
+  prior: 0.12
+  calibration:
+    copy_move:         {p_fire_fraud: 0.55, p_fire_clean: 0.30}
+    cross_figure:      {p_fire_fraud: 0.45, p_fire_clean: 0.20}
+    ai_generation:     {p_fire_fraud: 0.40, p_fire_clean: 0.10}
+    claim_consistency: {p_fire_fraud: 0.50, p_fire_clean: 0.15}
 
 # ---------------------------------------------------------------------------
 # Output + logging.

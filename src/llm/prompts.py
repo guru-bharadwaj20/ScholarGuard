@@ -102,3 +102,85 @@ def build_claim_extraction_prompt(figure_label: str, caption: str,
         f"=== SURROUNDING RESULTS / METHODS TEXT ===\n{results_block}\n\n"
         f"Return the structured claims for {figure_label}."
     )
+
+
+# --------------------------------------------------------------------------
+# Figure vision analysis: structured observations of what ONE figure image
+# actually shows (multimodal call — the image is attached to the message).
+# Replaces the coarse classical-CV blob/lane counting as the primary
+# observation source for claim-consistency checking.
+# --------------------------------------------------------------------------
+FIGURE_VISION_SYSTEM = (
+    "You are a meticulous scientific-figure analyst. You describe only what "
+    "is visibly present in the provided figure image — you never infer what "
+    "an experiment 'probably' contained, and you make no accusations of "
+    "misconduct. When something cannot be determined from the pixels, you "
+    "return null. Count carefully and conservatively."
+)
+
+FIGURE_VISION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "observed_panel_count": {
+            "type": ["integer", "null"],
+            "description": "Number of distinct panels/sub-figures visible "
+                           "(separate plots, images, or lettered sections). "
+                           "Null if genuinely ambiguous.",
+        },
+        "panel_letters": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Panel letters visible in the figure (e.g. "
+                           "['A','B','C']). Empty if none.",
+        },
+        "observed_lane_count": {
+            "type": ["integer", "null"],
+            "description": "If the figure contains a gel/blot: the number of "
+                           "lanes in the largest blot/gel panel. Null if no "
+                           "blot/gel or uncountable.",
+        },
+        "techniques": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": ["western_blot", "gel", "micrograph", "flow_cytometry",
+                         "line_plot", "bar_chart", "scatter_plot", "heatmap",
+                         "diagram", "photo", "other"],
+            },
+            "description": "Visual techniques present, one entry per distinct "
+                           "kind of panel seen.",
+        },
+        "visible_text_labels": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Short legible labels (condition names, axis titles, "
+                           "molecular weights). Best-effort; empty if none.",
+        },
+        "notable_observations": {
+            "type": ["string", "null"],
+            "description": "Anything visually notable a human reviewer should "
+                           "see (e.g. 'panels B and D look very similar', "
+                           "'a sharp rectangular seam is visible in lane 3'). "
+                           "Purely descriptive — never an accusation. Null if "
+                           "nothing notable.",
+        },
+    },
+    "required": [
+        "observed_panel_count", "panel_letters", "observed_lane_count",
+        "techniques", "visible_text_labels", "notable_observations",
+    ],
+    "additionalProperties": False,
+}
+
+
+def build_figure_vision_prompt(figure_label: str, caption: str) -> str:
+    """Assemble the multimodal prompt for observing one figure image."""
+    cap = caption.strip() or "(no caption available)"
+    return (
+        f"Look at the attached figure image ({figure_label}) and report ONLY "
+        f"what is visibly present. Count the sub-panels and, if any gel/blot "
+        f"is shown, its lanes. Identify each panel's technique. Do NOT judge "
+        f"integrity or make accusations — only describe what you see.\n\n"
+        f"For reference, the paper's caption reads:\n{cap}\n\n"
+        f"Return the structured observations."
+    )

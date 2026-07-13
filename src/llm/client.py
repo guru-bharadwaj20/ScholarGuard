@@ -61,19 +61,32 @@ class LLMClient:
         schema: dict[str, Any],
         system: str | None = None,
         max_tokens: int = DEFAULT_MAX_TOKENS,
+        image_path: str | None = None,
     ) -> dict[str, Any]:
         """Call Claude and return a dict guaranteed to match ``schema``.
 
         Uses ``output_config.format`` so the model's response is constrained
         to the JSON Schema — the returned text is valid JSON matching it.
+        When ``image_path`` is given the image is attached to the message
+        (Claude is multimodal), enabling checks against what the figure
+        actually shows rather than heuristic pixel counting.
         Raises :class:`LLMResponseError` on refusal or truncation.
         """
+        if image_path:
+            content: Any = [
+                {"type": "image",
+                 "source": {"type": "base64", "media_type": "image/jpeg",
+                            "data": _encode_image_jpeg_b64(image_path)}},
+                {"type": "text", "text": prompt},
+            ]
+        else:
+            content = prompt
         try:
             response = self.client.messages.create(
                 model=self.model,
                 max_tokens=max_tokens,
                 system=system or "You output only valid JSON matching the schema.",
-                messages=[{"role": "user", "content": prompt}],
+                messages=[{"role": "user", "content": content}],
                 output_config={"format": {"type": "json_schema", "schema": schema}},
             )
         except self._anthropic.AuthenticationError as exc:
@@ -103,6 +116,30 @@ class LLMClient:
 
 class LLMResponseError(RuntimeError):
     """Raised when the LLM returns an unusable response (refusal/truncation)."""
+
+
+def _encode_image_jpeg_b64(image_path: str, max_side: int = 1536,
+                           quality: int = 85) -> str:
+    """Load an image, bound its size, and return base64-encoded JPEG bytes.
+
+    Downscaling to ``max_side`` keeps requests small and within the API's
+    image limits without hurting panel/lane counting.
+    """
+    import base64
+    import io
+
+    from PIL import Image
+
+    with Image.open(image_path) as img:
+        img = img.convert("RGB")
+        longest = max(img.size)
+        if longest > max_side:
+            scale = max_side / longest
+            img = img.resize((max(1, int(img.width * scale)),
+                              max(1, int(img.height * scale))))
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", quality=quality)
+    return base64.b64encode(buf.getvalue()).decode("ascii")
 
 
 # Load a .env file if python-dotenv is available, so ANTHROPIC_API_KEY can

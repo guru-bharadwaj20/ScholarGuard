@@ -111,6 +111,50 @@ def _high_freq_falloff(profile: np.ndarray) -> float:
     return float(np.log(high_band + 1e-12) - np.log(mid_band + 1e-12))
 
 
+def _azimuthal_anisotropy(power: np.ndarray, profile: np.ndarray) -> float:
+    """Off-axis angular concentration of spectral energy (GAN grid tell).
+
+    The radial mean used elsewhere washes out *direction*: GAN upsampling
+    grids put their peaks at specific angles, which the radial average
+    hides. We divide the spectrum by its radial background, bin the
+    mid/high-frequency residual by angle, and measure how concentrated it
+    is in a few bins.
+
+    Crucially, wedges within ±10° of the horizontal/vertical axes are
+    EXCLUDED: scientific plots are full of axis-aligned strokes (axes,
+    gridlines, lane edges) that legitimately concentrate energy there —
+    including them would flag every line plot. Diagonal concentration has
+    no such benign explanation.
+    """
+    h, w = power.shape
+    cy, cx = h // 2, w // 2
+    y, x = np.indices((h, w))
+    radius = np.hypot(x - cx, y - cy)
+    theta = np.degrees(np.arctan2(y - cy, x - cx)) % 180.0  # spectrum is symmetric
+
+    n = len(profile)
+    band = (radius >= n / 4) & (radius <= n - 1)
+    off_axis = (np.minimum(theta % 90.0, 90.0 - theta % 90.0) > 10.0)
+    sel = band & off_axis
+    if not sel.any():
+        return 0.0
+
+    background = profile[np.clip(radius.astype(int), 0, n - 1)]
+    residual = power / (background + 1e-12)
+
+    bins = np.clip((theta[sel] / 5.0).astype(int), 0, 35)  # 5° angle bins
+    sums = np.bincount(bins, weights=residual[sel], minlength=36)
+    counts = np.bincount(bins, minlength=36).astype(np.float64)
+    means = sums / np.maximum(counts, 1)
+    means = means[counts > 0]
+    if len(means) < 4:
+        return 0.0
+    peak = float(means.max())
+    median = float(np.median(means)) + 1e-12
+    # log-ratio squashed to [0, 1]; a >10x angular peak reads fully anomalous.
+    return float(np.clip(np.log10(peak / median), 0.0, 1.0))
+
+
 def _periodicity_score(power: np.ndarray, profile: np.ndarray) -> float:
     """Strength of periodic spectral peaks (GAN upsampling grid).
 
@@ -159,6 +203,7 @@ def analyze_frequency_spectrum(
     slope, r2 = _fit_power_law(profile)
     hf_falloff = _high_freq_falloff(profile)
     periodicity = _periodicity_score(power, profile)
+    anisotropy = _azimuthal_anisotropy(power, profile)
 
     # --- turn each raw metric into a [0, 1] "looks synthetic" sub-score ---
     lo, hi = NATURAL_SLOPE_RANGE
@@ -182,11 +227,16 @@ def analyze_frequency_spectrum(
         "poor_powerlaw_fit": fit_score,
         "high_freq_suppression": smooth_score,
         "periodicity": float(periodicity),
+        "azimuthal_anisotropy": float(anisotropy),
     }
-    # Weighted blend: periodicity and high-freq suppression are the most
-    # specific tells for the diffusion/GAN signatures we target.
-    anomaly = (0.35 * periodicity + 0.30 * smooth_score
-               + 0.15 * slope_score + 0.20 * fit_score)
+    # Weighted blend: periodicity, high-freq suppression and off-axis
+    # anisotropy are the most specific tells for the diffusion/GAN
+    # signatures we target. NOTE: adding/reweighting sub-scores changes the
+    # anomaly scale — the real-data baseline (mean/std per compression
+    # stratum in the AI detector) must be re-measured after any change here.
+    anomaly = (0.30 * periodicity + 0.28 * smooth_score
+               + 0.12 * slope_score + 0.18 * fit_score
+               + 0.12 * anisotropy)
 
     if heatmap_path:
         _save_spectrum_heatmap(power, heatmap_path)
@@ -197,6 +247,7 @@ def analyze_frequency_spectrum(
         "slope_r2": r2,
         "high_freq_falloff": hf_falloff,
         "periodicity": float(periodicity),
+        "azimuthal_anisotropy": float(anisotropy),
         "sub_scores": sub_scores,
     }
 
