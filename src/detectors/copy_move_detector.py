@@ -129,6 +129,12 @@ class DetectorConfig:
     # misses. Escalation-only keeps the extra ~1s/figure cost off clear hits.
     use_dense_tier: bool = True
     dense_escalate_below: float = 0.45   # run dense only when SIFT conf < this
+    # A dense hit only drives the fraud score when its noise-residual test
+    # CONFIRMS a clone. An unconfirmed hit (INCONCLUSIVE residual on a
+    # smooth/compressed block) is demoted to a LEAD — surfaced in the report
+    # for human review, but it never raises the score. This is the precision
+    # gate: the dense tier's recall benefit is kept without its FPR cost.
+    dense_confirmed_only: bool = True
 
     # -- content gating (the systematic false-positive fix) ------------------
     # When True, an analysis mask (continuous-tone panels minus text/scale
@@ -209,21 +215,28 @@ class CopyMoveDetector:
             from src.detectors.dense_cmfd import detect_dense_copy_move
             dense = detect_dense_copy_move(gray, analysis_mask=gate)
             if dense["confidence"] > confidence:
-                confidence = float(dense["confidence"])
                 dense_used = True
-                if dense["mask"] is not None and cv2.countNonZero(dense["mask"]):
+                verdict = dense.get("residual_verdict")
+                confirmed = verdict == "clone"
+                has_mask = bool(dense["mask"] is not None
+                                and cv2.countNonZero(dense["mask"]))
+                if confirmed or not cfg.dense_confirmed_only:
+                    # Noise-confirmed clone (or confirmation disabled): the
+                    # dense hit drives the fraud score.
+                    confidence = float(dense["confidence"])
+                    if has_mask:
+                        mask = cv2.bitwise_or(mask, dense["mask"])
+                        labeled_mask[dense["mask"] > 0] = 2
+                        if not regions:
+                            regions = [_dense_region(dense, verdict, lead_only=False)]
+                    forged = bool(confidence >= cfg.confidence_threshold)
+                elif has_mask:
+                    # Unconfirmed (INCONCLUSIVE residual): LEAD ONLY. Surfaced
+                    # for a human reviewer, but the score is left untouched so
+                    # a legitimately self-similar patch cannot inflate it.
                     mask = cv2.bitwise_or(mask, dense["mask"])
                     labeled_mask[dense["mask"] > 0] = 2
-                    if not regions:
-                        regions = [{
-                            "source_bbox": cv2.boundingRect(dense["mask"]),
-                            "dup_bbox": cv2.boundingRect(dense["mask"]),
-                            "n_inliers": int(dense["n_support"]),
-                            "inlier_ratio": 1.0,
-                            "noise_residual_verdict": "n/a (dense-field tier)",
-                            "tier": "dense_field",
-                        }]
-                forged = bool(confidence >= cfg.confidence_threshold)
+                    regions.append(_dense_region(dense, verdict, lead_only=True))
 
         # Rescale outputs back to the original resolution if we downscaled.
         if scale != 1.0:
@@ -620,6 +633,20 @@ class CopyMoveDetector:
             "dup_bbox": tuple(int(round(v * factor)) for v in (dx, dy, dw, dh)),
             "transform": transform.tolist(),
         }
+
+
+def _dense_region(dense: dict, verdict: str | None, lead_only: bool) -> dict:
+    """Build a region dict for a dense-field detection (confirmed or lead-only)."""
+    bbox = cv2.boundingRect(dense["mask"])
+    return {
+        "source_bbox": bbox,
+        "dup_bbox": bbox,
+        "n_inliers": int(dense["n_support"]),
+        "inlier_ratio": 1.0,
+        "noise_residual_verdict": verdict or "n/a (dense-field tier)",
+        "tier": "dense_field_lead" if lead_only else "dense_field",
+        "lead_only": lead_only,
+    }
 
 
 def _logistic(x: float) -> float:

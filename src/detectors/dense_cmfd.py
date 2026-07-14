@@ -36,6 +36,12 @@ from dataclasses import dataclass
 import cv2
 import numpy as np
 
+from src.forensics.residual_similarity import (
+    INDEPENDENT,
+    clone_factor,
+    residual_clone_test,
+)
+
 
 @dataclass
 class DenseCMFDConfig:
@@ -48,9 +54,32 @@ class DenseCMFDConfig:
     feat_max_dist: float = 6.0    # L2 feature distance to call two blocks equal
     min_offset: float = 24.0      # px; matched blocks nearer than this are self-noise
     offset_tol: int = 4           # px bin for shift-vector histogram
-    min_support: int = 60         # matched block-pairs sharing one shift to fire
+    min_support: int = 80         # matched block-pairs sharing one shift to fire
     min_local_std: float = 3.0    # flat blocks (below this) carry no signal
     zncc_min: float = 0.5         # mean ZNCC over grown region to keep it
+
+    # -- noise-residual confirmation (the dense-tier false-positive gate) ----
+    # Intensity ZNCC says "these blocks look alike" — true for a real clone AND
+    # for legitimately self-similar texture (gel lanes, repeated blot bands),
+    # which is exactly what over-fired on clean figures. The residual clone
+    # test settles it: a genuine copy carries one capture's noise field
+    # (identical residuals), an honest look-alike has independent noise. We
+    # VETO an INDEPENDENT verdict (legitimate look-alike) and damp an
+    # INCONCLUSIVE one (compressed/flat: test could not run).
+    require_residual_confirm: bool = True
+    residual_independent_factor: float = 0.25
+    residual_inconclusive_factor: float = 0.85
+
+    # -- self-similarity veto (the repetitive-texture false-positive gate) ---
+    # A genuine copy-move has ONE dominant translation. Periodic/self-similar
+    # texture (gel lanes, tiled sub-panels, repeated blot bands) instead
+    # produces SEVERAL competing shift-vector peaks of comparable strength.
+    # If a peak that is NOT a spillover neighbour of the winner reaches a
+    # comparable support, the content is repetitive, not a localized
+    # duplication -> veto. This complements the residual gate, which can only
+    # damp (not reject) on the smooth/compressed blocks this tier targets.
+    max_secondary_ratio: float = 0.5   # rival/winner support above this -> veto
+    secondary_min_frac: float = 0.5    # a rival must itself reach this*min_support
 
 
 _ZIGZAG_CACHE: dict = {}
@@ -173,8 +202,24 @@ def detect_dense_copy_move(gray: np.ndarray, cfg: DenseCMFDConfig | None = None,
     if n_support < cfg.min_support:
         return _empty(gray.shape)
 
-    # Build a mask from the supporting blocks (both ends of each shift).
+    # Self-similarity veto: compare the winning peak to the strongest rival
+    # that is NOT just a spillover neighbour of the winner (a single true
+    # offset can smear across a couple of adjacent tol-bins). A comparable
+    # non-adjacent rival is the signature of repetitive texture, not a copy.
+    bx, by = best_key
+    adj2 = (2 * b) ** 2
+    rivals = [len(v) for k, v in offsets.items()
+              if (k[0] - bx) ** 2 + (k[1] - by) ** 2 > adj2]
+    second = max(rivals) if rivals else 0
+    if (second >= cfg.secondary_min_frac * cfg.min_support
+            and second > cfg.max_secondary_ratio * n_support):
+        return _empty(gray.shape)
+
+    # Build a mask from the supporting blocks (both ends of each shift). Track
+    # the duplicate (shifted-in) side separately: the residual clone test must
+    # correlate the DUPLICATE content against its source, not the whole union.
     mask = np.zeros((h, w), np.uint8)
+    dup_mask = np.zeros((h, w), np.uint8)
     dx, dy = best_key
     for i in support_idx:
         x, y = pos_s[i]
@@ -182,15 +227,36 @@ def detect_dense_copy_move(gray: np.ndarray, cfg: DenseCMFDConfig | None = None,
         x2, y2 = x + dx, y + dy
         if 0 <= x2 <= w - b and 0 <= y2 <= h - b:
             mask[y2:y2 + b, x2:x2 + b] = 255
+            dup_mask[y2:y2 + b, x2:x2 + b] = 255
 
     # ZNCC confirmation: the region shifted by (dx,dy) must actually correlate.
     zncc = _shift_zncc(gf, dx, dy, mask)
     if zncc < cfg.zncc_min:
         return _empty(gray.shape)
 
-    # Confidence: support above the floor, gated by correlation quality.
+    # Noise-residual confirmation — the dense-tier false-positive gate.
+    # Shifting the image by (dx,dy) lands the SOURCE content onto the duplicate
+    # blocks, so over `dup_mask` the reference is the duplicate and the shifted
+    # frame is its source: their noise residuals are correlated iff this is a
+    # real pixel copy. An INDEPENDENT verdict means legitimate self-similar
+    # texture -> veto; INCONCLUSIVE (smooth/compressed) only damps.
+    noise_factor = 1.0
+    residual = {"verdict": "not run"}
+    if cfg.require_residual_confirm and cv2.countNonZero(dup_mask) > 0:
+        M = np.float32([[1, 0, dx], [0, 1, dy]])
+        shifted = cv2.warpAffine(gf, M, (w, h), borderMode=cv2.BORDER_REFLECT)
+        residual = residual_clone_test(gf, shifted, dup_mask)
+        if residual["verdict"] == INDEPENDENT:
+            return _empty(gray.shape)   # honest look-alike, not a duplication
+        noise_factor = clone_factor(
+            residual,
+            independent_factor=cfg.residual_independent_factor,
+            inconclusive_factor=cfg.residual_inconclusive_factor)
+
+    # Confidence: support above the floor, gated by correlation quality and the
+    # noise-residual verdict.
     surprise = min(1.0, (n_support - cfg.min_support) / (3.0 * cfg.min_support) + 0.34)
-    confidence = float(np.clip(surprise * max(zncc, 0.0), 0.0, 1.0))
+    confidence = float(np.clip(surprise * max(zncc, 0.0) * noise_factor, 0.0, 1.0))
 
     if scale != 1.0:  # back to original resolution
         mask = cv2.resize(mask, (gray.shape[1], gray.shape[0]),
@@ -202,6 +268,7 @@ def detect_dense_copy_move(gray: np.ndarray, cfg: DenseCMFDConfig | None = None,
         "n_support": n_support,
         "offset": (int(dx / max(scale, 1e-9)), int(dy / max(scale, 1e-9))),
         "mean_zncc": round(float(zncc), 4),
+        "residual_verdict": residual.get("verdict"),
     }
 
 
@@ -223,4 +290,4 @@ def _shift_zncc(gf: np.ndarray, dx: int, dy: int, mask: np.ndarray) -> float:
 def _empty(shape) -> dict:
     return {"forged": False, "confidence": 0.0,
             "mask": np.zeros(shape[:2], np.uint8), "n_support": 0,
-            "offset": None, "mean_zncc": 0.0}
+            "offset": None, "mean_zncc": 0.0, "residual_verdict": None}
