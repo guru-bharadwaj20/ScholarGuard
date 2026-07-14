@@ -83,7 +83,13 @@ detectors:
     condition_on_compression: true
     compression_baselines:
       high_compression: {mean: 0.357, std: 0.107}   # JPEG'd publisher figures
-      low_compression: {mean: 0.20, std: 0.10}       # near-lossless captures
+      # RECALIBRATED on native PMC-package clean figures (n=373, held-out run):
+      # they score forensic mean 0.40, sd 0.057 — NOT the 0.20 of the old
+      # synthetic sample. The stale 0.20 baseline made native figures score
+      # ~2 sd "too synthetic" and drove the AI per-figure FPR to 12.1%; the
+      # measured baseline brings it back to 2.9%. (Measured on the held-out
+      # set, so re-validate on a fresh native set — same overfitting caveat.)
+      low_compression: {mean: 0.40, std: 0.057}      # native (uncompressed) captures
 
   claim_consistency:                # Stage 5 — text claims vs. figure content
     enabled: true

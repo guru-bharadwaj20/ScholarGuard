@@ -105,7 +105,11 @@ FORENSIC_HIGH = 0.68  # ~ mean + 3*sd : unusually far above the real baseline
 # figure set (and again after any change to the forensic sub-scores).
 DEFAULT_BASELINES = {
     "high_compression": {"mean": 0.357, "std": 0.107},
-    "low_compression": {"mean": 0.20, "std": 0.10},
+    # low_compression recalibrated on native PMC-package clean figures
+    # (mean 0.40, sd 0.057; n=373 held-out) — the old 0.20 was a synthetic-
+    # sample artifact that inflated the AI false-alarm rate on native images
+    # from 2.9% to 12.1%. See config.yaml for the full note + caveat.
+    "low_compression": {"mean": 0.40, "std": 0.057},
 }
 Z_SUSPICIOUS = 2.0
 Z_LIKELY_AI = 3.0

@@ -76,13 +76,30 @@ Re-measured on a **fresh set of 88 papers (30 retracted-fraud, 58 clean) with ze
 - ⚠️ **Recall is still unmeasurable per-detector:** the 30 fraud papers are labeled fraud, not *which figure* — so only clean-figure FPR and paper-level detection are scored (191 detections on fraud papers can't be scored either way).
 - **Caveat:** Stage 0 vs Stage 2 is **not a controlled comparison** — different papers, and PDF-extracted vs native package images. Read it as directional evidence, not a clean A/B. Full report: `outputs/heldout_run/metrics_summary.md`.
 
+### Stage 2b — offline recalibration (what it did and did not fix)
+
+Because every per-figure signal is stored in `benchmark_report.json`, the AI baseline, per-figure thresholds, and fusion weights were re-fit **without re-running the pipeline**, and measured under **leave-one-out** (each paper's calibration fit on the other 87). Tool: [src/evaluation/recalibrate.py](src/evaluation/recalibrate.py).
+
+**✅ Fixed — AI false-alarm regression.** The Stage 2 AI FPR spike was a pure calibration mismatch: the `low_compression` baseline (0.20) was a synthetic-sample artifact, while native package figures score forensic ~0.40. Refit to the native value, **per-figure AI FPR drops 12.1% → 2.9%** (below even the Stage 0 number). Persisted to `config.yaml`.
+
+**📊 The decisive finding — a paper-level likelihood-ratio table.** Fitting `P(detector fires | fraud) / P(… | clean)` at the paper level exposes exactly how much each detector is worth:
+
+| Detector | P(fire \| fraud) | P(fire \| clean) | Likelihood ratio |
+|---|---|---|---|
+| AI-generation | 0.41 | 0.19 | **2.18** (carries the signal) |
+| Cross-figure | 0.62 | 0.39 | 1.60 (moderate) |
+| Copy-move | 0.56 | 0.47 | **1.19 (≈ noise)** |
+
+**⚠️ What recalibration could NOT do — lift the ceiling.** Across a full sweep of copy-move thresholds and AI cutoffs, paper-level **ROC-AUC never exceeds ~0.60** (LOOCV), no better than the uncalibrated fusion. The reason is now precise: copy-move barely separates fraud from clean *at the paper level* (LR 1.19) because per-figure false positives **compound** — even a tightened 10%-per-figure FPR becomes a 47% paper-level fire rate on clean papers with many figures. Fusion correctly down-weights copy-move, but there is little signal left to fuse.
+
+**Conclusion:** the bottleneck is **not** scoring/fusion — it is the detectors' raw sensitivity to *subtle, localized* real manipulations, plus the missing figure-level labels. That reframes the roadmap below.
+
 ### Stage 3 — what's still to do (in priority order)
 
-1. **Re-calibrate the AI baselines on native package images** — directly fixes the 12% FPR regression (fast).
-2. **Drive per-figure FPR into single digits** — the paper-level ceiling is set by per-figure FPR *compounding* across multi-figure papers; require cross-detector corroboration or tighten per-figure thresholds.
-3. **Fit the evidence-fusion likelihood ratios** on the calibration set and re-measure here — the fusion layer still runs at deliberately weak defaults; this is the cleanest paper-level gain available without figure annotations.
-4. **Annotate which figures the 30 retraction notices name** — the single change that unlocks per-detector *recall* measurement.
-5. **Grow to a larger, balanced held-out set** — 30/58 gives wide Wilson intervals; more papers tighten every estimate.
+1. **Improve detector sensitivity to real manipulations, not the score fusion.** The LR table shows copy-move (LR 1.19) is the weak link; the dense-field / Zernike CMFD tier and PatchMatch verification (already scoped in the design notes) target exactly the subtle splices SIFT misses. This is the only thing that raises the ~0.60 ceiling.
+2. **Annotate which figures the 30 retraction notices name** — unlocks per-detector *recall* measurement, without which detector improvements can't be steered (we currently measure only clean-figure FPR).
+3. **Grow to a larger, balanced held-out set** — 30/58 gives wide Wilson intervals; more papers tighten every estimate and stabilise the LR fits.
+4. **Lean the paper score on the detectors that discriminate** (AI, cross-figure) and treat copy-move as a lead-only signal until #1 lands — a low-FPR screening operating point is already reachable (paper FPR ~7% at recall ~0.27).
 
 **ScholarGuard is a screening prototype for human reviewers, not an autonomous accusation system. Every flag is a lead to be checked by a person.**
 
