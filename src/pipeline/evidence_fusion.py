@@ -44,6 +44,7 @@ from dataclasses import dataclass, field
 DEFAULT_CALIBRATION = {
     "copy_move": {"p_fire_fraud": 0.55, "p_fire_clean": 0.30},
     "cross_figure": {"p_fire_fraud": 0.45, "p_fire_clean": 0.20},
+    "splice": {"p_fire_fraud": 0.35, "p_fire_clean": 0.08},
     "ai_generation": {"p_fire_fraud": 0.40, "p_fire_clean": 0.10},
     "claim_consistency": {"p_fire_fraud": 0.50, "p_fire_clean": 0.15},
 }
@@ -53,6 +54,10 @@ DEFAULT_CALIBRATION = {
 # paper look guilty. Calibrate against data before trusting the posterior.
 DEFAULT_PRIOR = 0.12
 _EPS = 1e-6
+# Detectors fused, in a fixed order. Splice is included as an independent
+# image-forensic signal alongside the others.
+_FUSION_DETECTORS = ("copy_move", "cross_figure", "splice", "ai_generation",
+                     "claim_consistency")
 
 
 @dataclass
@@ -83,6 +88,8 @@ def detector_fired(name: str, result: dict) -> bool | None:
         return bool(result.get("forged"))
     if name == "cross_figure":
         return result.get("n_exact", 0) > 0 or result.get("n_region_reuse", 0) > 0
+    if name == "splice":
+        return bool(result.get("spliced"))
     if name == "ai_generation":
         return result.get("verdict") in ("suspicious", "likely_ai_generated")
     if name == "claim_consistency":
@@ -118,7 +125,7 @@ def fuse_figure(detectors: dict, config: FusionConfig) -> dict:
     prior = min(max(config.prior, _EPS), 1 - _EPS)
     log_odds = math.log(prior / (1.0 - prior))
     contributions = []
-    for name in ("copy_move", "cross_figure", "ai_generation", "claim_consistency"):
+    for name in _FUSION_DETECTORS:
         result = detectors.get(name, {"status": "skipped"})
         fired = detector_fired(name, result)
         llr = detector_llr(name, fired, config)

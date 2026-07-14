@@ -51,10 +51,13 @@ class Paper:
 
     paper_id: str
     gt_fraud: bool
-    # per-figure signals
+    # per-figure signals (flat, one entry per figure the detector ran on)
     cm_conf: list[float]        # copy-move confidence, one per figure
     cf_fire: list[bool]         # cross-figure fired (exact or region reuse)
     ai_forensic: list[float]    # 0.5*(freq+noise) per figure
+    # per-figure ALIGNED signals: one dict per figure, missing detectors -> None.
+    # This is what corroboration (co-firing on the SAME figure) needs.
+    figures: list[dict]
     stored_score: float         # pipeline's current paper point-score (baseline)
     stored_prob: float          # pipeline's current fraud_probability (baseline)
 
@@ -67,27 +70,77 @@ def load_papers(report: dict) -> list[Paper]:
         if entry.get("status") != "ok" or not rep or not rep.get("figures"):
             continue
         cm_conf, cf_fire, ai_forensic = [], [], []
+        figures: list[dict] = []
         for fig in rep["figures"]:
             d = fig["detectors"]
+            rec = {"cm_conf": None, "cf_fire": None, "ai_forensic": None}
             cm = d.get("copy_move", {})
             if cm.get("status") == "ok":
-                cm_conf.append(float(cm.get("confidence", 0.0)))
+                rec["cm_conf"] = float(cm.get("confidence", 0.0))
+                cm_conf.append(rec["cm_conf"])
             cf = d.get("cross_figure", {})
             if cf.get("status") == "ok":
-                cf_fire.append(cf.get("n_exact", 0) > 0
-                               or cf.get("n_region_reuse", 0) > 0)
+                rec["cf_fire"] = (cf.get("n_exact", 0) > 0
+                                  or cf.get("n_region_reuse", 0) > 0)
+                cf_fire.append(rec["cf_fire"])
             ai = d.get("ai_generation", {})
             if ai.get("status") == "ok" and ai.get("freq_score") is not None:
-                ai_forensic.append(0.5 * (float(ai["freq_score"])
-                                          + float(ai["noise_score"])))
+                rec["ai_forensic"] = 0.5 * (float(ai["freq_score"])
+                                            + float(ai["noise_score"]))
+                ai_forensic.append(rec["ai_forensic"])
+            figures.append(rec)
         papers.append(Paper(
             paper_id=pid,
             gt_fraud=bool(entry["ground_truth"]["is_fraudulent"]),
             cm_conf=cm_conf, cf_fire=cf_fire, ai_forensic=ai_forensic,
+            figures=figures,
             stored_score=float(rep["overall_risk"].get("score", 0.0)),
             stored_prob=float(rep["overall_risk"].get("fraud_probability", 0.0)),
         ))
     return papers
+
+
+def _figure_fires(fig: dict, cal: "Calibration") -> dict:
+    """Which detectors fire on a SINGLE figure under a calibration."""
+    cm = fig["cm_conf"] is not None and fig["cm_conf"] >= cal.cm_threshold
+    cf = bool(fig["cf_fire"])
+    ai = (fig["ai_forensic"] is not None
+          and (fig["ai_forensic"] - cal.ai_mean) / cal.ai_std >= cal.ai_z)
+    return {"copy_move": cm, "cross_figure": cf, "ai_generation": ai}
+
+
+def paper_scores(paper: Paper, cal: "Calibration") -> dict:
+    """Candidate paper-level scores that treat multi-figure compounding differently.
+
+    * ``any_fire_count`` — total detector-fires across ALL figures. This is the
+      compounding-prone baseline: more figures => more chances to fire.
+    * ``max_cofire`` — the most detectors firing on a SINGLE figure (0..3).
+      Corroboration: a figure with 2-3 independent signals is real evidence;
+      a paper full of lone single-detector fires (usually false positives) is
+      not. Insensitive to figure count, so it does not compound.
+    * ``best_figure_llr`` — max over figures of that figure's summed
+      log-likelihood-ratio evidence. Localises the decision to the single
+      most-suspicious figure instead of smearing weak evidence across many.
+    """
+    best_cofire = 0
+    best_llr = -1e9
+    for fig in paper.figures:
+        fires = _figure_fires(fig, cal)
+        cofire = sum(fires.values())
+        best_cofire = max(best_cofire, cofire)
+        if cal.lrs:
+            llr = 0.0
+            for d in DETECTORS:
+                pf, pc = cal.lrs[d]
+                pf = min(max(pf, _EPS), 1 - _EPS)
+                pc = min(max(pc, _EPS), 1 - _EPS)
+                llr += (math.log(pf / pc) if fires[d]
+                        else math.log((1 - pf) / (1 - pc)))
+            best_llr = max(best_llr, llr)
+    any_fire_count = sum(sum(_figure_fires(f, cal).values())
+                         for f in paper.figures)
+    return {"any_fire_count": any_fire_count, "max_cofire": best_cofire,
+            "best_figure_llr": best_llr}
 
 
 # --------------------------------------------------------------- calibration
@@ -237,6 +290,25 @@ def run(report_path: str, target_fpr: float, ai_z: float, prior: float,
                                    ("roc_auc", "average_precision")},
         "recalibrated_loocv": recal,
     }
+
+
+def compare_scoring(papers: list[Paper], target_fpr: float, ai_z: float,
+                    prior: float) -> dict:
+    """ROC-AUC of each paper-scoring scheme (threshold-free ranking).
+
+    Directly tests the compounding hypothesis: if ``max_cofire`` /
+    ``best_figure_llr`` (figure-count-insensitive) beat ``any_fire_count``
+    (compounding), then requiring corroboration on a single figure is the win.
+    Uses a full-data calibration — ranking AUC is the comparison, and the
+    calibration only sets thresholds, not the labels being ranked.
+    """
+    cal = fit_calibration(papers, target_fpr, ai_z, prior)
+    y = [p.gt_fraud for p in papers]
+    out = {}
+    for name in ("any_fire_count", "max_cofire", "best_figure_llr"):
+        out[name] = M.roc_auc(y, [paper_scores(p, cal)[name] for p in papers])
+    out["stored_prob"] = M.roc_auc(y, [p.stored_prob for p in papers])
+    return out
 
 
 def _fmt(v):

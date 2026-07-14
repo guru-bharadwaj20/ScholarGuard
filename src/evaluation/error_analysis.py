@@ -27,6 +27,7 @@ from src.evaluation.ground_truth_loader import fraud_type_for_figure
 DETECTOR_TO_FRAUD_TYPE = {
     "copy_move": "copy_move",
     "cross_figure": "cross_figure",
+    "splice": "copy_move",   # splicing is an image-content manipulation
     "ai_generation": "ai_generated",
     "claim_consistency": "claim_mismatch",
 }
@@ -38,6 +39,8 @@ def _fired(detector: str, result: dict) -> bool:
         return bool(result.get("forged"))
     if detector == "cross_figure":
         return result.get("n_exact", 0) > 0 or result.get("n_region_reuse", 0) > 0
+    if detector == "splice":
+        return bool(result.get("spliced"))
     if detector == "ai_generation":
         # A "flag" is ANY non-"likely_real" verdict — this matches how the risk
         # scorer treats it (both "suspicious" and "likely_ai_generated" add risk
@@ -55,6 +58,8 @@ def _fire_strength(detector: str, result: dict) -> float:
         return float(result.get("confidence", 0.0))
     if detector == "cross_figure":
         return float(result.get("n_region_reuse", 0) + result.get("n_exact", 0))
+    if detector == "splice":
+        return float(result.get("confidence", 0.0))
     if detector == "ai_generation":
         return float(result.get("freq_score", 0.0)) + float(result.get("noise_score", 0.0))
     if detector == "claim_consistency":
@@ -228,6 +233,9 @@ def _fp_reason(r: dict) -> str:
     if det == "copy_move":
         return ("copy-move false-triggered on repetitive/self-similar texture "
                 "within a legitimate figure")
+    if det == "splice":
+        return ("splice false-triggered on legitimate local variation in noise "
+                "or compression (e.g. a genuinely inset/annotated panel)")
     if det == "ai_generation":
         return "AI-detector false-triggered on a real (non-generated) image"
     if det == "claim_consistency":

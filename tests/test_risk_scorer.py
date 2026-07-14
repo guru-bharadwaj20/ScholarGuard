@@ -20,6 +20,7 @@ def _clean_detectors():
         "copy_move": {"status": "ok", "forged": False, "confidence": 0.1},
         "cross_figure": {"status": "ok", "n_exact": 0, "n_region_reuse": 0,
                          "n_visual_similar": 1},
+        "splice": {"status": "ok", "spliced": False, "confidence": 0.0},
         "ai_generation": {"status": "ok", "verdict": "likely_real",
                           "classifier_used": False},
         "claim_consistency": {"status": "ok", "consistent": True,
@@ -34,16 +35,19 @@ def test_clean_figure_scores_zero(settings):
     assert result["category"] == "low"
     # Every detector is represented in the breakdown, even at 0 points.
     assert {b["detector"] for b in result["breakdown"]} == {
-        "copy_move", "cross_figure", "ai_generation", "claim_consistency"}
+        "copy_move", "cross_figure", "splice", "ai_generation",
+        "claim_consistency"}
 
 
-def test_strong_copy_move_dominates(settings):
+def test_strong_copy_move_alone_is_bounded(settings):
     det = _clean_detectors()
-    det["copy_move"] = {"status": "ok", "forged": True, "confidence": 0.9}
+    det["copy_move"] = {"status": "ok", "forged": True, "confidence": 1.0}
     result = score_figure(det, settings)
-    # copy_move weight is 35; 0.9 * 35 = 31.5 -> "moderate" (>= 25).
-    assert result["score"] == pytest.approx(31.5, abs=0.5)
+    # copy_move weight is now 25 (reduced: LR 1.19); a lone max copy-move hit
+    # scores 25 -> exactly the "moderate" screening line, no higher.
+    assert result["score"] == pytest.approx(25.0, abs=0.5)
     assert result["category"] == "moderate"
+    assert result["n_corroborating_signals"] == 1
 
 
 def test_all_signals_high_is_critical(settings):
@@ -51,15 +55,17 @@ def test_all_signals_high_is_critical(settings):
         "copy_move": {"status": "ok", "forged": True, "confidence": 1.0},
         "cross_figure": {"status": "ok", "n_exact": 1, "n_region_reuse": 0,
                          "n_visual_similar": 0},
+        "splice": {"status": "ok", "spliced": True, "confidence": 1.0},
         "ai_generation": {"status": "ok", "verdict": "likely_ai_generated",
                           "classifier_used": True},
         "claim_consistency": {"status": "ok", "consistent": False,
                               "mismatches": ["count mismatch"], "confidence": 1.0},
     }
     result = score_figure(det, settings)
-    # 35 + 30 + 20 + 15 = 100 -> critical.
+    # 25 + 25 + 20 + 20 + 10 = 100 -> critical.
     assert result["score"] == pytest.approx(100.0, abs=0.1)
     assert result["category"] == "critical"
+    assert result["n_corroborating_signals"] == 5
 
 
 def test_skipped_detector_contributes_zero_but_is_recorded(settings):
@@ -115,3 +121,40 @@ def test_paper_no_figures(settings):
     paper = score_paper([], settings)
     assert paper["n_figures"] == 0
     assert paper["category"] == "low"
+
+
+# --------------------------------------------------------- corroboration (#6)
+def test_two_corroborating_detectors_floor_paper_to_high(settings):
+    """A figure that two independent detectors flag lifts the paper to >= high."""
+    two_signal = score_figure({
+        "copy_move": {"status": "ok", "forged": True, "confidence": 0.5},
+        "cross_figure": {"status": "ok", "n_exact": 1, "n_region_reuse": 0,
+                         "n_visual_similar": 0},
+        "ai_generation": {"status": "ok", "verdict": "likely_real",
+                          "classifier_used": False},
+        "claim_consistency": {"status": "ok", "consistent": True,
+                              "mismatches": [], "confidence": 0.0},
+    }, settings)
+    assert two_signal["n_corroborating_signals"] == 2
+    paper = score_paper([two_signal] + [score_figure(_clean_detectors(), settings)] * 4,
+                        settings)
+    assert paper["max_corroboration"] == 2
+    assert paper["category"] in ("high", "critical")
+
+
+def test_single_detector_does_not_get_corroboration_floor(settings):
+    """A lone single-detector fire must NOT be lifted by corroboration."""
+    one_signal = score_figure({
+        "copy_move": {"status": "ok", "forged": True, "confidence": 0.5},
+        "cross_figure": {"status": "ok", "n_exact": 0, "n_region_reuse": 0,
+                         "n_visual_similar": 0},
+        "ai_generation": {"status": "ok", "verdict": "likely_real",
+                          "classifier_used": False},
+        "claim_consistency": {"status": "ok", "consistent": True,
+                              "mismatches": [], "confidence": 0.0},
+    }, settings)
+    assert one_signal["n_corroborating_signals"] == 1
+    paper = score_paper([one_signal], settings)
+    assert paper["max_corroboration"] == 1
+    # only the point-score category applies (no corroboration bump to high)
+    assert paper["category"] in ("low", "moderate")

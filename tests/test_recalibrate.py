@@ -88,7 +88,7 @@ def test_paper_fires_respects_threshold():
                       lrs={}, prior=0.5)
     from src.evaluation.recalibrate import Paper
     p = Paper("x", True, cm_conf=[0.4, 0.6], cf_fire=[False, False],
-              ai_forensic=[0.3, 0.9], stored_score=0, stored_prob=0)
+              ai_forensic=[0.3, 0.9], figures=[], stored_score=0, stored_prob=0)
     fires = paper_fires(p, cal)
     assert fires["copy_move"] is True      # 0.6 >= 0.5
     assert fires["cross_figure"] is False

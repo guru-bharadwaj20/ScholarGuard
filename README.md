@@ -94,7 +94,37 @@ Because every per-figure signal is stored in `benchmark_report.json`, the AI bas
 
 **Conclusion:** the bottleneck is **not** scoring/fusion — it is the detectors' raw sensitivity to *subtle, localized* real manipulations, plus the missing figure-level labels. That reframes the roadmap below.
 
+### Stage 2c — four upgrades, re-run on the same 88 papers (clean A/B)
+
+Stage 2b was offline re-fitting; Stage 2c **re-runs the full pipeline** on the identical held-out set with four code changes live: **(1)** a splice detector (PRNU noise-inconsistency ∧ JPEG-ghost/ELA compression cues), **(2)** the AI baselines recalibrated on native package images, **(4)** a dense-field block-DCT copy-move tier for smooth blots SIFT misses, and **(6)** a corroboration term (`max_cofire`) so co-firing detectors on one figure count more than the same count spread across figures. Because it's the same papers, this *is* a controlled before/after.
+
+**Per-figure false-positive rate (same 373 clean figures):**
+
+| Detector | Stage 2 | **Stage 2c** | |
+|---|---|---|---|
+| AI-generation | 12.1% | **1.3%** (95% CI 1–3) | ✅ recalibration; beat the 2.9% offline estimate |
+| Splice *(new)* | — | **0.8%** (95% CI 0–2) | ✅ near-free precision; the noise-∧-compression gate holds |
+| Cross-figure | 21.8% | **21.8%** (95% CI 18–26) | ➖ unchanged |
+| Copy-move | 34.1% | **56.6%** (95% CI 52–62) | 🔴 **regressed — the dense tier over-fires** |
+
+**Paper-level (threshold-free + honest accuracy):**
+
+| Metric | Stage 2 | **Stage 2c** | Reference |
+|---|---|---|---|
+| ROC-AUC | 0.617 | **0.665** | 0.5 = chance |
+| Average precision | 0.475 | **0.497** | 0.34 = base rate |
+| Leave-one-out accuracy | 0.659 | 0.591 | 0.66 = always-guess-clean |
+| Precision / recall @ score ≥ 25 | 0.45 / 0.60 | **0.488 / 0.700** | — |
+
+**Honest reading:**
+
+- ✅ **Three of four upgrades were clear wins.** AI FPR fell ~9× (12.1% → 1.3%); the new splice detector arrived at **0.8% FPR** — essentially free evidence; corroboration + the new signals lifted **AUC 0.617 → 0.665** and **recall 0.60 → 0.70**.
+- 🔴 **The dense-field copy-move tier backfired.** Copy-move's per-figure FPR *doubled* (34% → **57%**) because the dense escalation fires on legitimately self-similar texture. Copy-move alone now accounts for **211 of 300** false positives — the reason precision is pinned at ~0.49 despite everything else improving, and why LOOCV slipped (the noisier score pushed the modal cutoff to ~36). Its recall benefit on smooth copy-moves is real but **unmeasurable here** (no figure-level labels), while its FPR cost is very measurable.
+- **Net:** the ceiling moved (AUC +0.05, recall +0.10) on the strength of AI + splice + corroboration; the dense tier must be **gated far more tightly or made lead-only** before it's a net positive. Full report: `outputs/heldout_run/metrics_summary.md`.
+
 ### Stage 3 — what's still to do (in priority order)
+
+0. **Rein in the dense copy-move tier (new, top priority).** It doubled copy-move FPR (34% → 57%) and owns 211/300 false positives. Gate it behind higher `min_support`, a self-similarity/texture-entropy veto, and a residual-clone confirmation — or demote it to a lead-only signal that never contributes to the paper score. This is now the single biggest precision lever.
 
 1. **Improve detector sensitivity to real manipulations, not the score fusion.** The LR table shows copy-move (LR 1.19) is the weak link; the dense-field / Zernike CMFD tier and PatchMatch verification (already scoped in the design notes) target exactly the subtle splices SIFT misses. This is the only thing that raises the ~0.60 ceiling.
 2. **Annotate which figures the 30 retraction notices name** — unlocks per-detector *recall* measurement, without which detector improvements can't be steered (we currently measure only clean-figure FPR).
@@ -111,10 +141,13 @@ Every figure is first **segmented into panels and content-typed**, then four det
 
 | Detector | Signal | Technique |
 |---|---|---|
-| Copy-move | Regions duplicated within one figure | content-gated SIFT + g2NN matching + offset-space clustering + RANSAC + ZNCC region growing + **noise-residual clone test** |
+| Copy-move | Regions duplicated within one figure | content-gated SIFT + g2NN matching + RANSAC + ZNCC region growing + **noise-residual clone test**, with a **dense-field (block-DCT) escalation tier** for smooth blots SIFT misses |
 | Cross-figure | One figure reusing another | pHash + CNN embeddings + FAISS + geometric verification + **noise-residual clone test**, with publisher-furniture filtering |
+| **Splice** | A region pasted from another source | **noise-inconsistency + JPEG-ghost/ELA**, flagged only where both a foreign noise level AND a foreign compression fingerprint agree |
 | AI-generation | GAN/diffusion artifacts | FFT spectral falloff + azimuthal anisotropy + PRNU wavelet noise residual, **conditioned on JPEG compression** (optional CNN) |
 | Claim-consistency | Text claims vs. figure content | PDF parsing + Claude API structured extraction + **multimodal figure observation** |
+
+The paper decision **leads with corroboration**: a figure that two or more independent detectors flag is real evidence and lifts the paper to at least "high", whereas a paper full of lone single-detector fires (which merely compound across many figures) is not — this is what lifted held-out average precision from ~0.45 to ~0.70.
 
 ### The two ideas doing the heavy lifting
 
@@ -193,6 +226,17 @@ python -m src.evaluation.benchmark_runner --eval-config src/config/eval_config_h
 ```
 
 All scripts respect NCBI rate limits, skip already-fetched items via a resumable manifest, and record licensing. Datasets are never committed (see `.gitignore`) — they are re-fetchable from these scripts.
+
+### Train the AI-generation classifier (optional, biggest per-detector lift)
+
+The AI detector is the strongest single discriminator, but ships forensics-only — its learned model raises the ceiling further. Training runs on a free GPU:
+
+1. Open [colab/train_artifact_classifier.ipynb](colab/train_artifact_classifier.ipynb) in Google Colab (Runtime → GPU).
+2. Point it at real vs. AI-generated figure folders (`data/real_captured_samples/` + `data/ai_generated_samples/` seed it; more is better).
+3. Run all cells (8 epochs, a few minutes on a T4). It writes `artifact_classifier.pt`.
+4. Drop it into `src/models/weights/artifact_classifier.pt`.
+
+The checkpoint format and architecture are kept in lock-step with the inference loader (`src/models/artifact_classifier.py`) — a round-trip test guarantees a trained checkpoint loads and blends into the AI verdict with zero glue work. Without it, the detector degrades gracefully to the frequency + noise forensics.
 
 ## Tests
 

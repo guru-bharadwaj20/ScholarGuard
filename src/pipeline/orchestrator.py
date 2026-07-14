@@ -217,13 +217,14 @@ class Pipeline:
         detectors: dict[str, dict] = {}
         image_flags: dict[str, bool] = {}
 
-        # --- image detectors (Stages 2/3/4), each isolated -----------------
+        # --- image detectors (Stages 2/3/4 + splice), each isolated --------
         if image_path:
             detectors["copy_move"] = self._run_copy_move(image_path, image_flags)
             detectors["cross_figure"] = self._run_cross_figure(image_path, image_flags)
+            detectors["splice"] = self._run_splice(image_path, image_flags)
             detectors["ai_generation"] = self._run_ai_generation(image_path, image_flags)
         else:
-            for name in ("copy_move", "cross_figure", "ai_generation"):
+            for name in ("copy_move", "cross_figure", "splice", "ai_generation"):
                 detectors[name] = {"status": "skipped",
                                    "reason": "no image extracted for this figure"}
 
@@ -282,6 +283,25 @@ class Pipeline:
                     "n_region_reuse": len(region), "n_visual_similar": len(similar)}
         except Exception as exc:  # noqa: BLE001
             logger.warning("cross-figure failed on %s: %s", image_path, exc)
+            return {"status": "error", "error": str(exc)}
+
+    def _run_splice(self, image_path: str, image_flags: dict) -> dict:
+        if not self.settings.enabled("splice"):
+            return {"status": "disabled"}
+        try:
+            from src.forensics.splice_detection import detect_splice
+            from src.preprocessing.panel_segmentation import build_analysis_mask
+            image = _load(image_path)
+            mask, _ = build_analysis_mask(image)
+            r = detect_splice(image, config=self.settings.splice_config(),
+                              analysis_mask=mask)
+            image_flags["spliced"] = bool(r["spliced"])
+            return {"status": "ok", "spliced": bool(r["spliced"]),
+                    "confidence": r["confidence"],
+                    "n_flagged_blocks": r["n_flagged_blocks"],
+                    "cues": r["cues"]}
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("splice detection failed on %s: %s", image_path, exc)
             return {"status": "error", "error": str(exc)}
 
     def _run_ai_generation(self, image_path: str, image_flags: dict) -> dict:

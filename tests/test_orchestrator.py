@@ -44,9 +44,9 @@ def test_pipeline_produces_wellformed_report(report):
     assert report["overall_risk"]["category"] in {"low", "moderate", "high", "critical"}
 
 
-def test_every_figure_has_all_four_detector_slots(report):
+def test_every_figure_has_all_detector_slots(report):
     for fig in report["figures"]:
-        assert set(fig["detectors"]) == {"copy_move", "cross_figure",
+        assert set(fig["detectors"]) == {"copy_move", "cross_figure", "splice",
                                          "ai_generation", "claim_consistency"}
         assert "risk" in fig and "breakdown" in fig["risk"]
         # Each detector slot has a status.

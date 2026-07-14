@@ -122,6 +122,14 @@ class DetectorConfig:
                                       # even if somewhat spread (loc multiplies
                                       # in [floor, 1], never fully zeroes)
 
+    # -- dense-field escalation tier ----------------------------------------
+    # When the SIFT tier finds nothing (smooth blots/gels starve keypoints),
+    # run the dense-field block matcher (src.detectors.dense_cmfd), which
+    # examines every block and catches translate-and-paste duplication SIFT
+    # misses. Escalation-only keeps the extra ~1s/figure cost off clear hits.
+    use_dense_tier: bool = True
+    dense_escalate_below: float = 0.45   # run dense only when SIFT conf < this
+
     # -- content gating (the systematic false-positive fix) ------------------
     # When True, an analysis mask (continuous-tone panels minus text/scale
     # bars — see src.preprocessing.panel_segmentation) gates the keypoints:
@@ -195,6 +203,28 @@ class CopyMoveDetector:
         confidence = self._score(clusters, mask, gray, grow_stats, len(matches))
         forged = bool(confidence >= cfg.confidence_threshold and len(regions) > 0)
 
+        # Dense-field escalation: only when the SIFT tier came up short.
+        dense_used = False
+        if cfg.use_dense_tier and confidence < cfg.dense_escalate_below:
+            from src.detectors.dense_cmfd import detect_dense_copy_move
+            dense = detect_dense_copy_move(gray, analysis_mask=gate)
+            if dense["confidence"] > confidence:
+                confidence = float(dense["confidence"])
+                dense_used = True
+                if dense["mask"] is not None and cv2.countNonZero(dense["mask"]):
+                    mask = cv2.bitwise_or(mask, dense["mask"])
+                    labeled_mask[dense["mask"] > 0] = 2
+                    if not regions:
+                        regions = [{
+                            "source_bbox": cv2.boundingRect(dense["mask"]),
+                            "dup_bbox": cv2.boundingRect(dense["mask"]),
+                            "n_inliers": int(dense["n_support"]),
+                            "inlier_ratio": 1.0,
+                            "noise_residual_verdict": "n/a (dense-field tier)",
+                            "tier": "dense_field",
+                        }]
+                forged = bool(confidence >= cfg.confidence_threshold)
+
         # Rescale outputs back to the original resolution if we downscaled.
         if scale != 1.0:
             mask = cv2.resize(mask, (orig_w, orig_h), interpolation=cv2.INTER_NEAREST)
@@ -212,6 +242,7 @@ class CopyMoveDetector:
             "labeled_mask": labeled_mask,  # extra: 1 = source, 2 = duplicate
             "regions": regions,
             "visualization": visualization,
+            "dense_tier_used": dense_used,
         }
 
     # ------------------------------------------------------- feature stage

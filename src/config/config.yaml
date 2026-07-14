@@ -27,6 +27,12 @@ detectors:
     # capture's sensor noise. Independent noise => legitimate look-alike.
     residual_independent_factor: 0.25   # damp verified pair with independent noise
     residual_inconclusive_factor: 0.85  # mild damp when the test can't run
+    # Dense-field escalation (src/detectors/dense_cmfd.py): when SIFT finds
+    # nothing on a smooth blot/gel, a block-matching tier catches the
+    # translate-and-paste duplication keypoints miss. Runs only when the SIFT
+    # confidence is below the escalation line, so cost stays off clear hits.
+    use_dense_tier: true
+    dense_escalate_below: 0.45
     # Confidence model (observed-vs-expected; see copy_move_detector._score).
     # Redesigned 2026-07-11: the old confidence was a weighted sum of raw
     # counts whose correlation term was unbounded (flat-pixel ZNCC drove it
@@ -58,6 +64,16 @@ detectors:
     # Optional external corpus of prior figures to check against. If null,
     # the paper's OWN figures form the corpus (catches within-paper reuse).
     corpus_dir: null
+
+  splice:                           # Splicing — a region pasted from another source
+    enabled: true
+    # A block is flagged only when BOTH a foreign sensor-noise level AND a
+    # foreign compression fingerprint (JPEG-ghost/ELA) agree on it — the
+    # signature of a paste from a different capture. Catches the dominant real
+    # fraud mode that copy-move (within-figure) and cross-figure (whole-figure)
+    # both miss. See src/forensics/splice_detection.py.
+    min_flagged_frac: 0.02          # fraction of textured blocks flagged to fire
+    min_flagged_blocks: 4           # and at least this many blocks
 
   ai_generation:                    # Stage 4 — GAN/diffusion-generated figures
     enabled: true
@@ -126,10 +142,14 @@ optimization:
 # ---------------------------------------------------------------------------
 risk_scoring:
   weights:                          # max points each detector adds (sum = 100)
-    copy_move: 35
-    cross_figure: 30
+    # Reweighted after the held-out likelihood-ratio analysis: copy-move barely
+    # discriminates at the paper level (LR 1.19) so its weight is reduced;
+    # splice is a strong new fraud-mode signal and gets real weight.
+    copy_move: 25
+    cross_figure: 25
+    splice: 20
     ai_generation: 20
-    claim_consistency: 15
+    claim_consistency: 10
   # Severity multipliers for signal sub-types (applied to the weight).
   cross_figure_severity:
     exact_duplicate: 1.0
@@ -196,6 +216,7 @@ evidence_fusion:
   calibration:
     copy_move:         {p_fire_fraud: 0.55, p_fire_clean: 0.30}
     cross_figure:      {p_fire_fraud: 0.45, p_fire_clean: 0.20}
+    splice:            {p_fire_fraud: 0.35, p_fire_clean: 0.08}
     ai_generation:     {p_fire_fraud: 0.40, p_fire_clean: 0.10}
     claim_consistency: {p_fire_fraud: 0.50, p_fire_clean: 0.15}
 

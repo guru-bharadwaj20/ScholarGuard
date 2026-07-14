@@ -53,6 +53,7 @@ class Settings:
             "localization_scale", "localization_floor",
             "use_analysis_mask", "residual_independent_factor",
             "residual_inconclusive_factor",
+            "use_dense_tier", "dense_escalate_below",
         ])
 
     def cross_figure_config(self):
@@ -99,6 +100,13 @@ class Settings:
     @property
     def cross_figure_corpus_dir(self) -> str | None:
         return self._detector("cross_figure").get("corpus_dir")
+
+    def splice_config(self):
+        """Build a SpliceConfig from config.yaml threshold values."""
+        from src.forensics.splice_detection import SpliceConfig
+
+        cfg = self._detector("splice")
+        return _apply(SpliceConfig(), cfg, ["min_flagged_frac", "min_flagged_blocks"])
 
     def ai_compression_baselines(self) -> dict | None:
         """Compression-conditioned AI-forensic baselines, or None if disabled.
@@ -154,7 +162,7 @@ class Settings:
                 raise ConfigError(f"config.yaml missing required section: '{section}'")
         weights = self.risk.get("weights", {})
         total = sum(weights.get(k, 0) for k in
-                    ("copy_move", "cross_figure", "ai_generation",
+                    ("copy_move", "cross_figure", "splice", "ai_generation",
                      "claim_consistency"))
         if total <= 0:
             raise ConfigError("risk_scoring.weights must sum to a positive number")
