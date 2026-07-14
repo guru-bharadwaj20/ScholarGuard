@@ -122,11 +122,45 @@ Stage 2b was offline re-fitting; Stage 2c **re-runs the full pipeline** on the i
 - 🔴 **The dense-field copy-move tier backfired.** Copy-move's per-figure FPR *doubled* (34% → **57%**) because the dense escalation fires on legitimately self-similar texture. Copy-move alone now accounts for **211 of 300** false positives — the reason precision is pinned at ~0.49 despite everything else improving, and why LOOCV slipped (the noisier score pushed the modal cutoff to ~36). Its recall benefit on smooth copy-moves is real but **unmeasurable here** (no figure-level labels), while its FPR cost is very measurable.
 - **Net:** the ceiling moved (AUC +0.05, recall +0.10) on the strength of AI + splice + corroboration; the dense tier must be **gated far more tightly or made lead-only** before it's a net positive. Full report: `outputs/heldout_run/metrics_summary.md`.
 
+### Stage 2d — reining in the dense copy-move tier (same 88 papers)
+
+Stage 2c's one regression was the dense tier firing on legitimately self-similar texture. Stage 2d adds three gates to it and re-runs the identical held-out set (again same conditions — no LLM key, forensic AI path — so the only variable is the dense gating):
+
+1. **Residual-clone confirmation** — shift the image by the detected offset and correlate the duplicate's *noise residual* against its source. **Independent** noise (an honest look-alike) is **vetoed**; only a shared noise field survives. ([dense_cmfd.py](src/detectors/dense_cmfd.py))
+2. **Self-similarity veto** — a real copy has one dominant offset; periodic texture (gel lanes, tiled panels) has several. A comparable non-adjacent rival peak vetoes the hit.
+3. **`min_support` 60 → 80 + lead-only demotion** — an unconfirmed (residual-`INCONCLUSIVE`) dense hit no longer raises the score; it is surfaced as a **lead** for human review only. Only a `CLONE`-confirmed hit drives the fraud score. ([copy_move_detector.py](src/detectors/copy_move_detector.py))
+
+**Per-figure false-positive rate (same 373 clean figures):**
+
+| Detector | Stage 2c | **Stage 2d** | |
+|---|---|---|---|
+| Copy-move | 56.6% | **41.3%** (95% CI 36–46) | ✅ −15 pts; 154 FPs vs 211 |
+| Cross-figure | 21.8% | **21.8%** (95% CI 18–26) | ➖ now the binding constraint |
+| Splice | 0.8% | **0.8%** | ➖ |
+| AI-generation | 1.3% | **1.3%** | ➖ |
+
+**Paper-level:**
+
+| Metric | Stage 2c | **Stage 2d** | |
+|---|---|---|---|
+| Total false positives | 300 | **243** | ✅ −57 (−19%) |
+| Leave-one-out accuracy | 0.591 | **0.670** | ✅ +0.08 (cleaner score) |
+| Paper-level FPR | 0.379 | **0.362** | ✅ |
+| ROC-AUC | 0.665 | 0.665 | ➖ flat |
+| Average precision | 0.497 | 0.477 | ⚠️ −0.02 |
+| Precision / recall @ ≥ 25 | 0.488 / 0.700 | 0.488 / 0.667 | ⚠️ −1 true positive |
+
+**Honest reading:**
+
+- ✅ **The gates did their job at the figure level.** Copy-move FPR fell 56.6% → **41.3%** (−57 false positives), and the honest **LOOCV accuracy rose 0.591 → 0.670** — the cleaner score is more separable. Roughly two-thirds of the dense tier's FPR damage is clawed back **without abandoning it**: `CLONE`-confirmed smooth copy-moves still flag.
+- ➖ **Paper-level precision/AUC didn't move**, and that is the expected, informative result. Copy-move was never the paper-level discriminator (LR 1.19 ≈ noise), and most of its removed fires were on papers *also* flagged by cross-figure — so fewer figure-level false alarms, but the same paper verdicts. **Cross-figure specificity (21.8% FPR, dose-response series) is now the binding constraint.**
+- ⚠️ **Cost: one true-positive paper** (recall 0.70 → 0.667). A fraud paper that Stage 2c flagged only via an *unconfirmed* dense hit now falls below threshold — the honest price of not scoring unconfirmed leads. Net paper-level trade was ~1 false positive removed for ~1 true positive lost; the real, unambiguous win is 57 fewer **figure-level** false alarms (reviewer burden) and the LOOCV gain.
+- **Residual 41.3% floor** is now mostly the SIFT tier itself (~34% baseline) plus a few spurious `CLONE` calls where JPEG compression correlates the residual. Full report: `outputs/heldout_run/metrics_summary.md`.
+
 ### Stage 3 — what's still to do (in priority order)
 
-0. **Rein in the dense copy-move tier (new, top priority).** It doubled copy-move FPR (34% → 57%) and owns 211/300 false positives. Gate it behind higher `min_support`, a self-similarity/texture-entropy veto, and a residual-clone confirmation — or demote it to a lead-only signal that never contributes to the paper score. This is now the single biggest precision lever.
-
-1. **Improve detector sensitivity to real manipulations, not the score fusion.** The LR table shows copy-move (LR 1.19) is the weak link; the dense-field / Zernike CMFD tier and PatchMatch verification (already scoped in the design notes) target exactly the subtle splices SIFT misses. This is the only thing that raises the ~0.60 ceiling.
+1. **Cross-figure specificity is now the top lever.** With copy-move gated, cross-figure (21.8% FPR) is the largest remaining false-positive source — it flags legitimate dose-response / time-series panel similarity as reuse. Add the residual-clone test (already built) as a confirmation gate on cross-figure matches, and a caption/panel-role check so a labelled series is not read as duplication.
+2. **Improve detector *sensitivity* to real manipulations, not the score fusion.** The LR table shows copy-move (LR 1.19) barely separates; PatchMatch verification and a Zernike-moment rotation-invariant CMFD tier (scoped in the design notes) target the subtle splices SIFT misses. This is the only thing that raises the ~0.66 AUC ceiling.
 2. **Annotate which figures the 30 retraction notices name** — unlocks per-detector *recall* measurement, without which detector improvements can't be steered (we currently measure only clean-figure FPR).
 3. **Grow to a larger, balanced held-out set** — 30/58 gives wide Wilson intervals; more papers tighten every estimate and stabilise the LR fits.
 4. **Lean the paper score on the detectors that discriminate** (AI, cross-figure) and treat copy-move as a lead-only signal until #1 lands — a low-FPR screening operating point is already reachable (paper FPR ~7% at recall ~0.27).
