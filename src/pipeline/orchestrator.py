@@ -131,19 +131,33 @@ class Pipeline:
             return None
 
     def _parse_pdf(self, pdf_path: str):
-        """Parse the PDF; return parsed dict, or None on unreadable/corrupt."""
+        """Parse the input; return parsed dict, or None on unreadable/corrupt.
+
+        Dispatches on source type: a PMC OA **package** (``.tar.gz`` or an
+        extracted package directory) is parsed from its JATS XML + bundled
+        native-resolution figure images; anything else is treated as a PDF.
+        Both paths return the identical parsed-dict shape.
+        """
         self._parse_error = None
-        if not os.path.isfile(pdf_path):
+        from src.nlp.pmc_package import is_package
+
+        is_pkg = is_package(pdf_path)
+        if not is_pkg and not os.path.isfile(pdf_path):
             self._parse_error = f"file not found: {pdf_path}"
             logger.error(self._parse_error)
             return None
         try:
+            if is_pkg:
+                from src.nlp.pmc_package import parse_pmc_package
+                extract_dir = os.path.join(self.settings.output_dir, "_packages")
+                os.makedirs(extract_dir, exist_ok=True)
+                return parse_pmc_package(pdf_path, extract_dir=extract_dir)
             from src.nlp.pdf_parser import parse_paper
             return parse_paper(pdf_path,
                                output_dir=os.path.join(self.settings.output_dir,
                                                        "_figures"))
-        except Exception as exc:  # corrupt PDF, unsupported format, etc.
-            self._parse_error = f"failed to parse PDF: {exc}"
+        except Exception as exc:  # corrupt PDF/package, unsupported format, etc.
+            self._parse_error = f"failed to parse input: {exc}"
             logger.error(self._parse_error)
             return None
 

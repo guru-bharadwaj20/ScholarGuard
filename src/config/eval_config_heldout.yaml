@@ -1,0 +1,36 @@
+# ScholarGuard — HELD-OUT evaluation on fresh PMC OA packages.
+#
+# This set is DISJOINT from the 25-paper calibration set (no DOI/PMCID overlap),
+# so metrics here are an (almost) unbiased estimate rather than the in-sample
+# numbers the calibration set can only give. Both classes are ingested as PMC
+# packages (JATS XML + native figure images) for format parity — the detectors
+# cannot separate fraud from clean by a PDF-vs-native artifact.
+#
+# Report the THRESHOLD-FREE metrics (ROC-AUC, average precision) and the
+# leave-one-out accuracy from metrics_summary.md — not the swept best-threshold
+# accuracy, which is optimistic.
+
+pipeline_config: src/config/config.yaml
+
+evaluation_set:
+  labels_path: data/heldout_packages/labels.json
+
+output:
+  dir: outputs/heldout_run
+
+decision:
+  paper_score_threshold: 25.0
+
+detector_fire_rules:
+  copy_move: forged_true
+  cross_figure: any_reuse
+  ai_generation: not_real
+  claim_consistency: inconsistent
+
+threshold_sweep:
+  start: 0.0
+  stop: 100.0
+  step: 2.5
+
+error_analysis:
+  max_examples_per_category: 15

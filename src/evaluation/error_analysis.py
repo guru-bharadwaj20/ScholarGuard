@@ -477,11 +477,19 @@ def analyze_benchmark(benchmark: dict, eval_settings: dict,
 
     # Threshold sweep (reuses stored paper scores — no detector re-runs).
     scored = [p for p in paper_records if p.get("score") is not None]
-    sweep = M.score_threshold_sweep(
-        [p["gt_fraud"] for p in scored], [p["score"] for p in scored])
+    y_true = [p["gt_fraud"] for p in scored]
+    y_score = [p["score"] for p in scored]
+    sweep = M.score_threshold_sweep(y_true, y_score)
     csv_path = os.path.join(output_dir, "threshold_sweep_results.csv")
     _write_sweep_csv(sweep, csv_path)
     recommendation = recommend_threshold(sweep)
+
+    # Threshold-free ranking (ROC-AUC / average precision) + an HONEST,
+    # leave-one-out accuracy — the antidote to the in-sample best-threshold
+    # accuracy that flattered earlier runs. These make no cutoff commitment
+    # and are directly comparable across runs.
+    ranking = M.ranking_metrics(y_true, y_score)
+    loocv = M.loocv_threshold_accuracy(y_true, y_score)
 
     errors = categorize_errors(figure_records)
     ea_dir = os.path.join(output_dir, "error_analysis")
@@ -499,6 +507,8 @@ def analyze_benchmark(benchmark: dict, eval_settings: dict,
         "dataset": benchmark.get("meta", {}),
         "per_detector": det_metrics,
         "combined_paper": combined,
+        "ranking": ranking,
+        "loocv": loocv,
         "threshold_recommendation": recommendation,
         "errors": {
             "n_false_positives": len(errors["false_positives"]),
@@ -511,7 +521,8 @@ def analyze_benchmark(benchmark: dict, eval_settings: dict,
         "baseline_compared": bool(baseline),
     }
     md = _render_summary_md(benchmark, det_metrics, combined, sweep,
-                            recommendation, errors, baseline)
+                            recommendation, errors, baseline,
+                            ranking=ranking, loocv=loocv)
     md_path = os.path.join(output_dir, "metrics_summary.md")
     with open(md_path, "w", encoding="utf-8") as fh:
         fh.write(md)
@@ -536,7 +547,8 @@ def _fmt(v) -> str:
 
 
 def _render_summary_md(benchmark, det_metrics, combined, sweep,
-                       recommendation, errors, baseline=None) -> str:
+                       recommendation, errors, baseline=None,
+                       ranking=None, loocv=None) -> str:
     meta = benchmark.get("meta", {})
     dataset = str(meta.get("dataset_name", "n/a"))
     is_real = "real" in dataset.lower()
@@ -613,6 +625,40 @@ def _render_summary_md(benchmark, det_metrics, combined, sweep,
     L.append(M.confusion_matrix_str(combined["metrics"]))
     L.append("```")
     L.append("")
+
+    # -- threshold-free ranking + honest (LOOCV) accuracy -------------------
+    if ranking is not None or loocv is not None:
+        L.append("## Threshold-free ranking & leave-one-out accuracy")
+        L.append("With a small set and a ~60% base rate, accuracy at a single "
+                 "hand-picked cutoff is mostly noise. The metrics below either "
+                 "commit to NO threshold (AUC, average precision) or pick the "
+                 "cutoff on all-but-one paper and score the held-out one "
+                 "(LOOCV) — an (almost) unbiased number, unlike the in-sample "
+                 "best-threshold accuracy that flattered earlier runs.")
+        L.append("")
+        if ranking is not None:
+            auc = ranking.get("roc_auc")
+            ap = ranking.get("average_precision")
+            L.append(f"- **ROC-AUC:** {_fmt(auc)}  _(P(a random fraud paper "
+                     f"outranks a random clean one); 0.5 = chance)_")
+            L.append(f"- **Average precision (PR-AUC):** {_fmt(ap)}  "
+                     f"_(area under precision-recall; more honest than ROC when "
+                     f"positives are the minority)_")
+            L.append(f"- _ranked over {ranking.get('n_positive', 0)} fraud / "
+                     f"{ranking.get('n_negative', 0)} clean papers_")
+        if loocv is not None:
+            if loocv.get("loocv_accuracy") is None:
+                L.append(f"- **LOOCV accuracy:** n/a "
+                         f"({loocv.get('note', 'too few papers')})")
+            else:
+                L.append(f"- **LOOCV accuracy:** {_fmt(loocv['loocv_accuracy'])}  "
+                         f"_(cutoff chosen on n-1, scored on the held-out paper; "
+                         f"modal cutoff {_fmt(loocv.get('modal_threshold'))})_")
+        L.append("")
+        L.append("> Report these — not the swept best-threshold accuracy — when "
+                 "comparing runs or claiming improvement. They cannot be inflated "
+                 "by fitting the cutoff to the same papers being scored.")
+        L.append("")
 
     # -- per detector -------------------------------------------------------
     L.append("## Per-detector breakdown (figure-level, scoreable figures only)")

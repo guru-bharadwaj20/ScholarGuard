@@ -76,14 +76,19 @@ def load_evaluation_set(labels_path: str) -> dict:
         if "is_fraudulent" not in paper:
             raise GroundTruthError(f"paper '{pid}' missing 'is_fraudulent'")
 
-        # Resolve pdf_path relative to the labels file if not absolute.
+        # Resolve pdf_path relative to the labels file if not absolute. The
+        # input may be a PDF file OR a PMC package (a .tar.gz file or an
+        # extracted package directory), so "exists" means file-or-directory.
+        def _exists(p: str) -> bool:
+            return bool(p) and (os.path.isfile(p) or os.path.isdir(p))
+
         pdf_path = paper.get("pdf_path", "")
         resolved = pdf_path if os.path.isabs(pdf_path) else \
             os.path.normpath(os.path.join(base_dir, "..", "..", pdf_path)) \
-            if not os.path.isfile(pdf_path) else pdf_path
+            if not _exists(pdf_path) else pdf_path
         # Prefer the path as given if it exists; else the resolved one.
-        pdf_exists = os.path.isfile(pdf_path) or os.path.isfile(resolved)
-        effective = pdf_path if os.path.isfile(pdf_path) else resolved
+        pdf_exists = _exists(pdf_path) or _exists(resolved)
+        effective = pdf_path if _exists(pdf_path) else resolved
         if not pdf_exists:
             msg = f"PDF for '{pid}' not found: {pdf_path}"
             warnings.append(msg)
