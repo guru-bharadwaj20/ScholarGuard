@@ -13,22 +13,76 @@ ScholarGuard screens a paper's figures for duplication, cross-figure reuse, and 
 
 ---
 
-## How honest is it?
+## How honest is it? — evaluation, stage by stage
 
-ScholarGuard was evaluated on **25 real PubMed Central papers** — 15 formally retracted for image integrity (Retraction Watch) and 10 never-retracted controls. The results are deliberately unflattering where the tool is weak:
+This section is the project's changelog *and* its report card: where the metrics started, what was changed and why, where they landed on **unseen data**, and what is still open. Nothing here is spun — the numbers are unflattering where the tool is weak.
 
-| Detector | Real false-alarm rate | Verdict |
+### Stage 0 — the starting point (in-sample, 25 papers)
+
+The first version was evaluated on 25 real PubMed Central papers (15 retracted for image integrity, 10 controls) — but its thresholds were tuned on those *same* 25 papers, so these are **optimistic in-sample** numbers, not a real test:
+
+| Detector | False-alarm rate (in-sample) | Verdict |
 |---|---|---|
-| **AI-generation** | **2.4%** (95% CI 0.7–8.4) | Comparatively reliable |
-| **Cross-figure reuse** | 27.7% (19–38) | Frequently over-triggers |
-| **Copy-move** | 56.6% (46–67) | Frequently over-triggers |
-| **Claim-consistency** | — | Unvalidated on real papers (needs API key) |
+| AI-generation | 2.4% (95% CI 0.7–8.4) | Comparatively reliable |
+| Cross-figure reuse | 27.7% (19–38) | Frequently over-triggers |
+| Copy-move | 56.6% (46–67) | Frequently over-triggers |
+| Claim-consistency | — | Unvalidated (needs API key) |
 
-At the paper level, **recall is 80%** (12/15 real fraud caught), but the **best accuracy at any single threshold is 60% — the base rate**. The score distributions of fraud and clean papers still overlap: copy-move and cross-figure fire on legitimate repeated structure (replicate panels, scale bars, dose-response series) that is geometrically identical to manipulation.
+Paper-level recall was 80%, but **best accuracy at any threshold was 60% — exactly the base rate**: fraud and clean score distributions overlapped almost completely. Root cause: copy-move and cross-figure fired on *legitimate* repeated structure (replicate panels, scale bars, dose-response series) that is geometrically identical to manipulation.
 
-> **Overfitting caveat:** detector thresholds were recalibrated on these same 25 papers — the only real data available — so the numbers above are optimistic in-sample estimates, **not** unbiased measurement on unseen data. A fresh, never-seen paper set is needed before trusting them further.
+### Stage 1 — what was changed, and why
 
-> **These numbers predate the current detector architecture.** The table above measured the previous whole-figure detectors. The pipeline has since been rebuilt around panel-level content gating and a noise-residual clone test (see "How it works") that target the exact false-positive source those numbers exposed — legitimate repeated structure scoring identically to manipulation. The improvements are architectural and unit-tested, but the headline recall/false-alarm rates have **not** yet been re-measured on the benchmark, and are not claimed here. Re-running `src/evaluation` on a fresh, figure-annotated set is the required next step, and the evaluation now reports threshold-free **ROC-AUC / average precision** and **leave-one-out** accuracy rather than the in-sample best-threshold accuracy that made the old numbers look better than the tool was.
+Every change targets a diagnosed failure above:
+
+| Upgrade | Attacks | Where |
+|---|---|---|
+| **Panel segmentation + content gating** (analysis mask = continuous-tone panels − text/scale-bars) | legit repetition reaching the matcher (the dominant false-positive source) | [panel_segmentation.py](src/preprocessing/panel_segmentation.py) |
+| **Noise-residual clone test** (shared sensor-noise field ⇒ clone; independent ⇒ look-alike) | "looks alike" vs "is a pixel clone" — the confusion ZNCC can't resolve | [residual_similarity.py](src/forensics/residual_similarity.py) |
+| **g2NN matching + empirical offset-null** | multi-clone misses; over-confident chance model | [copy_move_detector.py](src/detectors/copy_move_detector.py) |
+| **Cross-figure: principled confidence + publisher-furniture filter** | logos/badges matching each other as "reuse"; ad-hoc scoring | [cross_figure_detector.py](src/detectors/cross_figure_detector.py) |
+| **AI: JPEG-compression-conditioned baselines + azimuthal anisotropy** | publisher compression masquerading as an AI tell | [ai_generation_detector.py](src/detectors/ai_generation_detector.py) |
+| **Double-counting fix** (image flags no longer scored twice) | one FP earning both copy-move *and* claim-consistency points | [consistency_checker.py](src/nlp/consistency_checker.py) |
+| **Multimodal claim checking** (vision model observes the figure) | the coarse blob/lane heuristic | [claim_extractor.py](src/nlp/claim_extractor.py) |
+| **Likelihood-ratio evidence fusion** (noisy detectors auto-discounted) | fixed weights that can't down-weight a noisy detector | [evidence_fusion.py](src/pipeline/evidence_fusion.py) |
+| **Honest metrics** (ROC-AUC / average precision / leave-one-out) | in-sample best-threshold accuracy that flattered Stage 0 | [metrics.py](src/evaluation/metrics.py) |
+| **PMC package ingestion** (JATS XML + native figure images) | *unlocked the held-out test itself* — retracted papers exist as packages, not PDFs | [pmc_package.py](src/nlp/pmc_package.py) |
+
+### Stage 2 — how it measures now (held-out, 88 papers, zero overlap)
+
+Re-measured on a **fresh set of 88 papers (30 retracted-fraud, 58 clean) with zero DOI/PMCID overlap** with the Stage 0 papers — an actual out-of-sample test. Both classes ingested identically as PMC packages, so the detectors can't cheat on format.
+
+**Per-figure false-alarm rate on clean figures:**
+
+| Detector | Stage 0 (in-sample) | **Stage 2 (held-out)** |
+|---|---|---|
+| Copy-move | 56.6% | **34.1%** (95% CI 29–39) |
+| Cross-figure | 27.7% | **21.8%** (95% CI 18–26) |
+| AI-generation | 2.4% | **12.1%** (95% CI 9–16) |
+
+**Paper-level (threshold-free + honest accuracy):**
+
+| Metric | Value | Reference |
+|---|---|---|
+| ROC-AUC | **0.617** | 0.5 = chance |
+| Average precision | **0.475** | 0.34 = base rate |
+| Leave-one-out accuracy | **0.659** | 0.66 = always-guess-clean |
+| Precision / recall @ score ≥ 25 | 0.45 / 0.60 | — |
+
+**Honest reading:**
+
+- ✅ **The two worst over-triggers improved materially on unseen data:** copy-move ~57% → **34%**, cross-figure ~28% → **22%**. Content gating + the clone test are doing real work.
+- ⚠️ **The AI detector regressed** (2.4% → 12%). This is a **calibration mismatch, not a detector failure**: its compression baselines were set on PDF-extracted figures, but native package images keep intact sensor noise and a different spectral profile. Re-calibratable on native-image data.
+- ⚠️ **Paper-level discrimination is still only modestly above chance** (AUC 0.62; LOOCV 0.66 ≈ the always-clean baseline). The cause is arithmetic: a 34%-per-figure FPR **compounds** — a clean paper with 10 figures has a ~98% chance that *at least one* figure trips copy-move, so it's flagged. Per-figure FPR must reach ~5–10% for paper-level separation to follow.
+- ⚠️ **Recall is still unmeasurable per-detector:** the 30 fraud papers are labeled fraud, not *which figure* — so only clean-figure FPR and paper-level detection are scored (191 detections on fraud papers can't be scored either way).
+- **Caveat:** Stage 0 vs Stage 2 is **not a controlled comparison** — different papers, and PDF-extracted vs native package images. Read it as directional evidence, not a clean A/B. Full report: `outputs/heldout_run/metrics_summary.md`.
+
+### Stage 3 — what's still to do (in priority order)
+
+1. **Re-calibrate the AI baselines on native package images** — directly fixes the 12% FPR regression (fast).
+2. **Drive per-figure FPR into single digits** — the paper-level ceiling is set by per-figure FPR *compounding* across multi-figure papers; require cross-detector corroboration or tighten per-figure thresholds.
+3. **Fit the evidence-fusion likelihood ratios** on the calibration set and re-measure here — the fusion layer still runs at deliberately weak defaults; this is the cleanest paper-level gain available without figure annotations.
+4. **Annotate which figures the 30 retraction notices name** — the single change that unlocks per-detector *recall* measurement.
+5. **Grow to a larger, balanced held-out set** — 30/58 gives wide Wilson intervals; more papers tighten every estimate.
 
 **ScholarGuard is a screening prototype for human reviewers, not an autonomous accusation system. Every flag is a lead to be checked by a person.**
 
@@ -97,6 +151,7 @@ src/              CV + NLP pipeline
   ├─ forensics/       frequency, noise-residual, residual clone test, JPEG blockiness
   ├─ pipeline/        orchestrator, risk scorer, evidence fusion (LLR), report builder
   ├─ evaluation/      benchmark runner, metrics (Wilson CIs, ROC/PR-AUC, LOOCV), error analysis
+  ├─ nlp/             PDF parser, PMC-package (JATS+images) ingestion, claim/vision extraction
   └─ config/          config.yaml — single source of truth
 server/           FastAPI bridge (thin transport; zero pipeline logic)
 web/              Next.js 14 + Tailwind + Framer Motion + react-three-fiber
@@ -111,14 +166,21 @@ run_scholarguard.py   CLI entry point
 export NCBI_CONTACT_EMAIL=you@institution.edu   # required by NCBI policy
 python scripts/fetch_corpus.py --target-count 50
 python scripts/fetch_evaluation_set.py --fraud-target 15 --clean-target 10
+
+# A held-out TEST set as PMC packages (JATS XML + native figure images),
+# disjoint from the calibration set above. Retracted fraud papers are almost
+# never available as a PDF — only as packages — so this is how the Stage 2
+# held-out numbers were produced. Both classes use the same package format.
+python scripts/fetch_heldout_packages.py --fraud-target 30
+python -m src.evaluation.benchmark_runner --eval-config src/config/eval_config_heldout.yaml
 ```
 
-Both respect NCBI rate limits, skip already-fetched items via a resumable manifest, and record licensing.
+All scripts respect NCBI rate limits, skip already-fetched items via a resumable manifest, and record licensing. Datasets are never committed (see `.gitignore`) — they are re-fetchable from these scripts.
 
 ## Tests
 
 ```bash
-pytest -q      # 119 passed, 1 skipped
+pytest -q      # 124 passed, 1 skipped
 ```
 
 ---
