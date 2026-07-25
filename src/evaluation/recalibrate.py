@@ -1,10 +1,11 @@
 """Offline recalibration + likelihood-ratio fusion, measured under LOOCV.
 
-This module improves the paper-level decision WITHOUT re-running the 1-hour
-pipeline: every per-figure detector signal it needs (copy-move ``confidence``,
-cross-figure counts, the AI detector's raw ``freq_score`` / ``noise_score``)
-is already stored in ``benchmark_report.json``. It re-derives paper scores
-under three fixes and reports honest, out-of-sample metrics:
+This module improves the paper-level decision WITHOUT re-running the pipeline:
+every per-figure detector signal it needs (copy-move ``confidence``,
+cross-figure counts, the AI detector's ``freq_score`` / ``noise_score`` and,
+when a classifier was loaded, its ``classifier_score``) is already stored in
+``benchmark_report.json``. It re-derives paper scores under three fixes and
+reports honest, out-of-sample metrics:
 
   1. **AI baseline recalibrated to native images.** The shipped baseline was
      measured on PDF-extracted figures; native PMC-package images keep their
@@ -26,10 +27,22 @@ under three fixes and reports honest, out-of-sample metrics:
      automatically.
 
 **Honesty:** every quantity is fit under leave-one-out — for each held-out
-paper, the baseline, the copy-move threshold, and the likelihood ratios are
-estimated on the OTHER papers only, then applied to the held-out one. The
-pooled predictions are therefore out-of-sample, not fit to the papers they
+paper, the baseline, the copy-move threshold, the AI cutoff, and the likelihood
+ratios are estimated on the OTHER papers only, then applied to the held-out one.
+The pooled predictions are therefore out-of-sample, not fit to the papers they
 score. Compared against the pipeline's current stored scores as a baseline.
+
+**On the AI fire rule.** Two are implemented: the frequency+noise z-score
+(``forensic``) and the pipeline's classifier blend (``blend``, available once a
+report carries ``classifier_score``). ``forensic`` is the default *because it
+measured better*, which was not the expected result — on the Stage 2e held-out
+set it reaches paper-level LR 4.33 and LOOCV AUC 0.705, and no blend cutoff
+comes close (best 2.71 / 0.663, swept over target FPRs 0.005–0.50). The reason
+is the training data, not the code: the classifier was trained to tell diffusion
+output from real micrographs, whereas retracted-fraud figures are manipulated
+*photographs*, so ``p_ai`` is near zero on fraud and clean alike and carries
+little paper-level signal. Re-run the sweep before trusting ``blend`` on any new
+classifier.
 """
 
 from __future__ import annotations
@@ -39,10 +52,21 @@ import json
 import math
 from dataclasses import dataclass
 
+from src.detectors.ai_generation_detector import (
+    CLASSIFIER_WEIGHT,
+    FORENSIC_WEIGHT,
+)
 from src.evaluation import metrics as M
 
 _EPS = 1e-6
 DETECTORS = ("copy_move", "cross_figure", "ai_generation")
+
+#: AI fire modes. ``blend`` uses the pipeline's classifier-blended score with a
+#: cutoff refit to a target clean-figure FPR; ``forensic`` z-scores the
+#: frequency+noise score against a native-image baseline (the only option for
+#: reports written before the classifier existed). ``auto`` picks ``blend``
+#: whenever the report carries classifier scores.
+AI_MODE_AUTO, AI_MODE_BLEND, AI_MODE_FORENSIC = "auto", "blend", "forensic"
 
 
 @dataclass
@@ -55,6 +79,8 @@ class Paper:
     cm_conf: list[float]        # copy-move confidence, one per figure
     cf_fire: list[bool]         # cross-figure fired (exact or region reuse)
     ai_forensic: list[float]    # 0.5*(freq+noise) per figure
+    ai_blend: list[float]       # the pipeline's blended AI score per figure,
+                                # empty when the run had no classifier weights
     # per-figure ALIGNED signals: one dict per figure, missing detectors -> None.
     # This is what corroboration (co-firing on the SAME figure) needs.
     figures: list[dict]
@@ -69,11 +95,12 @@ def load_papers(report: dict) -> list[Paper]:
         rep = entry.get("pipeline_report")
         if entry.get("status") != "ok" or not rep or not rep.get("figures"):
             continue
-        cm_conf, cf_fire, ai_forensic = [], [], []
+        cm_conf, cf_fire, ai_forensic, ai_blend = [], [], [], []
         figures: list[dict] = []
         for fig in rep["figures"]:
             d = fig["detectors"]
-            rec = {"cm_conf": None, "cf_fire": None, "ai_forensic": None}
+            rec = {"cm_conf": None, "cf_fire": None, "ai_forensic": None,
+                   "ai_blend": None}
             cm = d.get("copy_move", {})
             if cm.get("status") == "ok":
                 rec["cm_conf"] = float(cm.get("confidence", 0.0))
@@ -88,11 +115,20 @@ def load_papers(report: dict) -> list[Paper]:
                 rec["ai_forensic"] = 0.5 * (float(ai["freq_score"])
                                             + float(ai["noise_score"]))
                 ai_forensic.append(rec["ai_forensic"])
+                # Reproduce the pipeline's own blend when the run had a trained
+                # classifier. Older reports predate `classifier_score` and have
+                # only the forensic pair, which the forensic path still handles.
+                p_ai = ai.get("classifier_score")
+                if p_ai is not None:
+                    rec["ai_blend"] = (CLASSIFIER_WEIGHT * float(p_ai)
+                                       + FORENSIC_WEIGHT * rec["ai_forensic"])
+                    ai_blend.append(rec["ai_blend"])
             figures.append(rec)
         papers.append(Paper(
             paper_id=pid,
             gt_fraud=bool(entry["ground_truth"]["is_fraudulent"]),
             cm_conf=cm_conf, cf_fire=cf_fire, ai_forensic=ai_forensic,
+            ai_blend=ai_blend,
             figures=figures,
             stored_score=float(rep["overall_risk"].get("score", 0.0)),
             stored_prob=float(rep["overall_risk"].get("fraud_probability", 0.0)),
@@ -100,13 +136,27 @@ def load_papers(report: dict) -> list[Paper]:
     return papers
 
 
+def _ai_figure_fires(fig: dict, cal: "Calibration") -> bool:
+    """Does the AI detector fire on one figure under this calibration?
+
+    In ``blend`` mode the classifier-blended score is compared against a cutoff
+    refit to a target clean-figure FPR; otherwise the forensic score is z-scored
+    against the clean-figure baseline. A figure with no blend score under blend
+    mode (mixed-vintage report) falls back to the forensic rule rather than
+    silently counting as "did not fire".
+    """
+    if cal.ai_blend_threshold is not None and fig.get("ai_blend") is not None:
+        return fig["ai_blend"] >= cal.ai_blend_threshold
+    return (fig["ai_forensic"] is not None
+            and (fig["ai_forensic"] - cal.ai_mean) / cal.ai_std >= cal.ai_z)
+
+
 def _figure_fires(fig: dict, cal: "Calibration") -> dict:
     """Which detectors fire on a SINGLE figure under a calibration."""
     cm = fig["cm_conf"] is not None and fig["cm_conf"] >= cal.cm_threshold
     cf = bool(fig["cf_fire"])
-    ai = (fig["ai_forensic"] is not None
-          and (fig["ai_forensic"] - cal.ai_mean) / cal.ai_std >= cal.ai_z)
-    return {"copy_move": cm, "cross_figure": cf, "ai_generation": ai}
+    return {"copy_move": cm, "cross_figure": cf,
+            "ai_generation": _ai_figure_fires(fig, cal)}
 
 
 def paper_scores(paper: Paper, cal: "Calibration") -> dict:
@@ -152,6 +202,7 @@ class Calibration:
     ai_z: float                  # z above baseline that counts as an AI hit
     lrs: dict                    # detector -> (p_fire_fraud, p_fire_clean)
     prior: float
+    ai_blend_threshold: float | None = None  # blend cutoff; None => forensic mode
 
 
 def _clean_quantile(train: list[Paper], target_fpr: float) -> float:
@@ -179,11 +230,18 @@ def _ai_baseline(train: list[Paper]) -> tuple[float, float]:
 
 
 def paper_fires(paper: Paper, cal: Calibration) -> dict:
-    """Which detectors fire on this paper under a given calibration."""
-    cm = any(c >= cal.cm_threshold for c in paper.cm_conf)
-    cf = any(paper.cf_fire)
-    ai = any((f - cal.ai_mean) / cal.ai_std >= cal.ai_z for f in paper.ai_forensic)
-    return {"copy_move": cm, "cross_figure": cf, "ai_generation": ai}
+    """Which detectors fire on this paper under a given calibration.
+
+    A paper fires if any of its figures does, so this is the per-figure rule
+    aggregated — and it goes through ``_figure_fires`` rather than repeating the
+    thresholds, so the paper-level and figure-level views cannot disagree (they
+    previously could: only this function was updated when the AI rule changed).
+    """
+    fires = {d: False for d in DETECTORS}
+    for fig in paper.figures:
+        for d, fired in _figure_fires(fig, cal).items():
+            fires[d] = fires[d] or fired
+    return fires
 
 
 def _fit_lrs(train: list[Paper], cal_wo_lrs: Calibration) -> dict:
@@ -204,13 +262,56 @@ def _fit_lrs(train: list[Paper], cal_wo_lrs: Calibration) -> dict:
     return lrs
 
 
+def _ai_blend_quantile(train: list[Paper], target_fpr: float) -> float:
+    """Blend cutoff just above the (1-target_fpr) quantile of clean blend scores.
+
+    Same idea as the copy-move cutoff — put the threshold where ~target_fpr of
+    training clean figures exceed it — and this is what lets the classifier be
+    refit at all, since its shipped cutoff (``COMBINED_LOW``) was chosen before
+    any checkpoint existed and is tied to no measured false-alarm rate.
+
+    It differs in one deliberate way: the cutoff is nudged *strictly above* the
+    quantile value rather than set equal to it. Because the rule is ``>=``, a
+    cutoff sitting exactly on a clean score fires on that figure and on every
+    other clean figure tied with it — and blend scores tie readily, since a
+    confident ``p_ai`` of 0.0 collapses the blend onto ``0.4*forensic``. With
+    ties present, an equal-to cutoff can overshoot the target FPR by an order of
+    magnitude. Strictly-above makes ``target_fpr`` an upper bound: the realized
+    rate can undershoot, which is the safe direction for a false-alarm budget.
+    """
+    clean = sorted(b for p in train if not p.gt_fraud for b in p.ai_blend)
+    if not clean:
+        return 0.0
+    idx = min(len(clean) - 1,
+              int(math.ceil((1.0 - target_fpr) * len(clean))) - 1)
+    return math.nextafter(clean[max(0, idx)], math.inf)
+
+
 def fit_calibration(train: list[Paper], target_fpr: float, ai_z: float,
-                    prior: float) -> Calibration:
+                    prior: float, ai_mode: str = AI_MODE_AUTO,
+                    ai_target_fpr: float = 0.02) -> Calibration:
     cm_threshold = _clean_quantile(train, target_fpr)
     ai_mean, ai_std = _ai_baseline(train)
-    cal = Calibration(cm_threshold, ai_mean, ai_std, ai_z, {}, prior)
+    blend_threshold = None
+    if ai_mode != AI_MODE_FORENSIC and any(p.ai_blend for p in train):
+        blend_threshold = _ai_blend_quantile(train, ai_target_fpr)
+    cal = Calibration(cm_threshold, ai_mean, ai_std, ai_z, {}, prior,
+                      ai_blend_threshold=blend_threshold)
     cal.lrs = _fit_lrs(train, cal)
     return cal
+
+
+def resolve_ai_mode(papers: list[Paper], ai_mode: str) -> str:
+    """The AI mode actually usable for these papers, for honest reporting.
+
+    ``blend`` is requested-but-unavailable when the report predates
+    ``classifier_score`` (or the run had no weights); saying so beats quietly
+    reporting forensic numbers under a blend heading.
+    """
+    has_blend = any(p.ai_blend for p in papers)
+    if ai_mode == AI_MODE_FORENSIC or not has_blend:
+        return AI_MODE_FORENSIC
+    return AI_MODE_BLEND
 
 
 def posterior(paper: Paper, cal: Calibration) -> float:
@@ -228,12 +329,14 @@ def posterior(paper: Paper, cal: Calibration) -> float:
 
 # ------------------------------------------------------------------- LOOCV
 def loocv_predictions(papers: list[Paper], target_fpr: float, ai_z: float,
-                      prior: float) -> list[tuple[bool, float]]:
+                      prior: float, ai_mode: str = AI_MODE_AUTO,
+                      ai_target_fpr: float = 0.02) -> list[tuple[bool, float]]:
     """(gt_fraud, recalibrated posterior) for each paper, fit on the rest."""
     out = []
     for i, held in enumerate(papers):
         train = [p for j, p in enumerate(papers) if j != i]
-        cal = fit_calibration(train, target_fpr, ai_z, prior)
+        cal = fit_calibration(train, target_fpr, ai_z, prior, ai_mode,
+                              ai_target_fpr)
         out.append((held.gt_fraud, posterior(held, cal)))
     return out
 
@@ -254,11 +357,15 @@ def _metrics(pairs: list[tuple[bool, float]], threshold: float) -> dict:
 
 
 def run(report_path: str, target_fpr: float, ai_z: float, prior: float,
-        decision_threshold: float) -> dict:
+        decision_threshold: float, ai_mode: str = AI_MODE_AUTO,
+        ai_target_fpr: float = 0.02) -> dict:
     with open(report_path, encoding="utf-8") as fh:
         report = json.load(fh)
     papers = load_papers(report)
     n_fraud = sum(1 for p in papers if p.gt_fraud)
+    resolved_mode = resolve_ai_mode(papers, ai_mode)
+    n_blend_figures = sum(len(p.ai_blend) for p in papers)
+    n_ai_figures = sum(len(p.ai_forensic) for p in papers)
 
     # Baseline = the pipeline's CURRENT stored fraud_probability (uncalibrated
     # fusion), scored the same way for an apples-to-apples comparison.
@@ -268,11 +375,13 @@ def run(report_path: str, target_fpr: float, ai_z: float, prior: float,
             "average_precision": M.average_precision(
                 [t for t, _ in base_pairs], [s for _, s in base_pairs])}
 
-    recal_pairs = loocv_predictions(papers, target_fpr, ai_z, prior)
+    recal_pairs = loocv_predictions(papers, target_fpr, ai_z, prior, ai_mode,
+                                    ai_target_fpr)
     recal = _metrics(recal_pairs, decision_threshold)
 
     # Full-data LR table (display only) to show which detector discriminates.
-    full_cal = fit_calibration(papers, target_fpr, ai_z, prior)
+    full_cal = fit_calibration(papers, target_fpr, ai_z, prior, ai_mode,
+                               ai_target_fpr)
     lr_table = {d: {"p_fire_fraud": round(full_cal.lrs[d][0], 3),
                     "p_fire_clean": round(full_cal.lrs[d][1], 3),
                     "likelihood_ratio": round(full_cal.lrs[d][0]
@@ -283,6 +392,15 @@ def run(report_path: str, target_fpr: float, ai_z: float, prior: float,
         "n_papers": len(papers), "n_fraud": n_fraud,
         "n_clean": len(papers) - n_fraud,
         "copy_move_threshold_median_fold": round(full_cal.cm_threshold, 3),
+        "ai_mode_requested": ai_mode,
+        "ai_mode_used": resolved_mode,
+        "ai_classifier_coverage": f"{n_blend_figures}/{n_ai_figures} figures",
+        "ai_blend_threshold_full": (round(full_cal.ai_blend_threshold, 3)
+                                    if full_cal.ai_blend_threshold is not None
+                                    else None),
+        "ai_blend_weights": {"classifier": CLASSIFIER_WEIGHT,
+                             "forensic": FORENSIC_WEIGHT},
+        "ai_target_fpr": ai_target_fpr,
         "ai_baseline_full": {"mean": round(full_cal.ai_mean, 3),
                              "std": round(full_cal.ai_std, 3), "z": ai_z},
         "likelihood_ratios": lr_table,
@@ -327,11 +445,25 @@ def main(argv=None) -> int:
     p.add_argument("--prior", type=float, default=0.34,
                    help="paper-level fraud prior (base rate)")
     p.add_argument("--decision-threshold", type=float, default=0.5)
+    p.add_argument("--ai-mode", default=AI_MODE_FORENSIC,
+                   choices=[AI_MODE_AUTO, AI_MODE_BLEND, AI_MODE_FORENSIC],
+                   help="how the AI detector's fire decision is re-derived: "
+                        "'forensic' (default) z-scores frequency+noise, 'blend' "
+                        "uses the pipeline's classifier-blended score, 'auto' "
+                        "picks blend when the report carries classifier scores. "
+                        "The default is forensic because it MEASURED BETTER: on "
+                        "the Stage 2e held-out set the forensic rule reaches "
+                        "paper-level LR 4.33 and LOOCV AUC 0.705, which no blend "
+                        "cutoff matches (best 2.71 / 0.663 swept over target "
+                        "FPRs 0.005-0.50)")
+    p.add_argument("--ai-target-fpr", type=float, default=0.02,
+                   help="target per-figure AI FPR the blend cutoff is fit to "
+                        "(blend mode only; the forensic path uses --ai-z)")
     p.add_argument("--json", action="store_true", help="print raw JSON")
     args = p.parse_args(argv)
 
     out = run(args.report, args.target_fpr, args.ai_z, args.prior,
-              args.decision_threshold)
+              args.decision_threshold, args.ai_mode, args.ai_target_fpr)
     if args.json:
         print(json.dumps(out, indent=2))
         return 0
@@ -339,7 +471,19 @@ def main(argv=None) -> int:
     b, r = out["baseline_stored_fusion"], out["recalibrated_loocv"]
     print(f"\n=== Offline recalibration (LOOCV) — {out['n_fraud']} fraud / "
           f"{out['n_clean']} clean ===\n")
-    print("Paper-level likelihood ratios (fired-rate fraud vs clean):")
+    if out["ai_mode_used"] == AI_MODE_BLEND:
+        print(f"AI fire rule: BLEND "
+              f"{out['ai_blend_weights']['classifier']:.1f}*p_ai + "
+              f"{out['ai_blend_weights']['forensic']:.1f}*forensic "
+              f">= {out['ai_blend_threshold_full']} "
+              f"(cutoff refit to {out['ai_target_fpr']:.0%} clean-figure FPR; "
+              f"classifier scores on {out['ai_classifier_coverage']})")
+    else:
+        why = ("requested" if out["ai_mode_requested"] == AI_MODE_FORENSIC
+               else "no classifier_score in this report")
+        print(f"AI fire rule: FORENSIC z >= {out['ai_baseline_full']['z']} "
+              f"({why})")
+    print("\nPaper-level likelihood ratios (fired-rate fraud vs clean):")
     for d, t in out["likelihood_ratios"].items():
         print(f"  {d:14s} P(fire|fraud)={t['p_fire_fraud']:.2f}  "
               f"P(fire|clean)={t['p_fire_clean']:.2f}  LR={t['likelihood_ratio']}")

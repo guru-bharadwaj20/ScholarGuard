@@ -113,8 +113,12 @@ DEFAULT_BASELINES = {
 }
 Z_SUSPICIOUS = 2.0
 Z_LIKELY_AI = 3.0
-# Classifier-blended thresholds (unchanged; only used when weights exist, which
-# is not the case in the current forensic-only deployment).
+# Classifier-blended thresholds + weights, used only when weights exist.
+# The weights are named (rather than inline literals) because
+# src/evaluation/recalibrate.py has to reproduce this exact blend offline to
+# refit around the classifier; two copies of "0.6" would drift apart silently.
+CLASSIFIER_WEIGHT = 0.6
+FORENSIC_WEIGHT = 1.0 - CLASSIFIER_WEIGHT
 COMBINED_LOW = 0.40
 COMBINED_HIGH = 0.60
 # |p_ai - forensic| above this counts as a strong disagreement.
@@ -215,7 +219,8 @@ def detect_ai_generation(image_path: str, weights_path: str | None = None,
                        "signals only (train via colab notebook for stronger calls)")
     else:
         classifier_score = classifier["p_ai_generated"]
-        combined = 0.6 * classifier_score + 0.4 * forensic
+        combined = (CLASSIFIER_WEIGHT * classifier_score
+                    + FORENSIC_WEIGHT * forensic)
         disagreement = abs(classifier_score - forensic)
         if disagreement >= DISAGREEMENT_MARGIN:
             verdict = SUSPICIOUS
