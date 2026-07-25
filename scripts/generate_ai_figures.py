@@ -133,15 +133,25 @@ def match_and_save(rgb: np.ndarray, out_path: str, stats: dict,
 def build_pipeline(args):
     """Load the diffusion pipeline onto the GPU in fp16."""
     import torch
-    from diffusers import AutoPipelineForText2Image
+    from diffusers import AutoencoderKL, AutoPipelineForText2Image
 
     if not torch.cuda.is_available():
         raise RuntimeError("no CUDA device: generation needs a GPU (this is the "
                            "one GPU-only step; everything else is CPU-only)")
     logger.info("loading %s onto %s", args.model, torch.cuda.get_device_name(0))
+    extra = {}
+    if args.vae:
+        # SDXL's original VAE overflows in fp16, so diffusers silently upcasts it
+        # to fp32 for every decode — which dominated the runtime (~3.4 img/min)
+        # and pushed VRAM to the card's limit. The fp16-fix VAE is the same
+        # architecture rescaled to stay in fp16 range: same decoder family, so
+        # the upsampling artifacts the classifier learns are unchanged.
+        extra["vae"] = AutoencoderKL.from_pretrained(
+            args.vae, torch_dtype=torch.float16)
+        logger.info("using fp16 VAE %s (avoids the fp32 decode upcast)", args.vae)
     pipe = AutoPipelineForText2Image.from_pretrained(
         args.model, torch_dtype=torch.float16, variant="fp16",
-        use_safetensors=True)
+        use_safetensors=True, **extra)
     pipe = pipe.to("cuda")
     pipe.set_progress_bar_config(disable=True)
     if args.no_safety_checker and hasattr(pipe, "safety_checker"):
@@ -185,6 +195,7 @@ def run(args) -> int:
     provenance = {
         "generator": "genuine diffusion output (not src/utils/synth.py stand-ins)",
         "model": args.model,
+        "vae": args.vae or "(pipeline default)",
         "num_inference_steps": args.steps,
         "guidance_scale": args.guidance,
         "render_size": args.render_size,
@@ -224,6 +235,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--real-dir", default="data/clean",
                    help="real figures whose size/compression stats are matched")
     p.add_argument("--model", default="stabilityai/stable-diffusion-xl-base-1.0")
+    p.add_argument("--vae", default="madebyollin/sdxl-vae-fp16-fix",
+                   help="fp16-safe VAE, so decoding is not upcast to fp32 "
+                        "(pass '' to use the pipeline's own VAE)")
     p.add_argument("--steps", type=int, default=30)
     p.add_argument("--guidance", type=float, default=7.0)
     p.add_argument("--render-size", type=int, default=1024,
