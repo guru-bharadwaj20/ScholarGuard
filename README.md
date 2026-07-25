@@ -365,7 +365,7 @@ All scripts respect NCBI rate limits, skip already-fetched items via a resumable
 
 ### Train the AI-generation classifier (optional; measured +0.048 ROC-AUC)
 
-The AI detector ships forensics-only. Training its learned model is the one GPU step in the project, and Stage 2e measures exactly what it buys: **ROC-AUC 0.685 → 0.733 and average precision 0.613 → 0.690, for 7 extra false alarms on 288 clean figures.** Read that section before trusting the classifier — a 0.99 validation accuracy does not mean 0.99 in the wild.
+The AI detector ships forensics-only. Training its learned model is the one GPU step in the project, and it measures as **ROC-AUC 0.685 → 0.733, average precision 0.613 → 0.688, for 7 extra false alarms on 288 clean figures** — but read [Stage 2f](#stage-2f--what-the-classifier-is-actually-worth) before trusting it. On that same set a plain threshold change with no classifier at all matched the gain, and offline recalibration found the blended score *less* informative at the paper level than the forensic z-score. A 0.99 validation accuracy does not mean 0.99 in the wild. **Treat this as an experiment worth reproducing, not a settled upgrade.**
 
 **The training data matters more than the training.** `data/ai_generated_samples/` holds *synthetic stand-ins* — a real sample bilateral-denoised with a checkerboard added — and [src/utils/synth.py](src/utils/synth.py) says so itself. A classifier trained on those learns `cv2.bilateralFilter`. Generate real diffusion output instead:
 
