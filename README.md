@@ -157,13 +157,69 @@ Stage 2c's one regression was the dense tier firing on legitimately self-similar
 - ⚠️ **Cost: one true-positive paper** (recall 0.70 → 0.667). A fraud paper that Stage 2c flagged only via an *unconfirmed* dense hit now falls below threshold — the honest price of not scoring unconfirmed leads. Net paper-level trade was ~1 false positive removed for ~1 true positive lost; the real, unambiguous win is 57 fewer **figure-level** false alarms (reviewer burden) and the LOOCV gain.
 - **Residual 41.3% floor** is now mostly the SIFT tier itself (~34% baseline) plus a few spurious `CLONE` calls where JPEG compression correlates the residual. Full report: `outputs/heldout_run/metrics_summary.md`.
 
+### Stage 2e — a fresh held-out set, and the AI classifier finally trained
+
+Two changes, measured separately. First the held-out set was **rebuilt from scratch** (a fresh Retraction Watch scan, so a different fraud draw than Stages 2–2d). Then the optional AI-generation classifier — which had never actually been trained — was trained on a local GPU and A/B'd against the identical papers.
+
+**The new set: 30 retracted-fraud / 50 clean papers, 546 figures (288 clean and scoreable).** Fraud = image-retraction papers with zero DOI/PMCID overlap with the calibration set; clean = controls picked by the same search terms and screened against the full Retraction Watch DOI list. Both classes ingested as PMC packages, same as before. It is **not** the same 88 papers as Stage 2d — 50 clean controls survived package fetching rather than 58, and the fraud papers are a newer draw — so read Stage 2d → 2e as directional, not a controlled A/B.
+
+**Do the Stage 2d gates hold on fresh fraud? Yes** (forensics only, no checkpoint on disk — the same conditions Stage 2d ran under):
+
+| Detector | Stage 2d (88 papers) | **Stage 2e (80 papers)** |
+|---|---|---|
+| Copy-move | 41.3% | **39.6%** (95% CI 34–45) |
+| Cross-figure | 21.8% | **19.9%** (95% CI 16–25) |
+| Splice | 0.8% | **0.7%** (95% CI 0–3) |
+| AI-generation | 1.3% | **1.4%** (95% CI 1–4) |
+
+Paper-level: ROC-AUC 0.665 → **0.685**, average precision 0.477 → **0.613**, LOOCV accuracy 0.670 → **0.700**, precision/recall @ ≥25 0.488/0.667 → **0.600/0.700**. Every per-figure rate lands inside its Stage 2d confidence interval, so the residual-clone and self-similarity gates are not an artifact of the papers they were tuned against.
+
+**The classifier A/B.** Trained locally on an RTX 4500 Ada ([scripts/train_artifact_classifier.py](scripts/train_artifact_classifier.py)): 301 real PMC package figures vs 400 genuine Stable-Diffusion-XL figures ([scripts/generate_ai_figures.py](scripts/generate_ai_figures.py)), MobileNetV3-small, 8 epochs, **best validation accuracy 0.991**. The only variable between the two runs below is whether `src/models/weights/artifact_classifier.pt` exists on disk:
+
+| Metric | Forensics only | **With classifier** | |
+|---|---|---|---|
+| ROC-AUC (point score) | 0.685 | **0.733** | ✅ +0.048 |
+| Average precision (point score) | 0.613 | **0.690** | ✅ +0.077 |
+| ROC-AUC (fusion probability) | 0.758 | **0.790** | ✅ +0.032 |
+| Average precision (fusion probability) | 0.686 | **0.732** | ✅ +0.046 |
+| LOOCV accuracy | 0.700 | 0.700 | ➖ |
+| Precision / recall @ ≥25 | 0.600 / 0.700 | 0.568 / 0.700 | ⚠️ −0.03 precision |
+| Paper-level FPR | 0.280 | 0.320 | ⚠️ |
+| AI per-figure FPR | 1.4% (4/288) | **3.8%** (11/288) | ⚠️ 2.7× |
+| Copy-move / cross-figure / splice FPR | 39.6 / 19.9 / 0.7% | *identical* | ➖ |
+| AI detections on fraud-paper figures | 13 | **36** | (leads, unscoreable) |
+
+**Honest reading:**
+
+- ✅ **The classifier improves ranking, and that is the metric that cannot be gamed by a cutoff.** Both threshold-free measures rise on both scores (point-score AUC +0.048, AP +0.077). The gain is real but it is a *ranking* gain — it is not realised at the fixed 25-point cutoff, where precision actually slips 0.600 → 0.568 because the operating point was chosen for the forensics-only score distribution.
+- ✅ **The entire delta is attributable to the AI detector, which is the strongest possible evidence the A/B was clean.** Copy-move, cross-figure and splice FPRs are identical to three decimals, and the count of leads on fraud-paper figures rose by exactly 23 — precisely the AI detector's own 13 → 36.
+- ⚠️ **It costs 7 extra false alarms on clean figures** (4 → 11 of 288). Still the second-lowest FPR of any detector, and ~10× below copy-move's, but it is a real regression against the 1.4% forensics-only figure.
+- ⚠️ **Do not read 0.991 validation accuracy as forensic skill.** That number is in-domain, on a split of the very sets it trained on. Diffusion output *looks* different from a real micrograph, so a 224px CNN can separate the classes on appearance rather than on generator artifacts. The generator deliberately removes the two mechanical shortcuts — every image is resized to a size drawn from the real class's distribution and JPEG-encoded to match a sampled real blockiness (real 0.191 vs generated 0.186; compression strata 170/30 vs 173/27) — but it cannot remove the *semantic* shortcut. **Transfer to subtle, real AI-manipulated figures is unproven**, and unprovable on this set: it contains no AI-generation ground-truth positives, which is why the table above reports the detector's false-alarm rate and not its recall.
+- **Net:** worth keeping, worth re-picking the operating point for, and not worth believing the 0.99.
+
+**A blind spot this exposed: [recalibrate.py](src/evaluation/recalibrate.py) cannot see the classifier.** It re-derives every AI decision from the `freq_score` / `noise_score` stored per figure and never reads `classifier_score`, so its refit is structurally blind to the strongest new signal — both runs above produce a byte-identical recalibration. Its likelihood-ratio table therefore describes the *forensic* AI detector, not the trained one:
+
+| Detector | P(fire \| fraud) | P(fire \| clean) | Likelihood ratio |
+|---|---|---|---|
+| AI-generation (forensic) | 0.50 | 0.12 | **4.33** |
+| Cross-figure | 0.66 | 0.44 | 1.48 |
+| Copy-move | 0.62 | 0.46 | **1.35 (≈ noise)** |
+
+Even blind to the classifier, the AI detector's paper-level LR has doubled since Stage 2b (2.18 → 4.33) while copy-move remains ≈ noise. Teaching `recalibrate.py` to read `classifier_score` is now a priority — it is the only way to re-fit the fusion weights around the signal that is actually carrying the run.
+
+**One bug, found only because a checkpoint finally existed.** The orchestrator normalised a configured-but-missing `weights_path` to `None`, and `classify_artifact` treats `None` as "use the default path" — so a config pointing at absent weights silently loaded `src/models/weights/artifact_classifier.pt` while the report still carried its `FORENSICS-ONLY` warning. With no checkpoint ever trained, both paths were absent and the two behaviours coincided, which is why 148 tests never caught it. Fixed, and the test that asserted forensics-only unconditionally now asserts that the report's claim and the detector's behaviour *agree* — which holds whether or not a checkpoint is present.
+
+**Evaluation is now parallel.** [benchmark_runner.py](src/evaluation/benchmark_runner.py) takes `--workers N`; papers are independent, so 80 of them went from ~11 minutes to **3m21s** on 16 of 32 cores, verified bit-identical (0 mismatches across all 80 paper scores and 2,730 per-figure detector blocks).
+
 ### Stage 3 — what's still to do (in priority order)
 
-1. **Cross-figure specificity is now the top lever.** With copy-move gated, cross-figure (21.8% FPR) is the largest remaining false-positive source — it flags legitimate dose-response / time-series panel similarity as reuse. Add the residual-clone test (already built) as a confirmation gate on cross-figure matches, and a caption/panel-role check so a labelled series is not read as duplication.
-2. **Improve detector *sensitivity* to real manipulations, not the score fusion.** The LR table shows copy-move (LR 1.19) barely separates; PatchMatch verification and a Zernike-moment rotation-invariant CMFD tier (scoped in the design notes) target the subtle splices SIFT misses. This is the only thing that raises the ~0.66 AUC ceiling.
-2. **Annotate which figures the 30 retraction notices name** — unlocks per-detector *recall* measurement, without which detector improvements can't be steered (we currently measure only clean-figure FPR).
-3. **Grow to a larger, balanced held-out set** — 30/58 gives wide Wilson intervals; more papers tighten every estimate and stabilise the LR fits.
-4. **Lean the paper score on the detectors that discriminate** (AI, cross-figure) and treat copy-move as a lead-only signal until #1 lands — a low-FPR screening operating point is already reachable (paper FPR ~7% at recall ~0.27).
+1. **Re-pick the operating point for the classifier-blended score.** Stage 2e's AUC/AP gain is a pure *ranking* gain that the fixed 25-point cutoff throws away (precision 0.600 → 0.568). Sweep the cutoff on the with-classifier score distribution and choose it under LOOCV, rather than inheriting a threshold calibrated on the forensics-only distribution. This is the cheapest available win — no new detector work.
+2. **Teach [recalibrate.py](src/evaluation/recalibrate.py) to read `classifier_score`.** It currently re-derives every AI decision from `freq_score`/`noise_score` alone, so it is blind to the run's strongest signal and its refits are identical with and without a trained model. Until this lands, the fusion weights cannot be fit around the classifier at all.
+3. **Cross-figure specificity is the top remaining detector lever.** With copy-move gated, cross-figure (19.9% FPR, 57 of 184 false positives) is the largest false-positive source that is *fixable* — it flags legitimate dose-response / time-series panel similarity as reuse. Add the residual-clone test (already built) as a confirmation gate on cross-figure matches, and a caption/panel-role check so a labelled series is not read as duplication.
+4. **Improve detector *sensitivity* to real manipulations, not the score fusion.** Copy-move still barely separates at the paper level (LR 1.35, ≈ noise) while producing 114 of 184 false positives; PatchMatch verification and a Zernike-moment rotation-invariant CMFD tier (scoped in the design notes) target the subtle splices SIFT misses.
+5. **Annotate which figures the 30 retraction notices name** — unlocks per-detector *recall* measurement, without which detector improvements can't be steered (we currently measure only clean-figure FPR). This is also the only way to test whether the trained classifier detects *subtle* AI manipulation or merely tells diffusion output from microscopy.
+6. **Grow to a larger, balanced held-out set** — 30/50 gives wide Wilson intervals; more papers tighten every estimate and stabilise the LR fits. Now much cheaper to iterate on: `--workers 16` cuts a full evaluation to ~3 minutes.
+7. **Lean the paper score on the detectors that discriminate** (AI, cross-figure) and treat copy-move as a lead-only signal until #3 lands — a low-FPR screening operating point is already reachable (paper FPR ~7% at recall ~0.27).
 
 **ScholarGuard is a screening prototype for human reviewers, not an autonomous accusation system. Every flag is a lead to be checked by a person.**
 
@@ -189,7 +245,7 @@ The paper decision **leads with corroboration**: a figure that two or more indep
 
 **Noise-residual clone test.** Intensity correlation (ZNCC) answers "do these regions *look* alike?" — which is true for both a copy-paste and two honest replicate blots. It cannot separate them. [src/forensics/residual_similarity.py](src/forensics/residual_similarity.py) asks the physically decisive question instead: after alignment, do the two regions share **one exposure's sensor-noise field**? Photon/read noise is independent per capture, so a genuine look-alike scores ~0 residual correlation while a true clone carries its noise with it and correlates strongly (the per-region analogue of PRNU camera forensics). The verdict (`clone` / `independent` / `inconclusive`) multiplies detector confidence: independent noise suppresses a flag, a clone corroborates it, and — honestly — heavy JPEG compression that destroys the residual returns *inconclusive* rather than a false "independent".
 
-Everything runs CPU-only. The optional AI classifier trains on GPU in [colab/](colab/); inference is CPU. The Claude API key is read from the environment and never hardcoded — without it, claim-consistency (both the text extraction and the multimodal figure observation) is skipped and reported as such.
+Everything runs CPU-only. The optional AI classifier is the single exception: it trains on a GPU — either [colab/](colab/) on a free T4 or [scripts/train_artifact_classifier.py](scripts/train_artifact_classifier.py) on a local CUDA card — and its inference is CPU. The Claude API key is read from the environment and never hardcoded — without it, claim-consistency (both the text extraction and the multimodal figure observation) is skipped and reported as such.
 
 ### Evidence fusion
 
@@ -255,27 +311,51 @@ python scripts/fetch_evaluation_set.py --fraud-target 15 --clean-target 10
 # disjoint from the calibration set above. Retracted fraud papers are almost
 # never available as a PDF — only as packages — so this is how the Stage 2
 # held-out numbers were produced. Both classes use the same package format.
+# The clean class is a PMCID list, selected by the same terms and Retraction
+# Watch screen as the calibration controls but without fetching PDFs the
+# package benchmark never opens (~1 GB saved for 58 papers).
+python scripts/build_heldout_clean_list.py --clean-target 58
 python scripts/fetch_heldout_packages.py --fraud-target 30
-python -m src.evaluation.benchmark_runner --eval-config src/config/eval_config_heldout.yaml
+
+# Papers are independent, so evaluate them in parallel (~11 min -> ~3 min for
+# 80 papers on 16 cores; results are bit-identical to --workers 1).
+python -m src.evaluation.benchmark_runner \
+    --eval-config src/config/eval_config_heldout.yaml --workers 16
 ```
 
 All scripts respect NCBI rate limits, skip already-fetched items via a resumable manifest, and record licensing. Datasets are never committed (see `.gitignore`) — they are re-fetchable from these scripts.
 
-### Train the AI-generation classifier (optional, biggest per-detector lift)
+### Train the AI-generation classifier (optional; measured +0.048 ROC-AUC)
 
-The AI detector is the strongest single discriminator, but ships forensics-only — its learned model raises the ceiling further. Training runs on a free GPU:
+The AI detector ships forensics-only. Training its learned model is the one GPU step in the project, and Stage 2e measures exactly what it buys: **ROC-AUC 0.685 → 0.733 and average precision 0.613 → 0.690, for 7 extra false alarms on 288 clean figures.** Read that section before trusting the classifier — a 0.99 validation accuracy does not mean 0.99 in the wild.
 
-1. Open [colab/train_artifact_classifier.ipynb](colab/train_artifact_classifier.ipynb) in Google Colab (Runtime → GPU).
-2. Point it at real vs. AI-generated figure folders (`data/real_captured_samples/` + `data/ai_generated_samples/` seed it; more is better).
-3. Run all cells (8 epochs, a few minutes on a T4). It writes `artifact_classifier.pt`.
-4. Drop it into `src/models/weights/artifact_classifier.pt`.
+**The training data matters more than the training.** `data/ai_generated_samples/` holds *synthetic stand-ins* — a real sample bilateral-denoised with a checkerboard added — and [src/utils/synth.py](src/utils/synth.py) says so itself. A classifier trained on those learns `cv2.bilateralFilter`. Generate real diffusion output instead:
 
-The checkpoint format and architecture are kept in lock-step with the inference loader (`src/models/artifact_classifier.py`) — a round-trip test guarantees a trained checkpoint loads and blends into the AI verdict with zero glue work. Without it, the detector degrades gracefully to the frequency + noise forensics.
+```bash
+# 1. A real class: native PMC package figures (400 more on top of what you have)
+export NCBI_CONTACT_EMAIL=you@institution.edu
+python scripts/fetch_corpus.py --search-terms "western blot" "fluorescence microscopy" \
+    "immunohistochemistry" --target-count 400 --output-dir data/clean
+
+# 2. An AI class: genuine Stable-Diffusion output, with the resolution and JPEG
+#    confounds matched to the real class so the model cannot separate them on
+#    compression alone (~25 min for 400 images on a 24 GB card)
+python scripts/generate_ai_figures.py --n 400 --batch-size 2 --render-size 768
+
+# 3. Train (~1 min on a modern GPU). Figures whose PMCID appears in an
+#    evaluation labels.json are dropped from the real class automatically --
+#    without that, ~185 of 486 figures here would have been papers under test.
+python scripts/train_artifact_classifier.py --epochs 8
+```
+
+That writes `src/models/weights/artifact_classifier.pt` (plus a `training_report.json` recording the split, exclusions and per-class metrics) and the detector picks it up automatically. [colab/train_artifact_classifier.ipynb](colab/train_artifact_classifier.ipynb) does the same on a free T4 if you have no local GPU.
+
+The checkpoint format and architecture are kept in lock-step with the inference loader (`src/models/artifact_classifier.py`) — the local trainer calls that module's own `build_model`, and a round-trip test guarantees a trained checkpoint loads and blends into the AI verdict with zero glue work. Without a checkpoint the detector degrades to the frequency + noise forensics and the report says so.
 
 ## Tests
 
 ```bash
-pytest -q      # 124 passed, 1 skipped
+pytest -q      # 148 passed, 1 skipped
 ```
 
 ---
