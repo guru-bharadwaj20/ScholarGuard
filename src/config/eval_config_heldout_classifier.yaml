@@ -1,0 +1,46 @@
+# ScholarGuard — held-out re-run WITH the trained AI-generation classifier.
+#
+# Identical to eval_config_heldout.yaml in every respect except the output
+# directory, so the two runs sit side by side and neither overwrites the other:
+#   outputs/heldout_run/            <- forensics only (no checkpoint on disk)
+#   outputs/heldout_run_classifier/ <- this run, with src/models/weights/
+#                                      artifact_classifier.pt present
+#
+# The ONLY variable between them is whether that checkpoint exists: same papers,
+# same pipeline_config, same operating point and sweep. So this is a controlled
+# before/after for the README's claim that the learned classifier is the biggest
+# per-detector lift — and, just as importantly, it is how a *regression* would
+# show up, since with weights present the detector blends
+# ``0.6*p_ai + 0.4*forensic`` and the classifier becomes the primary signal
+# (see src/detectors/ai_generation_detector.py). A classifier miscalibrated on
+# real figures would push the AI false-alarm rate straight back up.
+
+pipeline_config: src/config/config.yaml
+
+evaluation_set:
+  labels_path: data/heldout_packages/labels.json
+
+output:
+  dir: outputs/heldout_run_classifier
+
+decision:
+  paper_score_threshold: 25.0
+
+detector_fire_rules:
+  copy_move: forged_true
+  cross_figure: any_reuse
+  ai_generation: not_real
+  claim_consistency: inconsistent
+
+threshold_sweep:
+  start: 0.0
+  stop: 100.0
+  step: 2.5
+
+error_analysis:
+  max_examples_per_category: 15
+
+# Recompute the forensics-only run's metrics from its benchmark report and
+# render the two side by side. Nothing in that output directory is modified.
+comparison:
+  baseline_benchmark: outputs/heldout_run/benchmark_report.json
