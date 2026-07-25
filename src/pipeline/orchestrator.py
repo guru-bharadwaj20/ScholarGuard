@@ -326,6 +326,12 @@ class Pipeline:
             return {"status": "ok", "verdict": r["combined_verdict"],
                     "freq_score": r["frequency_anomaly_score"],
                     "noise_score": r["noise_residual_anomaly_score"],
+                    # The classifier's p(AI) is recorded, not just the fact that
+                    # it ran: with weights loaded it is the majority of the
+                    # verdict (0.6*p_ai + 0.4*forensic), so a report that keeps
+                    # only the boolean hides the number that drove the call and
+                    # leaves offline recalibration unable to refit around it.
+                    "classifier_score": r["classifier_score"],
                     "classifier_used": r["classifier_score"] is not None}
         except Exception as exc:  # noqa: BLE001
             logger.warning("ai-generation failed on %s: %s", image_path, exc)

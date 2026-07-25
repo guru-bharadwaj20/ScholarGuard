@@ -104,6 +104,14 @@ def test_ai_weights_state_is_reported_accurately(report):
         ai = fig["detectors"]["ai_generation"]
         assert ai["status"] == "ok"
         assert ai["classifier_used"] is weights_present
+        # The score itself is recorded, not just that it ran — offline
+        # recalibration reads it, and with weights loaded it is most of the
+        # verdict (0.6*p_ai + 0.4*forensic).
+        if weights_present:
+            assert isinstance(ai["classifier_score"], float)
+            assert 0.0 <= ai["classifier_score"] <= 1.0
+        else:
+            assert ai["classifier_score"] is None
 
     warned = any("FORENSICS-ONLY" in w for w in report["pipeline_warnings"])
     assert warned is not weights_present
