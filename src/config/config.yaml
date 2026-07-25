@@ -189,6 +189,19 @@ risk_scoring:
   # and cross_figure 0.28 (untouched) — NOT the cutoff.
   # RECALIBRATE with a larger, figure-annotated real set before trusting any
   # numeric threshold change. See the "How honest is it?" section of README.md.
+  #
+  # STILL 25, and still deliberately — 2026-07-25, Stage 2e (30 fraud / 50 clean
+  # held out). These boundaries are shared by every deployment, and nothing fitted
+  # to the test set is shipped in them. Two measured findings for anyone changing
+  # them:
+  #
+  #   * If you load AI classifier weights, the score distribution shifts UP and
+  #     this cutoff becomes effectively looser: the LOOCV-selected cutoff moves
+  #     25.8 -> 36.1, and scoring the blended run at 25 costs precision
+  #     (0.600 -> 0.568) and raises paper FPR (0.280 -> 0.320). 27.5 restores
+  #     parity at identical recall. See eval_config_heldout_classifier.yaml.
+  #   * 25 remains right for the shipped forensics-only path: it is that score's
+  #     F1 maximum (0.646) and its LOOCV-modal cutoff (25.8).
   categories:
     low: 0
     moderate: 25
