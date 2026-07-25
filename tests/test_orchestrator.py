@@ -82,11 +82,28 @@ def test_report_files_written(report):
     assert "Figure 1" in md
 
 
-def test_ai_weights_missing_is_reported_not_fatal(report):
-    """With no classifier weights on disk, AI runs forensics-only and says so."""
-    # Every figure's AI detector ran (forensics only).
+def test_ai_weights_state_is_reported_accurately(report):
+    """The report's classifier claim must match what the detector actually did.
+
+    This used to assert forensics-only unconditionally, which quietly depended
+    on no one having trained a checkpoint into the configured path: the moment
+    one existed the test failed, even though the pipeline was behaving
+    correctly. What actually matters is that the two agree — the AI detector
+    ran, and ``classifier_used`` plus the FORENSICS-ONLY warning both reflect
+    whether the configured weights are really there. The inverse case (report
+    says forensics-only while the default checkpoint drives the verdict) is a
+    bug this pins down; ``test_missing_stage4_weights_degrades_gracefully``
+    covers the missing-weights path explicitly.
+    """
+    from src.config.settings import load_settings
+
+    weights_path = load_settings().ai_weights_path
+    weights_present = bool(weights_path) and os.path.isfile(weights_path)
+
     for fig in report["figures"]:
         ai = fig["detectors"]["ai_generation"]
         assert ai["status"] == "ok"
-        assert ai["classifier_used"] is False
-    assert any("FORENSICS-ONLY" in w for w in report["pipeline_warnings"])
+        assert ai["classifier_used"] is weights_present
+
+    warned = any("FORENSICS-ONLY" in w for w in report["pipeline_warnings"])
+    assert warned is not weights_present

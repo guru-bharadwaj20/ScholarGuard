@@ -310,8 +310,14 @@ class Pipeline:
         try:
             from src.detectors.ai_generation_detector import (
                 detect_ai_generation, FORENSIC_LOW, FORENSIC_HIGH)
+            # Pass the CONFIGURED path through, missing or not: classify_artifact
+            # returns None for a path that isn't a file, which is the
+            # forensics-only degradation this pipeline promises. Normalizing a
+            # missing path to None instead made it mean "use the default path",
+            # so a config pointing at absent weights silently loaded
+            # src/models/weights/artifact_classifier.pt while the report still
+            # said FORENSICS-ONLY.
             weights = self.settings.ai_weights_path
-            weights = weights if (weights and os.path.isfile(weights)) else None
             low, high = self.settings.ai_forensic_bands(FORENSIC_LOW, FORENSIC_HIGH)
             r = detect_ai_generation(image_path, weights_path=weights,
                                      forensic_low=low, forensic_high=high,
