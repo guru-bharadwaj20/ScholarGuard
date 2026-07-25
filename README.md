@@ -179,25 +179,27 @@ Paper-level: ROC-AUC 0.665 → **0.685**, average precision 0.477 → **0.613**,
 | Metric | Forensics only | **With classifier** | |
 |---|---|---|---|
 | ROC-AUC (point score) | 0.685 | **0.733** | ✅ +0.048 |
-| Average precision (point score) | 0.613 | **0.690** | ✅ +0.077 |
+| Average precision (point score) | 0.613 | **0.688** | ✅ +0.075 |
 | ROC-AUC (fusion probability) | 0.758 | **0.790** | ✅ +0.032 |
 | Average precision (fusion probability) | 0.686 | **0.732** | ✅ +0.046 |
 | LOOCV accuracy | 0.700 | 0.700 | ➖ |
-| Precision / recall @ ≥25 | 0.600 / 0.700 | 0.568 / 0.700 | ⚠️ −0.03 precision |
-| Paper-level FPR | 0.280 | 0.320 | ⚠️ |
+| LOOCV-selected cutoff | 25.8 | **36.1** | scores shift up |
+| Precision / recall at the inherited ≥25 | 0.600 / 0.700 | 0.568 / 0.700 | ⚠️ −0.03 precision |
+| Precision / recall at the re-picked ≥27.5 | — | **0.600 / 0.700** | ✅ parity restored |
+| Paper-level FPR (≥25 → ≥27.5) | 0.280 | 0.320 → **0.280** | ✅ |
 | AI per-figure FPR | 1.4% (4/288) | **3.8%** (11/288) | ⚠️ 2.7× |
 | Copy-move / cross-figure / splice FPR | 39.6 / 19.9 / 0.7% | *identical* | ➖ |
 | AI detections on fraud-paper figures | 13 | **36** | (leads, unscoreable) |
 
 **Honest reading:**
 
-- ✅ **The classifier improves ranking, and that is the metric that cannot be gamed by a cutoff.** Both threshold-free measures rise on both scores (point-score AUC +0.048, AP +0.077). The gain is real but it is a *ranking* gain — it is not realised at the fixed 25-point cutoff, where precision actually slips 0.600 → 0.568 because the operating point was chosen for the forensics-only score distribution.
+- ✅ **The classifier improves ranking, and that is the metric that cannot be gamed by a cutoff.** Both threshold-free measures rise on both scores (point-score AUC +0.048, AP +0.075). It is a *ranking* gain, and at the inherited 25-point cutoff it was being thrown away — precision slipped 0.600 → 0.568 because that cutoff was calibrated on the forensics-only distribution while the classifier shifts scores upward (LOOCV-selected cutoff 25.8 → 36.1). **Re-picked to 27.5, the blended run matches the forensics-only operating point exactly** (precision 0.600, recall 0.700, paper FPR 0.280, F1 0.646) while keeping the better ranking. See [Stage 2f](#stage-2f--what-the-classifier-is-actually-worth) for the follow-up that questions the whole gain.
 - ✅ **The entire delta is attributable to the AI detector, which is the strongest possible evidence the A/B was clean.** Copy-move, cross-figure and splice FPRs are identical to three decimals, and the count of leads on fraud-paper figures rose by exactly 23 — precisely the AI detector's own 13 → 36.
 - ⚠️ **It costs 7 extra false alarms on clean figures** (4 → 11 of 288). Still the second-lowest FPR of any detector, and ~10× below copy-move's, but it is a real regression against the 1.4% forensics-only figure.
 - ⚠️ **Do not read 0.991 validation accuracy as forensic skill.** That number is in-domain, on a split of the very sets it trained on. Diffusion output *looks* different from a real micrograph, so a 224px CNN can separate the classes on appearance rather than on generator artifacts. The generator deliberately removes the two mechanical shortcuts — every image is resized to a size drawn from the real class's distribution and JPEG-encoded to match a sampled real blockiness (real 0.191 vs generated 0.186; compression strata 170/30 vs 173/27) — but it cannot remove the *semantic* shortcut. **Transfer to subtle, real AI-manipulated figures is unproven**, and unprovable on this set: it contains no AI-generation ground-truth positives, which is why the table above reports the detector's false-alarm rate and not its recall.
 - **Net:** worth keeping, worth re-picking the operating point for, and not worth believing the 0.99.
 
-**A blind spot this exposed: [recalibrate.py](src/evaluation/recalibrate.py) cannot see the classifier.** It re-derives every AI decision from the `freq_score` / `noise_score` stored per figure and never reads `classifier_score`, so its refit is structurally blind to the strongest new signal — both runs above produce a byte-identical recalibration. Its likelihood-ratio table therefore describes the *forensic* AI detector, not the trained one:
+**A blind spot this exposed: [recalibrate.py](src/evaluation/recalibrate.py) could not see the classifier.** It re-derived every AI decision from the `freq_score` / `noise_score` stored per figure and never read `classifier_score` — which the report did not even record, keeping only a `classifier_used` boolean. Both runs above therefore produced a byte-identical recalibration, and its likelihood-ratio table described the *forensic* AI detector, not the trained one:
 
 | Detector | P(fire \| fraud) | P(fire \| clean) | Likelihood ratio |
 |---|---|---|---|
@@ -205,7 +207,43 @@ Paper-level: ROC-AUC 0.665 → **0.685**, average precision 0.477 → **0.613**,
 | Cross-figure | 0.66 | 0.44 | 1.48 |
 | Copy-move | 0.62 | 0.46 | **1.35 (≈ noise)** |
 
-Even blind to the classifier, the AI detector's paper-level LR has doubled since Stage 2b (2.18 → 4.33) while copy-move remains ≈ noise. Teaching `recalibrate.py` to read `classifier_score` is now a priority — it is the only way to re-fit the fusion weights around the signal that is actually carrying the run.
+The forensic AI detector's paper-level LR has doubled since Stage 2b (2.18 → 4.33) while copy-move remains ≈ noise. Both gaps are now closed — see Stage 2f, where teaching the recalibrator to read the classifier produced the opposite of the expected answer.
+
+### Stage 2f — what the classifier is actually worth
+
+Stage 2e left two loose ends: the operating point was inherited rather than re-picked, and the recalibrator could not see the classifier at all. Closing both changed the conclusion.
+
+**1. The report now records `classifier_score`, not just that a classifier ran.** With weights loaded the classifier is the majority of the AI verdict (`0.6*p_ai + 0.4*forensic`), so keeping only a boolean hid the number that drove the call and left offline recalibration unable to refit around it — despite that module's whole premise being that every signal it needs is already in `benchmark_report.json`.
+
+**2. Recalibration can now use the blend — and measurement says not to.** [recalibrate.py](src/evaluation/recalibrate.py) grew an `--ai-mode {forensic,blend,auto}` that reproduces the pipeline's blend (weights imported from the detector, so the two cannot drift) and refits the AI cutoff to a target clean-figure FPR, the same construction the copy-move cutoff uses. Swept across target FPRs from 0.5% to 50%:
+
+| AI fire rule | P(fire \| fraud) | P(fire \| clean) | LR | LOOCV AUC | LOOCV AP |
+|---|---|---|---|---|---|
+| Blend @ 2% target FPR | 0.22 | 0.10 | 2.27 | 0.573 | 0.413 |
+| Blend @ 5% (best of sweep) | 0.62 | 0.23 | 2.71 | 0.663 | 0.474 |
+| Blend @ 20% | 0.84 | 0.50 | 1.69 | 0.639 | 0.434 |
+| **Forensic z ≥ 2** | 0.50 | 0.12 | **4.33** | **0.705** | **0.574** |
+
+**No blend cutoff beats the plain forensic z-score.** So `forensic` is the default and `blend` is opt-in — the reverse of what "use the better signal" would suggest. The cause is the training data, not the fusion: the classifier was trained to tell diffusion output from real micrographs, while retracted-fraud figures are *manipulated photographs*, so `p_ai` sits near zero on fraud and clean alike and carries little paper-level signal.
+
+**3. The uncomfortable finding: a two-line threshold change reproduces the classifier's entire ranking gain.** Attributing the 32 figures whose AI verdict newly fired shows **18 of them fire because `p_ai ≈ 0` *disagrees* with an elevated forensic score** — the detector's `|p_ai − forensic| ≥ 0.5` rule — versus only 10 driven by a confident `p_ai ≥ 0.5`. That rule fires at forensic ≈ 0.5 regardless of compression stratum, which quietly bypasses the compression-conditioned baseline Stage 2c built. In other words, much of the classifier's contribution is a *lowered effective threshold*, triggered by the classifier saying "real". So we tested it directly — same 80 papers, no classifier, absolute band at 0.50:
+
+| Run | ROC-AUC | Avg precision | Precision / recall | Paper FPR | AI figure FPR | Total FPs |
+|---|---|---|---|---|---|---|
+| **A** shipped forensics | 0.685 | 0.613 | 0.600 / 0.700 | 0.280 | 1.4% | 177 |
+| **B** forensic ≥ 0.50, *no classifier* | **0.739** | **0.691** | 0.600 / 0.700 | 0.280 | **2.1%** | **179** |
+| **C** with classifier (cutoff 27.5) | 0.733 | 0.688 | 0.600 / 0.700 | 0.280 | 3.8% | 184 |
+
+**B matches C on both threshold-free metrics — with no GPU, no training data, no checkpoint, and half the AI false-alarm rate.** The honest reading of Stage 2e's headline is therefore that the AI *threshold* was mis-set, and the classifier's apparent lift is mostly a proxy for fixing it.
+
+Two caveats that stop this from being a clean verdict, in both directions:
+
+- **B's thresholds were chosen after inspecting this set** (the 0.50 band was picked to mimic the disagreement rule's observed edge), so B's 0.739 is optimistic in a way C's 0.733 is not — the classifier was trained on entirely separate data and fitted nothing to these papers. B is evidence that the gain is *achievable* without a classifier, not proof that it generalises better.
+- **B abandons compression conditioning**, which Stage 2c added to fix a documented failure (publisher compression masquerading as an AI tell). It wins here and could lose on a set with more varied compression.
+
+**Nothing fitted to the test set was shipped.** `config.yaml` keeps `moderate: 25` and keeps compression conditioning on; the re-picked 27.5 lives in the evaluation config, and both are documented in place with the numbers above. The next honest step is a fresh set on which A, B and C can be compared without any of them having seen it.
+
+**Two smaller fixes found on the way.** `paper_fires` re-implemented the thresholds instead of aggregating the per-figure rule, so the paper-level and figure-level views could disagree (and did, once the AI rule changed) — it now aggregates `_figure_fires`. And the refit blend cutoff is nudged strictly above the clean quantile, because blend scores tie readily (a confident `p_ai` of 0.0 collapses the blend onto `0.4*forensic`) and a `>=` cutoff landing on a tied clean value overshoots its target FPR by an order of magnitude.
 
 **One bug, found only because a checkpoint finally existed.** The orchestrator normalised a configured-but-missing `weights_path` to `None`, and `classify_artifact` treats `None` as "use the default path" — so a config pointing at absent weights silently loaded `src/models/weights/artifact_classifier.pt` while the report still carried its `FORENSICS-ONLY` warning. With no checkpoint ever trained, both paths were absent and the two behaviours coincided, which is why 148 tests never caught it. Fixed, and the test that asserted forensics-only unconditionally now asserts that the report's claim and the detector's behaviour *agree* — which holds whether or not a checkpoint is present.
 
@@ -213,13 +251,13 @@ Even blind to the classifier, the AI detector's paper-level LR has doubled since
 
 ### Stage 3 — what's still to do (in priority order)
 
-1. **Re-pick the operating point for the classifier-blended score.** Stage 2e's AUC/AP gain is a pure *ranking* gain that the fixed 25-point cutoff throws away (precision 0.600 → 0.568). Sweep the cutoff on the with-classifier score distribution and choose it under LOOCV, rather than inheriting a threshold calibrated on the forensics-only distribution. This is the cheapest available win — no new detector work.
-2. **Teach [recalibrate.py](src/evaluation/recalibrate.py) to read `classifier_score`.** It currently re-derives every AI decision from `freq_score`/`noise_score` alone, so it is blind to the run's strongest signal and its refits are identical with and without a trained model. Until this lands, the fusion weights cannot be fit around the classifier at all.
-3. **Cross-figure specificity is the top remaining detector lever.** With copy-move gated, cross-figure (19.9% FPR, 57 of 184 false positives) is the largest false-positive source that is *fixable* — it flags legitimate dose-response / time-series panel similarity as reuse. Add the residual-clone test (already built) as a confirmation gate on cross-figure matches, and a caption/panel-role check so a labelled series is not read as duplication.
-4. **Improve detector *sensitivity* to real manipulations, not the score fusion.** Copy-move still barely separates at the paper level (LR 1.35, ≈ noise) while producing 114 of 184 false positives; PatchMatch verification and a Zernike-moment rotation-invariant CMFD tier (scoped in the design notes) target the subtle splices SIFT misses.
-5. **Annotate which figures the 30 retraction notices name** — unlocks per-detector *recall* measurement, without which detector improvements can't be steered (we currently measure only clean-figure FPR). This is also the only way to test whether the trained classifier detects *subtle* AI manipulation or merely tells diffusion output from microscopy.
+1. **Settle A vs B vs C on a set none of them has seen.** Stage 2f leaves the single most consequential question open: whether the AI gain belongs to the classifier (C) or just to a better-placed forensic threshold (B, which matches it without a GPU but was tuned after inspecting this set). A fresh held-out set decides it, and the answer determines whether the classifier is worth shipping at all. Everything needed is in place — `scripts/build_heldout_clean_list.py` + `fetch_heldout_packages.py`, then three `--workers 16` runs at ~3 minutes each.
+2. **Cross-figure specificity is the top remaining detector lever.** With copy-move gated, cross-figure (19.9% FPR, 57 of 184 false positives) is the largest false-positive source that is *fixable* — it flags legitimate dose-response / time-series panel similarity as reuse. Add the residual-clone test (already built) as a confirmation gate on cross-figure matches, and a caption/panel-role check so a labelled series is not read as duplication.
+3. **Improve detector *sensitivity* to real manipulations, not the score fusion.** Copy-move still barely separates at the paper level (LR 1.35, ≈ noise) while producing 114 of 184 false positives; PatchMatch verification and a Zernike-moment rotation-invariant CMFD tier (scoped in the design notes) target the subtle splices SIFT misses.
+4. **Annotate which figures the 30 retraction notices name** — unlocks per-detector *recall* measurement, without which detector improvements can't be steered (we currently measure only clean-figure FPR). This is also the only way to test whether the trained classifier detects *subtle* AI manipulation or merely tells diffusion output from microscopy.
+5. **Retrain the classifier on manipulated photographs, not just diffusion output.** Stage 2f diagnosed why it contributes so little at the paper level: it learned diffusion-vs-micrograph, a distinction almost orthogonal to how these papers were actually faked. A class built from spliced/duplicated real figures — which `src/utils/synth.py` can already produce, and which #4 would let us evaluate — targets the right decision boundary.
 6. **Grow to a larger, balanced held-out set** — 30/50 gives wide Wilson intervals; more papers tighten every estimate and stabilise the LR fits. Now much cheaper to iterate on: `--workers 16` cuts a full evaluation to ~3 minutes.
-7. **Lean the paper score on the detectors that discriminate** (AI, cross-figure) and treat copy-move as a lead-only signal until #3 lands — a low-FPR screening operating point is already reachable (paper FPR ~7% at recall ~0.27).
+7. **Lean the paper score on the detectors that discriminate** (AI, cross-figure) and treat copy-move as a lead-only signal until #2 lands — a low-FPR screening operating point is already reachable (paper FPR ~7% at recall ~0.27).
 
 **ScholarGuard is a screening prototype for human reviewers, not an autonomous accusation system. Every flag is a lead to be checked by a person.**
 
