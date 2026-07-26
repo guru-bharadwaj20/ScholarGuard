@@ -587,14 +587,68 @@ def average_precision(y_true: list[bool], scores: list[float]) -> float | None:
     return round(ap, 4)
 
 
-def ranking_metrics(y_true: list[bool], scores: list[float]) -> dict:
-    """Threshold-free summary: ROC-AUC + average precision + support."""
-    return {
+def count_matched_auc(y_true: list[bool], scores: list[float],
+                      strata: list[int]) -> dict:
+    """ROC-AUC restricted to positive/negative pairs in the SAME stratum.
+
+    Why this belongs in every report
+    --------------------------------
+    On held-out set 1 the paper risk score reaches ROC-AUC 0.685. So does
+    ``len(paper.figures)`` — 0.681, with no image analysis at all. Retracted
+    papers simply have more figures (median 7.5 vs 5.0), and any statistic that
+    accumulates per-figure evidence inherits that. A headline AUC cannot tell
+    you whether a detector works or whether it counted the figures.
+
+    Passing ``strata=[n_figures, ...]`` answers that: only fraud/clean pairs with
+    an *identical* figure count are compared, so figure count itself scores
+    exactly 0.500 and anything above that is signal the confound cannot explain.
+
+    Ties count as half, as in :func:`roc_auc`. Returns the matched AUC, the
+    number of comparable pairs, and how many strata contributed — a small
+    ``n_pairs`` means a wide interval, so report it alongside the estimate.
+    """
+    if not (len(y_true) == len(scores) == len(strata)):
+        raise ValueError("y_true, scores and strata must be the same length")
+    pos = [(s, k) for t, s, k in zip(y_true, scores, strata) if t]
+    neg = [(s, k) for t, s, k in zip(y_true, scores, strata) if not t]
+    by_stratum: dict[int, list] = {}
+    for s, k in neg:
+        by_stratum.setdefault(k, []).append(s)
+
+    wins = 0.0
+    pairs = 0
+    used = set()
+    for s_pos, k in pos:
+        for s_neg in by_stratum.get(k, ()):
+            pairs += 1
+            used.add(k)
+            if s_pos > s_neg:
+                wins += 1.0
+            elif s_pos == s_neg:
+                wins += 0.5
+    if pairs == 0:
+        return {"auc": None, "n_pairs": 0, "n_strata": 0}
+    return {"auc": round(wins / pairs, 4), "n_pairs": pairs,
+            "n_strata": len(used)}
+
+
+def ranking_metrics(y_true: list[bool], scores: list[float],
+                    strata: list[int] | None = None) -> dict:
+    """Threshold-free summary: ROC-AUC + average precision + support.
+
+    When ``strata`` is supplied (figure counts, in practice) the summary also
+    carries the stratum-matched AUC, so a reader can see at once how much of the
+    headline number survives controlling for how many figures were examined.
+    """
+    out = {
         "roc_auc": roc_auc(y_true, scores),
         "average_precision": average_precision(y_true, scores),
         "n_positive": sum(1 for t in y_true if t),
         "n_negative": sum(1 for t in y_true if not t),
     }
+    if strata is not None:
+        out["count_matched"] = count_matched_auc(y_true, scores, strata)
+    return out
 
 
 def loocv_threshold_accuracy(y_true: list[bool], scores: list[float],

@@ -103,6 +103,12 @@ def build_records(benchmark: dict, subset_map: dict[str, str] | None = None):
             "paper_id": pid, "gt_fraud": gt["is_fraudulent"],
             "score": report["overall_risk"]["score"],
             "category": report["overall_risk"]["category"],
+            # Carried so the ranking summary can control for it: figure count
+            # alone reaches ROC-AUC 0.681 on set 1 against the paper score's
+            # 0.685, so an uncontrolled headline cannot distinguish forensics
+            # from counting figures.
+            "n_figures": len(report.get("figures") or []),
+            "fraud_probability": report["overall_risk"].get("fraud_probability"),
             "label_confidence": gt.get("label_confidence", "confirmed"),
             "status": "ok"})
 
@@ -496,8 +502,25 @@ def analyze_benchmark(benchmark: dict, eval_settings: dict,
     # leave-one-out accuracy — the antidote to the in-sample best-threshold
     # accuracy that flattered earlier runs. These make no cutoff commitment
     # and are directly comparable across runs.
-    ranking = M.ranking_metrics(y_true, y_score)
+    # Figure counts turn the headline into a *controlled* number: pairs are
+    # only compared within an identical count, so the confound scores 0.500.
+    strata = [int(p.get("n_figures") or 0) for p in scored]
+    ranking = M.ranking_metrics(y_true, y_score, strata=strata)
     loocv = M.loocv_threshold_accuracy(y_true, y_score)
+
+    # Two reference rankings reported alongside the headline:
+    #   * figure count alone -- the null a forensic tool must beat, and on set 1
+    #     it very nearly matched the pipeline (0.681 vs 0.685);
+    #   * the noisy-OR posterior the pipeline already computes but does not lead
+    #     with, which outranked the point score on every view of set 1.
+    ranking_baselines = {
+        "figure_count_only": M.ranking_metrics(
+            y_true, [float(s) for s in strata], strata=strata),
+    }
+    probs = [p.get("fraud_probability") for p in scored]
+    if all(v is not None for v in probs):
+        ranking_baselines["noisy_or_probability"] = M.ranking_metrics(
+            y_true, [float(v) for v in probs], strata=strata)
 
     errors = categorize_errors(figure_records)
     ea_dir = os.path.join(output_dir, "error_analysis")
@@ -516,6 +539,7 @@ def analyze_benchmark(benchmark: dict, eval_settings: dict,
         "per_detector": det_metrics,
         "combined_paper": combined,
         "ranking": ranking,
+        "ranking_baselines": ranking_baselines,
         "loocv": loocv,
         "threshold_recommendation": recommendation,
         "errors": {
@@ -530,7 +554,8 @@ def analyze_benchmark(benchmark: dict, eval_settings: dict,
     }
     md = _render_summary_md(benchmark, det_metrics, combined, sweep,
                             recommendation, errors, baseline,
-                            ranking=ranking, loocv=loocv)
+                            ranking=ranking, loocv=loocv,
+                            ranking_baselines=ranking_baselines)
     md_path = os.path.join(output_dir, "metrics_summary.md")
     with open(md_path, "w", encoding="utf-8") as fh:
         fh.write(md)
@@ -556,7 +581,7 @@ def _fmt(v) -> str:
 
 def _render_summary_md(benchmark, det_metrics, combined, sweep,
                        recommendation, errors, baseline=None,
-                       ranking=None, loocv=None) -> str:
+                       ranking=None, loocv=None, ranking_baselines=None) -> str:
     meta = benchmark.get("meta", {})
     dataset = str(meta.get("dataset_name", "n/a"))
     is_real = "real" in dataset.lower()
@@ -654,6 +679,14 @@ def _render_summary_md(benchmark, det_metrics, combined, sweep,
                      f"positives are the minority)_")
             L.append(f"- _ranked over {ranking.get('n_positive', 0)} fraud / "
                      f"{ranking.get('n_negative', 0)} clean papers_")
+            cm = ranking.get("count_matched") or {}
+            if cm.get("auc") is not None:
+                L.append(f"- **Figure-count-matched ROC-AUC:** "
+                         f"{_fmt(cm['auc'])}  _(only fraud/clean pairs with the "
+                         f"SAME number of figures; {cm['n_pairs']} such pairs "
+                         f"across {cm['n_strata']} counts. Figure count itself "
+                         f"scores exactly 0.500 here, so this is the part of "
+                         f"the headline the confound cannot explain.)_")
         if loocv is not None:
             if loocv.get("loocv_accuracy") is None:
                 L.append(f"- **LOOCV accuracy:** n/a "
@@ -662,6 +695,25 @@ def _render_summary_md(benchmark, det_metrics, combined, sweep,
                 L.append(f"- **LOOCV accuracy:** {_fmt(loocv['loocv_accuracy'])}  "
                          f"_(cutoff chosen on n-1, scored on the held-out paper; "
                          f"modal cutoff {_fmt(loocv.get('modal_threshold'))})_")
+        if ranking_baselines:
+            L.append("")
+            L.append("### Reference rankings")
+            L.append("A forensic tool has to beat the number of figures in the "
+                     "paper. On held-out set 1 it barely did — figure count "
+                     "alone scored ROC-AUC 0.681 against the paper score's "
+                     "0.685 — so both references are reported on every run.")
+            L.append("")
+            L.append("| ranking statistic | ROC-AUC | avg precision | "
+                     "count-matched AUC |")
+            L.append("|---|---|---|---|")
+            pretty = {"figure_count_only": "figure count alone (no forensics)",
+                      "noisy_or_probability": "noisy-OR fraud probability"}
+            for key, vals in ranking_baselines.items():
+                bcm = (vals.get("count_matched") or {}).get("auc")
+                L.append(f"| {pretty.get(key, key)} | "
+                         f"{_fmt(vals.get('roc_auc'))} | "
+                         f"{_fmt(vals.get('average_precision'))} | "
+                         f"{_fmt(bcm)} |")
         L.append("")
         L.append("> Report these — not the swept best-threshold accuracy — when "
                  "comparing runs or claiming improvement. They cannot be inflated "

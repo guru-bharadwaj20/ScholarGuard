@@ -251,6 +251,50 @@ def test_average_precision_all_tied_equals_base_rate():
     assert average_precision(y, [0.5] * 4) == 0.5
 
 
+def test_count_matched_auc_neutralises_the_stratifying_variable():
+    """The stratifying variable itself must score exactly 0.5 under this control.
+
+    That is the whole point: figure count reaches ROC-AUC 0.681 on set 1, almost
+    the pipeline's 0.685, so a control that does not zero it out is not a control.
+    """
+    from src.evaluation.metrics import count_matched_auc
+    y = [True, True, False, False, True, False]
+    counts = [3, 5, 3, 5, 3, 5]
+    res = count_matched_auc(y, [float(c) for c in counts], counts)
+    assert res["auc"] == 0.5
+    assert res["n_pairs"] == 4      # 2 fraud@3 x 1 clean@3, 1 fraud@5 x 1 clean@5
+
+
+def test_count_matched_auc_detects_signal_within_strata():
+    from src.evaluation.metrics import count_matched_auc
+    y = [True, False, True, False]
+    counts = [4, 4, 9, 9]
+    scores = [1.0, 0.0, 1.0, 0.0]        # fraud always wins inside its stratum
+    assert count_matched_auc(y, scores, counts)["auc"] == 1.0
+
+
+def test_count_matched_auc_ignores_uncomparable_papers():
+    from src.evaluation.metrics import count_matched_auc
+    y = [True, False, True]
+    counts = [2, 2, 77]                  # the 77-figure fraud paper has no match
+    res = count_matched_auc(y, [1.0, 0.0, 1.0], counts)
+    assert res["n_pairs"] == 1 and res["n_strata"] == 1
+
+
+def test_count_matched_auc_undefined_without_pairs():
+    from src.evaluation.metrics import count_matched_auc
+    res = count_matched_auc([True, False], [1.0, 0.0], [1, 2])
+    assert res["auc"] is None and res["n_pairs"] == 0
+
+
+def test_ranking_metrics_carries_the_control_when_strata_given():
+    from src.evaluation.metrics import ranking_metrics
+    y = [True, False, True, False]
+    out = ranking_metrics(y, [0.9, 0.1, 0.8, 0.2], strata=[3, 3, 4, 4])
+    assert out["count_matched"]["auc"] == 1.0
+    assert "count_matched" not in ranking_metrics(y, [0.9, 0.1, 0.8, 0.2])
+
+
 def test_average_precision_matches_sklearn_under_heavy_ties():
     import random
 

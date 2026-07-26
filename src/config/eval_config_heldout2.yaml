@@ -1,0 +1,34 @@
+# ScholarGuard — HELD-OUT set 2 (the set whose result overturned Stage 2e).
+#
+# Same pipeline, same ingestion, disjoint papers from set 1 and from the
+# calibration set. Its outputs were not kept the first time round, so this
+# config exists to make the run reproducible: the set-2 numbers quoted in
+# EVALUATION.md should be regenerable with one command.
+#
+# Report the THRESHOLD-FREE metrics (ROC-AUC, average precision) and the
+# leave-one-out accuracy — not the swept best-threshold accuracy.
+
+pipeline_config: src/config/config.yaml
+
+evaluation_set:
+  labels_path: data/heldout_packages_v2/labels.json
+
+output:
+  dir: outputs/heldout2_run
+
+decision:
+  paper_score_threshold: 25.0
+
+detector_fire_rules:
+  copy_move: forged_true
+  cross_figure: any_reuse
+  ai_generation: not_real
+  claim_consistency: inconsistent
+
+threshold_sweep:
+  start: 0.0
+  stop: 100.0
+  step: 2.5
+
+error_analysis:
+  max_examples_per_category: 15

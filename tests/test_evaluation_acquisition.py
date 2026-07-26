@@ -99,7 +99,8 @@ def test_resolve_dois_to_pmcids_parses_batch_and_errors(fast_limiter):
          "status": "error", "errmsg": "Identifier not found in PMC"},
     ]}
     resp = MagicMock()
-    resp.raise_for_status.return_value = None
+    resp.status_code = 200          # real responses carry an int; the resolver
+    resp.raise_for_status.return_value = None   # branches on it to spot 4xx/5xx
     resp.json.return_value = body
     session = MagicMock()
     session.get.return_value = resp
@@ -111,6 +112,7 @@ def test_resolve_dois_to_pmcids_parses_batch_and_errors(fast_limiter):
 
 def test_resolve_dois_batches_requests(fast_limiter):
     resp = MagicMock()
+    resp.status_code = 200
     resp.raise_for_status.return_value = None
     resp.json.return_value = {"records": []}
     session = MagicMock()
