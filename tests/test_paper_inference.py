@@ -111,11 +111,15 @@ def test_by_empty():
 
 # -------------------------------------------------------- count correction
 def test_extra_clean_figures_do_not_raise_the_paper_statistic():
-    """THE regression test for the confound this module exists to remove.
+    """BY does correct for figure count — the property it was built for.
 
     Same single suspicious figure, once alone and once buried among many
-    unremarkable ones. The old ``0.7*max + 0.3*mean`` aggregation rose with
+    unremarkable ones. The shipped ``0.7*max + 0.3*mean`` aggregation rises with
     figure count on clean papers (corr 0.451); the BY statistic must not.
+
+    Note this property is real but did not pay off: on set 1 the BY ranking
+    measured WORSE than the uncorrected one (0.561 vs 0.685), so the shipped
+    pipeline does not rank with it. See the module docstring.
     """
     calib = [float(i) / 100 for i in range(100)]      # clean figure scores 0..0.99
     small = paper_evidence([0.995], calib)
