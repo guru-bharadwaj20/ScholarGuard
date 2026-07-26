@@ -547,23 +547,44 @@ def average_precision(y_true: list[bool], scores: list[float]) -> float | None:
 
     More informative than ROC-AUC when positives are the minority and the
     cost of false positives is high — which is the screening setting here.
-    Computed as the recall-weighted mean of precision at each threshold
-    where a new true positive is retrieved.
+
+    Ties are resolved as a **block**, not by input order. This matters: the
+    previous implementation sorted with a stable sort keyed on score alone, so
+    equally-scored papers kept their order in ``benchmark_report.json`` — which
+    stores fraud papers first. Every tied fraud paper was therefore ranked above
+    every tied clean one, and a coarse integer statistic
+    (``max_corroboration``) reported AP 0.865 where honest random tie-breaking
+    averages 0.612 — higher than all of 200 random shuffles.
+
+    The fix is the standard definition: step through *distinct* score
+    thresholds and accumulate ``sum((R_k - R_{k-1}) * P_k)``. Within a tie the
+    procedure cannot prefer either label, so the result no longer depends on
+    row order. Scores that are all distinct give exactly the previous value.
     """
-    pairs = sorted(zip(scores, y_true), key=lambda t: t[0], reverse=True)
-    total_pos = sum(1 for _, t in pairs if t)
+    total_pos = sum(1 for t in y_true if t)
     if total_pos == 0:
         return None
-    tp = 0
-    fp = 0
+    pairs = sorted(zip(scores, y_true), key=lambda t: t[0], reverse=True)
+
     ap = 0.0
-    for _, t in pairs:
-        if t:
-            tp += 1
-            ap += tp / (tp + fp)   # precision at this recall step
-        else:
-            fp += 1
-    return round(ap / total_pos, 4)
+    tp = fp = 0
+    prev_recall = 0.0
+    i, n = 0, len(pairs)
+    while i < n:
+        # Consume every entry sharing this score before measuring anything.
+        j = i
+        while j < n and pairs[j][0] == pairs[i][0]:
+            if pairs[j][1]:
+                tp += 1
+            else:
+                fp += 1
+            j += 1
+        recall = tp / total_pos
+        precision = tp / (tp + fp)
+        ap += (recall - prev_recall) * precision
+        prev_recall = recall
+        i = j
+    return round(ap, 4)
 
 
 def ranking_metrics(y_true: list[bool], scores: list[float]) -> dict:

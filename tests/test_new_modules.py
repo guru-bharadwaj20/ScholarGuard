@@ -227,6 +227,47 @@ def test_roc_auc_undefined_single_class():
     assert roc_auc([True, True], [0.1, 0.2]) is None
 
 
+def test_average_precision_ignores_row_order_under_ties():
+    """Ties must not be broken by the order rows happen to arrive in.
+
+    benchmark_report.json stores fraud papers first, so a stable sort keyed on
+    score alone used to rank every tied fraud paper above every tied clean one.
+    A coarse statistic then reported AP 0.865 where honest tie-breaking gives
+    ~0.61 — an inflation produced entirely by row order.
+    """
+    from src.evaluation.metrics import average_precision
+    y = [True, True, False, False, True, False]
+    scores = [1.0, 1.0, 1.0, 0.0, 0.0, 0.0]
+    baseline = average_precision(y, scores)
+    order = [5, 2, 0, 4, 1, 3]
+    shuffled = average_precision([y[i] for i in order], [scores[i] for i in order])
+    assert baseline == shuffled
+
+
+def test_average_precision_all_tied_equals_base_rate():
+    """With one indistinguishable block, precision is just the base rate."""
+    from src.evaluation.metrics import average_precision
+    y = [True, False, False, True]
+    assert average_precision(y, [0.5] * 4) == 0.5
+
+
+def test_average_precision_matches_sklearn_under_heavy_ties():
+    import random
+
+    from sklearn.metrics import average_precision_score
+
+    from src.evaluation.metrics import average_precision
+    rng = random.Random(7)
+    for _ in range(60):
+        n = rng.randint(6, 40)
+        y = [rng.random() < 0.4 for _ in range(n)]
+        if not any(y) or all(y):
+            continue
+        scores = [rng.choice([0, 1, 2, 3, 0.5]) for _ in range(n)]
+        assert average_precision(y, scores) == pytest.approx(
+            float(average_precision_score(y, scores)), abs=1e-4)
+
+
 def test_loocv_threshold_accuracy_runs():
     from src.evaluation.metrics import loocv_threshold_accuracy
     # Well-separated classes with a comfortable margin -> LOOCV recovers it.
