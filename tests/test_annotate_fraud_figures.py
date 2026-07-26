@@ -16,7 +16,7 @@ def nums(text):
 def test_single_figure_and_panel_letter():
     assert nums("Figure 3B was duplicated.") == {3}
     assert nums("An investigation found duplication in Fig. 7.") == {7}
-    assert nums("see figure 4") == {4}
+    assert nums("Figure 4 was manipulated.") == {4}
 
 
 def test_conjunction_does_not_swallow_the_next_number():
@@ -36,9 +36,29 @@ def test_abbreviating_period_does_not_split_the_reference():
     assert nums(text) == {7}
 
 
-def test_multiple_sentences_accumulate():
+def test_only_the_accused_figure_is_taken_from_a_mixed_notice():
+    """A neutral mention alongside an accusation must not be labelled."""
     text = "Figure 1 shows the workflow. Figure 12C is manipulated."
-    assert nums(text) == {1, 12}
+    assert nums(text) == {12}
+
+
+def test_exculpatory_mentions_are_not_labelled_as_manipulated():
+    """Regression: a real notice (PMID 35245321) volunteered supporting data.
+
+    "the authors have provided ... most blots presented in Figs 1-5" would
+    otherwise mark every figure in a five-figure paper as manipulated, on the
+    strength of the authors' defence, leaving the paper with no negatives.
+    """
+    text = ("The authors have provided individual level data underlying the "
+            "graphs and most blots presented in Figs 1-5. The underlying blots "
+            "provided for Fig 3D confirm that despite their similarity, the "
+            "bands are not identical.")
+    assert 1 not in nums(text) and 2 not in nums(text)
+
+
+def test_a_figure_needs_a_manipulation_cue_nearby():
+    assert nums("See figure 4 for the study workflow.") == set()
+    assert nums("Figure 4 shows overlapping panels.") == {4}
 
 
 def test_notices_without_figures_yield_nothing():
@@ -61,3 +81,22 @@ def test_evidence_is_returned_for_audit():
         "The authors retract this article. Figure 3B was duplicated from 5A.")
     assert found == {3}
     assert evidence and "Figure 3B" in evidence[0]
+
+
+def test_comma_and_list_keeps_every_number():
+    """'Figs 3, 4, and 5' is the commonest phrasing; it must not stop at 4."""
+    assert nums("concerns regarding results presented in Figs 3, 4, and 5.") == {3, 4, 5}
+    assert nums("Figures 1, 2, 3 and 7 are affected") == {1, 2, 3, 7}
+
+
+def test_supplementary_figures_are_not_main_figures():
+    """Supplementary figures are numbered separately from Figure N."""
+    assert nums("Supplementary Figure 1b shows duplicates.") == set()
+    assert nums("Supp. Fig 2 and Extended Data Figure 3") == set()
+    text = "Supplementary Figure 1b: panels are duplicates. Figure 4(a): images reused."
+    assert nums(text) == {4}
+
+
+def test_list_does_not_run_away_into_unrelated_numbers():
+    got = nums("Duplication in Figure 2, published in 2019 with 45 patients")
+    assert 2 in got and 45 not in got and 19 not in got

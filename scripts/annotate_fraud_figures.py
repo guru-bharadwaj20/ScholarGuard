@@ -68,18 +68,42 @@ from src.data_acquisition.rate_limiter import RateLimiter  # noqa: E402
 
 logger = logging.getLogger("scholarguard.annotate")
 
-#: "Figure 3", "Fig. 3", "Figures 2 and 4", "Figs 1-3", "Figure 5B".
-#: The panel letter carries a negative lookahead so it cannot swallow the first
-#: letter of a following word — without it, "Figures 2 and 4" parses as
-#: "2 a" and the 4 is lost.
-_PANEL = r"\d{1,2}(?:\s?[A-Za-z](?![A-Za-z]))?"
-_FIG_RE = re.compile(
-    r"\b(?:fig(?:ure)?s?\.?)\s*"
-    rf"((?:{_PANEL})(?:\s*(?:,|and|&|to|through|[-–—])\s*(?:{_PANEL}))*)",
+#: The "Figure"/"Fig."/"Figs" prefix that a number list may follow.
+_PREFIX_RE = re.compile(r"\bfig(?:ure)?s?\b\.?", re.IGNORECASE)
+#: One item of a following list: optional separator, optional range dash, a
+#: number, and an optional panel letter. The letter's negative lookahead stops
+#: it swallowing the first letter of a following word — without it "Figures 2
+#: and 4" reads as "2 a" and the 4 is lost. Separators stack (", and ") because
+#: "Figs 3, 4, and 5" is the single most common phrasing in these notices.
+_ITEM_RE = re.compile(
+    r"\s*(?:(?:,|;|and|&|to|through)\s*)*(?:(?P<dash>[-–—])\s*)?"
+    r"(?P<num>\d{1,2})(?:\s?[A-Za-z](?![A-Za-z]))?",
     re.IGNORECASE)
-_RANGE_RE = re.compile(r"(\d{1,2})\s*[-–—]\s*(\d{1,2})")
+#: A reference is skipped when this appears just before it: supplementary
+#: figures are numbered separately and are NOT the paper's Figure N.
+_SUPPLEMENT_RE = re.compile(
+    r"(?:supp(?:l(?:ement(?:al|ary)?)?)?\.?|extended\s+data|online)\s*$",
+    re.IGNORECASE)
 #: A figure number above this is far likelier to be a typo or a year fragment.
 _MAX_FIGURE = 30
+#: Longest list accepted after one prefix, so a match cannot run away down a
+#: sentence of unrelated numbers.
+_MAX_ITEMS = 12
+#: A figure reference only counts as an ACCUSATION if one of these appears near
+#: it. Notices mention figures for innocent reasons too, and the difference is
+#: not visible to a pattern match — one real notice says "the authors have
+#: provided individual level data underlying the graphs and most blots presented
+#: in Figs 1-5", which would otherwise mark every figure in the paper as
+#: manipulated on the strength of the authors' *defence*.
+_CUE_RE = re.compile(
+    r"duplicat|manipulat|splic|overlap|irregular|alter|reus|falsif|fabricat|"
+    r"doctor|identical|similar|concern|integrity|inappropriate|affect",
+    re.IGNORECASE)
+#: Sentence boundary used to scope the cue search. The uppercase/bullet
+#: lookahead keeps "Fig. 7" and "Figs 1-5." intact, since a digit never starts a
+#: new sentence here; a mis-split only narrows the window, which is the safe
+#: direction — it can drop a true figure, never invent one.
+_SENTENCE_SPLIT = re.compile(r"(?<=[.;:!?])\s+(?=[A-Z•‐-―*-])")
 
 
 def parse_figure_numbers(text: str) -> tuple[set[int], list[str]]:
@@ -93,26 +117,46 @@ def parse_figure_numbers(text: str) -> tuple[set[int], list[str]]:
     sentence splitter breaks "Fig. 7" in half at the abbreviating period and
     loses the number entirely.
     """
+    # Sentence spans, so a cue is only credited to the reference it sits with.
+    bounds = [0] + [m.end() for m in _SENTENCE_SPLIT.finditer(text)] + [len(text)]
+    spans = list(zip(bounds, bounds[1:]))
+
+    def enclosing(index: int) -> str:
+        for lo, hi in spans:
+            if lo <= index < hi:
+                return text[lo:hi]
+        return text
+
     found: set[int] = set()
     evidence: list[str] = []
-    for match in _FIG_RE.finditer(text):
-        body = match.group(1)
+    for prefix in _PREFIX_RE.finditer(text):
+        if _SUPPLEMENT_RE.search(text[max(0, prefix.start() - 24):prefix.start()]):
+            continue  # "Supplementary Figure 1" is not this paper's Figure 1
         hits: set[int] = set()
-        for lo, hi in _RANGE_RE.findall(body):
-            if int(lo) <= int(hi) and int(hi) - int(lo) <= 20:
-                hits.update(range(int(lo), int(hi) + 1))
-        hits.update(int(n) for n in re.findall(r"\d{1,2}", body))
-        hits = {n for n in hits if 1 <= n <= _MAX_FIGURE}
+        pos, previous = prefix.end(), None
+        for _ in range(_MAX_ITEMS):
+            item = _ITEM_RE.match(text, pos)
+            if not item:
+                break
+            num = int(item.group("num"))
+            if not 1 <= num <= _MAX_FIGURE:
+                break
+            if item.group("dash") and previous is not None and previous < num:
+                hits.update(range(previous, num + 1))   # "Figs 1-3"
+            hits.add(num)
+            previous, pos = num, item.end()
         if not hits:
             continue
+        if not _CUE_RE.search(enclosing(prefix.start())):
+            continue
         found |= hits
-        lo = max(0, match.start() - 120)
-        evidence.append(" ".join(text[lo:match.end() + 120].split()))
+        lo = max(0, prefix.start() - 120)
+        evidence.append(" ".join(text[lo:pos + 80].split()))
     return found, evidence
 
 
 def _get(url: str, params: dict, session, limiter) -> str | None:
-    limiter.acquire()
+    limiter.wait()
     try:
         r = session.get(url, params=params, timeout=60)
         r.raise_for_status()
@@ -126,7 +170,7 @@ def pmcids_to_pmids(pmcids: list[str], session, limiter) -> dict[str, str]:
     """Map PMCID -> PMID via the same idconv service the project already uses."""
     out: dict[str, str] = {}
     for i in range(0, len(pmcids), 200):
-        limiter.acquire()
+        # _idconv_batch rate-limits itself; do not double-throttle here.
         for rec in _idconv_batch(pmcids[i:i + 200], session, limiter):
             if rec.get("pmcid") and rec.get("pmid"):
                 out[rec["pmcid"].upper()] = str(rec["pmid"])
