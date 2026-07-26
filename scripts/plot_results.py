@@ -39,8 +39,10 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 from src.evaluation import metrics as M  # noqa: E402
 
-# Categorical slots 1 and 2 of the validated default order, plus ink/grid tokens.
-SERIES = ["#2a78d6", "#eb6834"]
+# Categorical slots 1-3 of the validated default order, used unchanged and in
+# order. Slot 3 was added when a third held-out set arrived; keeping the first
+# two stable means set 1 and set 2 stay the colours the earlier charts used.
+SERIES = ["#2a78d6", "#eb6834", "#2f9e6f"]
 INK = "#0b0b0b"
 INK_SOFT = "#52514e"
 GRID = "#d9d8d4"
@@ -52,18 +54,24 @@ PRETTY = {"copy_move": "Copy-move", "cross_figure": "Cross-figure",
 
 
 def load_scores(run_dir: str):
-    """(labels, paper scores) from a benchmark report."""
+    """(labels, paper scores, figure counts) from a benchmark report.
+
+    The figure count comes back alongside the score because it is the baseline
+    the chart has to show: on these sets it ranks papers about as well as the
+    pipeline does, and a results chart that omits it overstates the tool.
+    """
     path = os.path.join(run_dir, "benchmark_report.json")
     with open(path, encoding="utf-8") as fh:
         results = json.load(fh)["results"]
-    y, s = [], []
+    y, s, n = [], [], []
     for _pid, entry in results.items():
         report = entry.get("pipeline_report")
         if entry.get("status") != "ok" or not report:
             continue
         y.append(bool(entry["ground_truth"]["is_fraudulent"]))
         s.append(float(report["overall_risk"]["score"]))
-    return y, s
+        n.append(float(len(report.get("figures") or [])))
+    return y, s, n
 
 
 def load_detector_table(run_dir: str) -> dict:
@@ -133,12 +141,19 @@ def plot_curves(runs, out_path):
         style(ax)
 
     for i, (label, run_dir) in enumerate(runs):
-        y, s = load_scores(run_dir)
+        y, s, n = load_scores(run_dir)
         auc, ap = M.roc_auc(y, s), M.average_precision(y, s)
         base = sum(y) / len(y)
         fpr, tpr = roc_points(y, s)
         axes[0].plot(fpr, tpr, color=SERIES[i], linewidth=2,
                      label=f"{label} — AUC {auc:.3f}")
+        # The confound, drawn on the same axis: ranking by figure count alone.
+        # Dotted and thin so the pipeline stays legible, but present, because
+        # the whole point is how little daylight there is between them.
+        cf, ct = roc_points(y, n)
+        axes[0].plot(cf, ct, color=SERIES[i], linewidth=1.1, linestyle=":",
+                     alpha=0.85,
+                     label=f"    …figure count alone — {M.roc_auc(y, n):.3f}")
         rec, prec = pr_points(y, s)
         axes[1].plot(rec, prec, color=SERIES[i], linewidth=2,
                      label=f"{label} — AP {ap:.3f}")
@@ -149,7 +164,8 @@ def plot_curves(runs, out_path):
                  alpha=0.6, label="chance")
     axes[0].set_xlabel("False-positive rate (clean papers flagged)", color=INK_SOFT)
     axes[0].set_ylabel("Recall (fraud papers caught)", color=INK_SOFT)
-    axes[0].set_title("Paper-level ROC", color=INK, fontsize=11, loc="left")
+    axes[0].set_title("Paper-level ROC  (dotted = figure count, no image analysis)",
+                      color=INK, fontsize=11, loc="left")
 
     axes[1].set_xlabel("Recall", color=INK_SOFT)
     axes[1].set_ylabel("Precision", color=INK_SOFT)
@@ -159,12 +175,16 @@ def plot_curves(runs, out_path):
     for ax in axes:
         ax.set_xlim(-0.02, 1.02)
         ax.set_ylim(-0.02, 1.02)
-        leg = ax.legend(frameon=False, fontsize=9, loc="lower right")
-        for t in leg.get_texts():
-            t.set_color(INK)
+    leg = axes[0].legend(frameon=False, fontsize=7.6, loc="lower right",
+                         labelspacing=0.3, handlelength=1.8)
+    for t in leg.get_texts():
+        t.set_color(INK)
+    leg = axes[1].legend(frameon=False, fontsize=9, loc="lower right")
+    for t in leg.get_texts():
+        t.set_color(INK)
 
-    fig.suptitle("Two held-out sets, same pipeline — the gap between them is the "
-                 "finding", color=INK, fontsize=12, x=0.008, ha="left")
+    fig.suptitle("Three held-out sets agree — and counting the figures does "
+                 "nearly as well", color=INK, fontsize=12, x=0.008, ha="left")
     fig.tight_layout(rect=(0, 0, 1, 0.94))
     fig.savefig(out_path, dpi=160, facecolor=SURFACE)
     print(f"wrote {out_path}")
@@ -214,8 +234,13 @@ def plot_detectors(runs, out_path):
                      loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.01))
     for t in leg.get_texts():
         t.set_color(INK)
-    fig.suptitle("Only copy-move clears its own false-alarm rate — and on set 2, "
-                 "barely", color=INK, fontsize=12, x=0.008, ha="left")
+    # Checked, not assumed: across all three sets every detector's recall
+    # interval overlaps its own false-alarm interval. An earlier title claimed
+    # only copy-move cleared its FPR, which set 3's cross-figure result (0.31
+    # recall against 0.26 FPR) contradicts.
+    fig.suptitle("Every detector's recall interval overlaps its own "
+                 "false-alarm interval", color=INK, fontsize=12, x=0.008,
+                 ha="left")
     fig.tight_layout(rect=(0, 0.07, 1, 0.93))
     fig.savefig(out_path, dpi=160, facecolor=SURFACE)
     print(f"wrote {out_path}")

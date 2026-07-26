@@ -19,32 +19,41 @@ The evaluation is the point of the project. Detectors are easy to write and easy
 
 ## Where it stands
 
-Measured on **two independent held-out sets** of real PubMed Central papers — 30 formally-retracted image-fraud papers against 50 and 46 clean controls, no overlap with anything used for tuning.
+Measured on **three independent held-out sets** of real PubMed Central papers — 30 formally-retracted image-fraud papers each, against 50, 46 and 43 clean controls, with no overlap between sets or with anything used for tuning.
 
-![ROC and precision-recall on both held-out sets](images/roc_pr.png)
+![ROC and precision-recall on the held-out sets](images/roc_pr.png)
 
-| | Set 1 (30/50) | Set 2 (30/46) |
-|---|---|---|
-| ROC-AUC (0.5 = chance) | 0.685 | 0.664 |
-| Average precision (base rate 0.38 / 0.39) | 0.613 | 0.567 |
-| Recall at the screening cutoff | 0.70 | 0.77 |
-| Precision at the screening cutoff | 0.60 | 0.52 |
+| | Set 1 (30/50) | Set 2 (30/46) | Set 3 (30/43) |
+|---|---|---|---|
+| ROC-AUC (0.5 = chance) | 0.685 | 0.664 | 0.668 |
+| **…with figure count controlled** | **0.571** | **0.632** | **0.625** |
+| *Figure count alone, no image analysis* | *0.681* | *0.690* | *0.658* |
+| Average precision | 0.613 | 0.567 | 0.602 |
+| Recall at the screening cutoff | 0.70 | 0.77 | 0.60 |
+| Precision at the screening cutoff | 0.60 | 0.52 | 0.53 |
 
-It finds roughly **7 in 10 known-fraud papers** while flagging **28–46% of clean ones**. That is a triage aid for a human reviewer, not a verdict machine, and the README says so because the numbers do.
+It finds roughly **6–8 in 10 known-fraud papers** while flagging **28–47% of clean ones**. That is a triage aid for a human reviewer, not a verdict machine, and the README says so because the numbers do.
+
+**Read the second and third rows together.** Retracted papers simply have more figures (median 7.5 vs 5.0), and counting them predicts retraction about as well as the whole pipeline does — better, on set 2. Comparing only papers with an *identical* figure count, the ranking pooled across all three sets is **0.610 (95% CI 0.482–0.725, 439 matched pairs)**: probably real signal, roughly a fifth as strong as the raw number suggests, and still not separable from chance at 95%. Every evaluation run prints this control.
 
 **Per-detector, the honest picture** — and the half of it that only became measurable once retraction notices were parsed for figure-level labels:
 
 ![Per-detector recall and false-alarm rate](images/detector_recall_fpr.png)
 
-Copy-move is the only detector with real, replicated sensitivity: it catches about **half** the figures a retraction notice actually names. Splice fires on ~2% of the figures it should. Cross-figure is at or below chance. AI-generation's recall cannot be measured at all, because no retraction notice in either set describes a figure as generated.
+Copy-move has the clearest sensitivity, replicated three times: it catches about **half** the figures a retraction notice actually names (0.57 / 0.44 / 0.59). Cross-figure lands at 0.33 / 0.00 / 0.31. Splice fires on ~2% of the figures it should, on all three sets. AI-generation's recall cannot be measured at all, because no retraction notice in any set describes a figure as generated.
 
-**And one detector has never been evaluated at all.** Claim-consistency needs an `ANTHROPIC_API_KEY`, and every benchmark run above was made without one, so it was skipped on all 1,046 figures and contributes nothing to any number on this page — while still holding 10 of the 100 risk-score points. It is implemented and unit-tested against a mocked LLM; it has never been scored against real papers. Closing that gap needs a key and a re-run, and it is the largest unmeasured surface in the project.
+But read the error bars, not the bars: **across all three sets, every detector's recall interval overlaps its own false-alarm interval.** Copy-move comes closest to separating (0.57 [0.43–0.69] against 0.39 [0.35–0.43] on set 1) and does not manage it. At the figure level this tool surfaces leads; it does not yet demonstrate that it surfaces the right ones more often than the wrong ones.
 
-**Three findings worth more than the metrics:**
+**And one detector has never been evaluated at all.** Claim-consistency needs an `ANTHROPIC_API_KEY`, and every benchmark run above was made without one, so it was skipped on all 1,475 figures of the three held-out sets and contributes nothing to any number on this page — while still holding 10 of the 100 risk-score points. It is implemented and unit-tested against a mocked LLM; it has never been scored against real papers. Closing that gap needs a key and a re-run, and it is the largest unmeasured surface in the project.
 
+**Four findings worth more than the metrics:**
+
+- **The headline metric was measuring the wrong thing.** Paper-level ROC-AUC could not distinguish this pipeline from `len(paper.figures)`. Found by benchmarking against the dumbest possible predictor — now a permanent line in every report.
 - **An "improvement" that did not replicate.** A trained AI-generation classifier lifted set 1's ROC-AUC 0.685 → 0.733. On set 2 it was the *worst* of three configurations, with triple the false-alarm rate. It is disabled by default and the whole arc is documented rather than deleted.
 - **A threshold, not a model.** Most of that apparent gain was reproducible by a two-line threshold change with no classifier at all.
 - **One held-out set is not enough.** The same detector's false-alarm rate moved 1.4% → 5.4% between sets with no code change.
+
+Two further changes were built, measured, and **declined**: an explicit conformal + Benjamini–Yekutieli count correction (it ranks *worse* than the confound it removes), and switching the headline to the noisy-OR posterior (a +0.073 win on set 1 that did not replicate). Both are documented with their numbers.
 
 **→ [Full evaluation: stage by stage, including what was withdrawn](EVALUATION.md)**
 
@@ -61,7 +70,7 @@ python run_scholarguard.py --pdf path/to/paper.pdf
 Writes one integrity report (JSON + Markdown) with a paper-level risk score. No API key? It still runs on image forensics and says what it skipped. All behaviour is configured in [src/config/config.yaml](src/config/config.yaml).
 
 ```bash
-pytest -q            # 168 passed, 1 skipped
+pytest -q            # 200 passed, 1 skipped
 docker build -t scholarguard .        # CPU-only image, datasets mounted not baked
 ```
 

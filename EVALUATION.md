@@ -5,12 +5,19 @@ started, what was changed and why, where they landed on **unseen data**, and
 what is still open. Nothing here is spun. The numbers are unflattering where the
 tool is weak, and where a later stage disproved an earlier one **both are left
 standing** so the correction is visible — Stage 2e reports a gain that Stage 2g
-then withdraws.
+then withdraws, and Stage 2h undercuts the paper-level headline of every stage
+before it.
 
 Every figure-level rate carries a 95% Wilson interval; every paper-level claim
 is either threshold-free (ROC-AUC, average precision) or leave-one-out. Read the
 intervals, not the point estimates: with 30 fraud papers per set they are wide
 enough to swallow most single changes, which is the lesson of Stage 2g.
+
+**Read Stage 2h before quoting any paper-level ROC-AUC on this page**, including
+the ones above it. Figure count alone scores 0.658–0.690 across the three
+held-out sets against the pipeline's 0.664–0.685, so an uncontrolled paper-level
+AUC does not distinguish forensics from counting figures. The figure-level rates
+are unaffected.
 
 ← [Back to the README](README.md)
 
@@ -268,16 +275,18 @@ So Stage 2e's "+0.048 ROC-AUC from the classifier" **did not survive contact wit
 
 ### Per-detector recall — measured for the first time
 
-Every previous stage reported recall as *not measurable*: Retraction Watch says a paper was retracted for "Duplication of/in Image", never which figure. [scripts/annotate_fraud_figures.py](scripts/annotate_fraud_figures.py) closes that gap by reading the retraction *notice* — a separate article that often does name figures — via PubMed's `RetractionIn` pointer. It found a notice for **60 of 60 fraud papers** across both sets and extracted figure numbers from 50 of them (the other 10 are bare "Retracted: <title>" with no detail), marking **130 figures** as manipulated.
+Every previous stage reported recall as *not measurable*: Retraction Watch says a paper was retracted for "Duplication of/in Image", never which figure. [scripts/annotate_fraud_figures.py](scripts/annotate_fraud_figures.py) closes that gap by reading the retraction *notice* — a separate article that often does name figures — via PubMed's `RetractionIn` pointer. It found a notice for **89 of 90 fraud papers** across the three sets and extracted figure numbers from 74 of them (the rest are bare "Retracted: <title>" with no detail), marking **197 figures** as manipulated.
 
 With those labels, the shipped configuration finally has two-sided numbers, and they replicate across two independent sets:
 
-| Detector | Recall (set 1) | Recall (set 2) | Precision (set 1) | Precision (set 2) |
+| Detector | Recall (set 1) | Recall (set 2) | Recall (set 3) | FPR (set 1 / 2 / 3) |
 |---|---|---|---|---|
-| Copy-move | **0.576** (95% CI 0.46–0.69) | **0.476** (0.36–0.60) | 0.184 (0.14–0.24) | 0.146 (0.10–0.20) |
-| Splice | **0.030** (0.01–0.10) | **0.048** (0.02–0.13) | 0.400 (0.12–0.77) | 0.273 (0.10–0.57) |
-| Cross-figure | *no positives of its type* | — | — | — |
-| AI-generation | *no positives of its type* | — | — | — |
+| Copy-move | **0.57** (95% CI 0.43–0.69) | **0.44** (0.32–0.57) | **0.59** (0.45–0.71) | 0.39 / 0.43 / 0.49 |
+| Cross-figure | **0.33** (0.15–0.58) | **0.00** (0.00–0.49) | **0.31** (0.13–0.58) | 0.27 / 0.29 / 0.26 |
+| Splice | **0.02** (0.00–0.10) | **0.02** (0.00–0.09) | **0.02** (0.00–0.10) | 0.01 / 0.02 / 0.01 |
+| AI-generation | *no positives of its type* | — | — | 0.03 / 0.04 / 0.03 |
+
+**In all nine measurable cells, the recall interval overlaps that detector's own false-alarm interval.** Copy-move on set 1 comes closest — 0.57 [0.43–0.69] against 0.39 [0.35–0.43] — and still does not separate. The detectors generate leads; none of them has yet been shown to generate right ones more often than wrong ones at a rate the intervals can distinguish.
 
 **What this changes:**
 
@@ -291,6 +300,53 @@ With those labels, the shipped configuration finally has two-sided numbers, and 
 The roadmap's top detector lever was to promote the residual-clone test from a damping factor to a hard veto on cross-figure matches, as the dense copy-move tier already does. It is implemented ([`residual_veto_independent`](src/config/config.yaml)) — and it **changes nothing at all**: gated and ungated runs produce byte-identical cross-figure output for all **546 figures across 80 papers**.
 
 The reason is worth recording, because it redirects the work. Instrumenting the residual test through the orchestrator gives **30 of 30 verdicts as `CLONE`** (median correlation 1.000) and never `INDEPENDENT` — the veto condition simply never occurs. Cross-figure's false alarms are not honest look-alikes that a noise test can reject; they *pass* the noise test. Two contributors were identified: 4 of 50 clean packages ship byte-identical duplicate image files under different names, and publisher JPEG compression correlates residuals — the same effect this README already notes behind copy-move's spurious `CLONE` calls. The gate is kept (six lines, config-flagged, zero measured cost, plausibly useful on native uncompressed figures) but it is **not** the fix for cross-figure specificity.
+
+### Stage 2h — the paper score is largely a figure counter
+
+Every stage above quoted a paper-level ROC-AUC. None of them checked it against the most boring predictor available. On held-out set 1:
+
+| Predictor | ROC-AUC |
+|---|---|
+| **Number of figures in the paper — no image analysis at all** | **0.681** |
+| Shipped paper score (`0.7·max + 0.3·mean`) | 0.685 |
+| Shipped score ÷ figure count | 0.505 |
+
+Retracted papers have more figures (median 7.5 vs 5.0), and any statistic that accumulates per-figure evidence inherits that. Among clean papers alone, `corr(n_figures, risk score) = 0.451`: a clean control with 8 figures averages 24.1 risk, one with 4 averages 15.0. This is uncontrolled multiple testing — the score grows with how many chances the pipeline was given to fire.
+
+**It replicates on all three sets**, including one frozen specifically to test it:
+
+| | Set 1 (30/50) | Set 2 (30/46) | **Set 3 (30/43, frozen)** |
+|---|---|---|---|
+| Shipped paper score | 0.685 | 0.664 | 0.668 |
+| Figure count alone | 0.681 | **0.690** | 0.658 |
+| Noisy-OR posterior | 0.758 | 0.658 | 0.677 |
+
+On set 2 the figure counter **beats** the forensic pipeline. Sets 1 and 2 had both informed decisions by this point (the splice demotion, the classifier, the cutoff), so set 3 was downloaded fresh, screened, and run exactly once — the numbers above are its first and only use.
+
+**The honest measurement is `count_matched_auc`**, which compares only fraud/clean pairs with an *identical* figure count, so the confound scores exactly 0.500 by construction:
+
+| | Set 1 | Set 2 | Set 3 | **Pooled (439 pairs)** |
+|---|---|---|---|---|
+| Shipped paper score | 0.571 | 0.632 | 0.625 | **0.610**  95% CI [0.482, 0.725] |
+| Noisy-OR posterior | 0.607 | 0.602 | 0.629 | **0.612**  95% CI [0.493, 0.725] |
+
+So there is probably real forensic signal in the paper ranking — the point estimate is above chance in all six cells — but it is **roughly a fifth as strong as the uncontrolled headline implies**, and even pooled across 439 matched pairs from three independent sets the 95% interval still touches 0.5. Every run now prints this line and both reference rankings, so the confound cannot go unreported again.
+
+**A change measured, and not adopted.** The obvious fix is to correct for the count explicitly. [src/pipeline/paper_inference.py](src/pipeline/paper_inference.py) does it properly: split-conformal p-values per figure against a clean calibration set, then Benjamini–Yekutieli across the paper's figures (BY not BH — figures within a paper share instrument, compression and authors, and BY's `C(m)` factor is valid under arbitrary dependence). Leave-one-paper-out calibrated on set 1, every count-corrected combiner **lost**:
+
+| Combiner | ROC-AUC | AP | | Combiner | ROC-AUC | AP |
+|---|---|---|---|---|---|---|
+| BY min-adjusted *p* | 0.561 | 0.412 | | Fisher | 0.650 | 0.597 |
+| Count of BY-rejected figures | 0.500 | 0.375 | | Stouffer | 0.513 | 0.443 |
+| Simes | 0.602 | 0.455 | | Higher criticism | 0.633 | 0.544 |
+
+against the shipped 0.685. Two reasons, both about this data rather than the theory: 42.5% of figures score exactly 0 (48.6% of the clean calibration figures too), so conformal *p*-values collapse onto a handful of values and the ordering inside them is lost; and BY's headline is driven by a single figure, while a max-type statistic was already the weaker choice here (max figure probability 0.723 vs noisy-OR 0.758).
+
+The conclusion is that figure count is **not purely an artifact to strip out**. Part of it is real — bigger papers do carry more opportunity — and removing it costs more than the confound does. The correction therefore lives in *measurement*, not in the ranking. The conformal calibrator is kept because its false-positive guarantee is a theorem rather than a measurement, and holds around whatever statistic it wraps.
+
+**The noisy-OR switch was also declined.** On set 1 it looked like a free +0.073 AUC. It lost on set 2 (0.658 vs 0.664), won narrowly on set 3, and once figure count is controlled it is indistinguishable from the shipped score (0.612 vs 0.610 pooled). Stage 2g's rule held: one set was not enough.
+
+**A measurement bug found on the way.** `average_precision` sorted with a stable sort keyed on score alone, so tied papers kept their order in `benchmark_report.json` — which writes fraud papers first. Every tied fraud paper therefore sat above every tied clean one. Invisible on the near-continuous headline scores (paper-score AP is 0.6128 before and after), but severe on coarse statistics: `max_corroboration` reported AP **0.865** where honest tie-breaking averages 0.618, higher than all of 200 random shuffles. It is now the standard block-wise definition, verified identical to the old code on 300 all-distinct cases and to `sklearn` on 400 heavy-tie cases.
 
 ### Stage 3 — what's still to do (in priority order)
 

@@ -301,6 +301,25 @@ def main(argv=None) -> int:
         if not report["results"]:
             log.error("no benchmark_report.json to analyze in %s", output_dir)
             return 1
+        # Refresh the ground truth from labels.json before analysing. The report
+        # stores the labels as they were AT RUN TIME, and figure-level
+        # annotations routinely arrive afterwards -- annotate_fraud_figures.py
+        # reads retraction notices over the network, so it is a separate pass.
+        # Without this, --analyze-only silently re-reports the stale labels and
+        # every newly-annotated figure still counts as UNLABELED: set 3 showed
+        # recall "not measurable" for all four detectors with 67 annotated
+        # figures sitting in labels.json.
+        labels_path = eval_cfg["evaluation_set"]["labels_path"]
+        refreshed = {p["paper_id"]: p
+                     for p in load_evaluation_set(labels_path)["papers"]}
+        n_updated = 0
+        for pid, entry in report["results"].items():
+            if pid in refreshed and entry.get("ground_truth") != refreshed[pid]:
+                entry["ground_truth"] = refreshed[pid]
+                n_updated += 1
+        if n_updated:
+            log.info("refreshed ground truth for %d paper(s) from %s",
+                     n_updated, labels_path)
     else:
         evaluation_set = load_evaluation_set(
             eval_cfg["evaluation_set"]["labels_path"])
