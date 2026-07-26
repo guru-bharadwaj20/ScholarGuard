@@ -1,0 +1,19 @@
+# Datasets and generated artefacts are mounted, never baked in.
+data/
+outputs/
+retraction-watch-data/
+src/models/weights/*.pt
+
+# Frontend build output and deps (the image serves the API bridge only).
+web/node_modules/
+web/.next/
+
+.git/
+.github/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+images/
