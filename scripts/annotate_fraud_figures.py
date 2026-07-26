@@ -45,6 +45,7 @@ Example:
 from __future__ import annotations
 
 import argparse
+import collections
 import json
 import logging
 import os
@@ -104,6 +105,23 @@ _CUE_RE = re.compile(
 #: new sentence here; a mis-split only narrows the window, which is the safe
 #: direction — it can drop a true figure, never invent one.
 _SENTENCE_SPLIT = re.compile(r"(?<=[.;:!?])\s+(?=[A-Z•‐-―*-])")
+#: Reuse ACROSS articles — the cross-figure detector's actual target. Phrases
+#: like "Figure 4a published in [1] and Figure 2b in [2]" or "also appears in a
+#: previously published article".
+_CROSS_ARTICLE_RE = re.compile(
+    # One optional word may sit between, as in "previously PUBLISHED article".
+    r"(?:another|different|previous(?:ly)?|separate|other|earlier)\s+"
+    r"(?:\w+\s+)?(?:article|paper|publication|study|manuscript)"
+    r"|published\s+in\s*\[|in\s+the\s+(?:earlier|prior)\s+(?:article|paper)"
+    r"|from\s+(?:a|an)\s+(?:different|other|unrelated)\s+(?:source|paper|article)",
+    re.IGNORECASE)
+#: Explicitly generated/synthetic imagery. Rare in these notices, kept narrow.
+_AI_RE = re.compile(
+    r"\b(?:ai[- ]generated|generative|synthetic image|computer[- ]generated)\b",
+    re.IGNORECASE)
+#: Duplication/manipulation confined to this paper's own figures.
+_WITHIN_RE = re.compile(
+    r"duplicat|overlap|splic|identical|manipulat|altered|reus", re.IGNORECASE)
 
 
 def parse_figure_numbers(text: str) -> tuple[set[int], list[str]]:
@@ -117,6 +135,22 @@ def parse_figure_numbers(text: str) -> tuple[set[int], list[str]]:
     sentence splitter breaks "Fig. 7" in half at the abbreviating period and
     loses the number entirely.
     """
+    refs = parse_figure_references(text)
+    evidence: list[str] = []
+    for windows in refs.values():
+        for w in windows:
+            if w not in evidence:
+                evidence.append(w)
+    return set(refs), evidence
+
+
+def parse_figure_references(text: str) -> dict[int, list[str]]:
+    """Map each named figure number to the wording that named it.
+
+    Same extraction as :func:`parse_figure_numbers`, but keeping the per-figure
+    association so each figure can be typed by what the notice says *about it*
+    rather than inheriting one label from the paper's retraction reason.
+    """
     # Sentence spans, so a cue is only credited to the reference it sits with.
     bounds = [0] + [m.end() for m in _SENTENCE_SPLIT.finditer(text)] + [len(text)]
     spans = list(zip(bounds, bounds[1:]))
@@ -127,8 +161,7 @@ def parse_figure_numbers(text: str) -> tuple[set[int], list[str]]:
                 return text[lo:hi]
         return text
 
-    found: set[int] = set()
-    evidence: list[str] = []
+    refs: dict[int, list[str]] = {}
     for prefix in _PREFIX_RE.finditer(text):
         if _SUPPLEMENT_RE.search(text[max(0, prefix.start() - 24):prefix.start()]):
             continue  # "Supplementary Figure 1" is not this paper's Figure 1
@@ -147,12 +180,35 @@ def parse_figure_numbers(text: str) -> tuple[set[int], list[str]]:
             previous, pos = num, item.end()
         if not hits:
             continue
-        if not _CUE_RE.search(enclosing(prefix.start())):
+        sentence = enclosing(prefix.start())
+        if not _CUE_RE.search(sentence):
             continue
-        found |= hits
         lo = max(0, prefix.start() - 120)
-        evidence.append(" ".join(text[lo:pos + 80].split()))
-    return found, evidence
+        window = " ".join(text[lo:pos + 80].split())
+        for num in hits:
+            refs.setdefault(num, []).append(window)
+    return refs
+
+
+def classify_manipulation(windows: list[str], default: str) -> str:
+    """Fraud type for one figure, from what the notice says *about that figure*.
+
+    Until now every annotated figure inherited a single ``fraud_type`` from its
+    paper's Retraction Watch reason, so no figure was ever typed
+    ``cross_figure`` and that detector's recall stayed unmeasurable no matter
+    how many papers were annotated. The notice usually distinguishes the modes
+    in plain language — reuse *across articles* reads very differently from
+    duplication within one figure — so the type is taken per figure here, with
+    the paper-level reason as the fallback.
+    """
+    blob = " ".join(windows)
+    if _CROSS_ARTICLE_RE.search(blob):
+        return "cross_figure"
+    if _AI_RE.search(blob):
+        return "ai_generated"
+    if _WITHIN_RE.search(blob):
+        return "copy_move"
+    return default
 
 
 def _get(url: str, params: dict, session, limiter) -> str | None:
@@ -270,6 +326,7 @@ def run(args) -> int:
                 len(pmid_by_pmcid))
 
     annotated, no_notice, no_figures = 0, 0, 0
+    types = collections.Counter()
     audit = []
     for paper in fraud:
         pmid = pmid_by_pmcid.get(paper["paper_id"].upper())
@@ -278,6 +335,7 @@ def run(args) -> int:
             no_notice += 1
             continue
         text, source = notice_text(notice_pmid, session, limiter)
+        refs = parse_figure_references(text)
         figures, evidence = parse_figure_numbers(text)
         if not figures:
             no_figures += 1
@@ -285,27 +343,33 @@ def run(args) -> int:
                         paper["paper_id"], notice_pmid, source, len(text))
             continue
 
-        ftype = rw.reason_to_fraud_type(paper.get("retraction_reason", "") or "")
+        default_type = rw.reason_to_fraud_type(
+            paper.get("retraction_reason", "") or "")
+        typed = {n: classify_manipulation(refs.get(n, []), default_type)
+                 for n in sorted(figures)}
         paper["figures"] = [{
             "figure_num": n,
-            "fraud_type": ftype,
+            "fraud_type": typed[n],
             "label_confidence": "confirmed",
             "note": (f"named in retraction notice PMID {notice_pmid} "
-                     f"({source})"),
+                     f"({source}); type inferred from the notice wording"),
         } for n in sorted(figures)]
         paper["retraction_notice_pmid"] = notice_pmid
         annotated += 1
+        for t in typed.values():
+            types[t] += 1
         audit.append({"paper_id": paper["paper_id"], "notice_pmid": notice_pmid,
                       "source": source, "figures": sorted(figures),
-                      "evidence": evidence[:4]})
+                      "fraud_types": typed, "evidence": evidence[:4]})
         logger.info("%s: figures %s (notice %s)", paper["paper_id"],
-                    sorted(figures), notice_pmid)
+                    [f"{n}:{typed[n]}" for n in sorted(figures)], notice_pmid)
 
     print(f"\nAnnotated {annotated}/{len(fraud)} fraud papers with figure-level "
           f"labels")
     print(f"  no retraction notice found : {no_notice}")
     print(f"  notice named no figure     : {no_figures}")
     print(f"  figures marked manipulated : {sum(len(a['figures']) for a in audit)}")
+    print(f"  by inferred type           : {dict(types)}")
 
     if args.dry_run:
         print("\n--dry-run: nothing written. Evidence sentences:")
@@ -323,6 +387,7 @@ def run(args) -> int:
     with open(audit_path, "w", encoding="utf-8") as fh:
         json.dump({"n_annotated": annotated, "n_no_notice": no_notice,
                    "n_notice_without_figures": no_figures,
+                   "figures_by_inferred_type": dict(types),
                    "annotations": audit}, fh, indent=2)
     print(f"\nWrote {args.labels} (backup: {args.labels}.prelabel.bak)")
     print(f"Audit  {audit_path}")

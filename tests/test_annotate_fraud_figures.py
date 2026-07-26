@@ -100,3 +100,40 @@ def test_supplementary_figures_are_not_main_figures():
 def test_list_does_not_run_away_into_unrelated_numbers():
     got = nums("Duplication in Figure 2, published in 2019 with 45 patients")
     assert 2 in got and 45 not in got and 19 not in got
+
+
+# --------------------------------------------------- per-figure fraud type
+from scripts.annotate_fraud_figures import (  # noqa: E402
+    classify_manipulation,
+    parse_figure_references,
+)
+
+
+def test_references_are_kept_per_figure():
+    """Each figure keeps the wording that named it, so it can be typed."""
+    refs = parse_figure_references(
+        "Figure 2 was duplicated. Figure 7 overlaps a previous article.")
+    assert set(refs) == {2, 7}
+    assert "Figure 2" in refs[2][0]
+    assert "Figure 7" in refs[7][0]
+
+
+def test_cross_article_reuse_is_typed_cross_figure():
+    """The cross-figure detector had no positives of its own type at all."""
+    assert classify_manipulation(
+        ["duplication between Figure 4a published in [1] and Figure 2b in [2]"],
+        "copy_move") == "cross_figure"
+    assert classify_manipulation(
+        ["images also appear in a previously published article"],
+        "copy_move") == "cross_figure"
+
+
+def test_within_paper_duplication_is_typed_copy_move():
+    assert classify_manipulation(
+        ["panels in Figure 3 are duplicates of each other"],
+        "cross_figure") == "copy_move"
+
+
+def test_unrecognised_wording_falls_back_to_the_paper_reason():
+    assert classify_manipulation(["Figure 2 raises concerns"], "copy_move") == "copy_move"
+    assert classify_manipulation([], "ai_generated") == "ai_generated"
