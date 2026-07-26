@@ -66,6 +66,7 @@ class Settings:
             "min_inliers", "min_region_area", "top_k",
             "use_analysis_mask", "min_content_entropy",
             "residual_independent_factor", "residual_inconclusive_factor",
+            "residual_veto_independent",
         ])
 
     # -- Stage 4 / 5 --------------------------------------------------------

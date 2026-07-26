@@ -61,6 +61,15 @@ detectors:
     min_content_entropy: 1.0
     residual_independent_factor: 0.25
     residual_inconclusive_factor: 0.85
+    # Residual clone test as a VETO, not just a damping factor. Damping scales
+    # confidence, so a strong geometric match between two legitimately similar
+    # panels (dose-response series, time courses) still cleared the reuse bar
+    # with demonstrably independent noise — the dominant remaining false-alarm
+    # source once copy-move was gated. Two captures never share a noise field,
+    # so an INDEPENDENT verdict means look-alike, not copy. INCONCLUSIVE is
+    # deliberately NOT vetoed: heavy JPEG destroys the residual, and treating
+    # "cannot tell" as "not a clone" would silently drop real reuse.
+    residual_veto_independent: true
     # Optional external corpus of prior figures to check against. If null,
     # the paper's OWN figures form the corpus (catches within-paper reuse).
     corpus_dir: null

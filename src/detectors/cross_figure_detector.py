@@ -41,7 +41,11 @@ from src.detectors.copy_move_detector import (
     keep_seeded_components,
     local_zncc,
 )
-from src.forensics.residual_similarity import clone_factor, residual_clone_test
+from src.forensics.residual_similarity import (
+    INDEPENDENT,
+    clone_factor,
+    residual_clone_test,
+)
 from src.indexing.feature_extractor import FeatureExtractor
 from src.preprocessing.panel_segmentation import (
     PanelSegConfig,
@@ -123,6 +127,14 @@ class CrossFigureConfig:
     corr_norm: float = 0.70         # high-passed ZNCC that counts as "perfect"
     residual_independent_factor: float = 0.25
     residual_inconclusive_factor: float = 0.85
+    # Promote the residual clone test from a damping factor to a VETO, the way
+    # the dense copy-move tier already uses it. Damping only scales confidence,
+    # so a strong geometric match on two legitimately similar panels (a
+    # dose-response series, a time course) still clears the reuse bar with
+    # independent noise. A veto answers the question the geometry cannot: two
+    # captures never share a noise field, so INDEPENDENT noise means "these are
+    # look-alikes", not "one was copied from the other".
+    residual_veto_independent: bool = True
 
     # Stage 2 feature/ZNCC settings are reused as-is.
     stage2: DetectorConfig = field(default_factory=DetectorConfig)
@@ -240,6 +252,14 @@ class CrossImageRegionMatcher:
         # pixel clone shares one capture's noise field. Runs on the raw
         # (not high-passed) intensities in B's frame.
         residual = residual_clone_test(gray_b, warped, mask_region_b)
+        if (cfg.residual_veto_independent
+                and residual.get("verdict") == INDEPENDENT):
+            # Independent noise fields: aligned, similar-looking, but not one
+            # capture reused. INCONCLUSIVE is NOT vetoed — heavy JPEG can
+            # destroy the residual, and treating "cannot tell" as "not a clone"
+            # would silently drop real reuse.
+            return {**no_match, "vetoed_by_residual": True,
+                    "noise_residual": residual}
         noise_factor = clone_factor(
             residual,
             independent_factor=cfg.residual_independent_factor,
