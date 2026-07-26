@@ -1,0 +1,43 @@
+name: tests
+
+# The pipeline is CPU-only by design, so CI runs the real suite rather than a
+# subset. The one GPU step (training the AI classifier) is not exercised here;
+# its checkpoint round-trip is covered on CPU by tests/test_artifact_classifier.py.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Floor and a current release: requirements.txt claims >= 3.10, and the
+        # bug this workflow exists to catch was a pin that silently required a
+        # newer Python than the project supports.
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install (CPU torch wheels, to keep the runner small)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+
+      - name: Show resolved versions
+        run: pip list
+
+      - name: Run tests
+        # No ANTHROPIC_API_KEY and no NCBI_CONTACT_EMAIL are set: the suite must
+        # pass without either, which is also how a first-time reader runs it.
+        run: pytest -q

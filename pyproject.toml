@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scholarguard"
+version = "0.1.0"
+description = "Figure-integrity screening for scientific papers, with every limitation measured and disclosed"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+dynamic = ["dependencies"]
+
+[project.scripts]
+scholarguard = "run_scholarguard:main"
+
+[tool.setuptools]
+# The pipeline is imported as `src.*` throughout (and the evaluation configs
+# reference `src/config/*.yaml` by path), so the package layout is kept as-is
+# rather than renamed at packaging time.
+packages = ["src"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.pytest.ini_options]
+# Without this, a bare `pytest -q` -- exactly what the README tells you to run --
+# fails at collection with ModuleNotFoundError: src. `python -m pytest` happened
+# to work because that form puts the CWD on sys.path and plain `pytest` does not,
+# so the suite looked green to anyone who ran it the second way.
+pythonpath = ["."]
+testpaths = ["tests"]
