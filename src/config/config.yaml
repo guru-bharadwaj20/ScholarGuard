@@ -154,6 +154,20 @@ risk_scoring:
     # Reweighted after the held-out likelihood-ratio analysis: copy-move barely
     # discriminates at the paper level (LR 1.19) so its weight is reduced;
     # splice is a strong new fraud-mode signal and gets real weight.
+    #
+    # SPLICE DEMOTION TRIED AND REVERTED, 2026-07-26. Figure-level labels showed
+    # splice's recall is 0.020 / 0.017 on the two held-out sets — it fires on
+    # about one figure in fifty of those it should — so its 20 points were moved
+    # to AI-generation (paper-level LR 4.33, the only detector measured to
+    # discriminate) and claim-consistency, leaving splice as a lead-only signal.
+    #
+    # Measured on both sets, that made things WORSE: average precision fell on
+    # each (0.690 -> 0.661 and 0.567 -> 0.554) and leave-one-out accuracy on set
+    # 1 collapsed (0.700 -> 0.512). Reverted. The likeliest reading is that
+    # splice's points are rarely awarded but well targeted when they are — its
+    # figure-level precision is the highest of any detector — so the 20 points
+    # buy more than their firing rate suggests. Low recall is a reason to
+    # improve its sensitivity, not to stop trusting the few calls it makes.
     copy_move: 25
     cross_figure: 25
     splice: 20

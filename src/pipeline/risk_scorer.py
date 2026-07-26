@@ -69,6 +69,11 @@ def score_figure(detectors: dict, settings: Settings) -> dict:
             "status": status,
             "max_points": weight,
             "points": points if status == "ok" else 0.0,
+            # Whether the detector FIRED, recorded separately from the points it
+            # contributed. A lead-only detector (weight 0) still fired and still
+            # corroborates its neighbours; inferring that from points > 0 would
+            # silently drop it out of the corroboration count.
+            "fired": bool(status == "ok" and severity > 0),
             "note": note,
         })
         return points if status == "ok" else 0.0
@@ -153,8 +158,11 @@ def score_figure(detectors: dict, settings: Settings) -> dict:
     # real evidence; a paper full of lone single-detector fires (usually false
     # positives, which compound across many figures) is not. This is the honest
     # signal a screening tool should lead with.
-    n_signals = sum(1 for b in breakdown
-                    if b["status"] == "ok" and b["points"] > 0)
+    # Counts detectors that FIRED, not detectors that scored: a lead-only
+    # detector (weight 0, e.g. splice since its recall was measured) contributes
+    # no points but its agreement with another detector on the same figure is
+    # still evidence, and that agreement is what this term exists to capture.
+    n_signals = sum(1 for b in breakdown if b.get("fired"))
     return {"score": score, "category": category, "breakdown": breakdown,
             "n_corroborating_signals": n_signals,
             "fraud_probability": fusion["fraud_probability"],
