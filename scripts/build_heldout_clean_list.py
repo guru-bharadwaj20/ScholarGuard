@@ -106,11 +106,20 @@ def collect(args) -> list[dict]:
             session=session, rate_limiter=limiter)
 
         kept = 0
+        unscreened = 0
         for pmcid in pmcids:
             if kept >= target:
                 break
             doi = rw.normalize_doi(pmcid_to_doi.get(pmcid) or "")
-            if doi and (doi in retracted or doi in used_dois):
+            if not doi:
+                # FAIL CLOSED. Without a DOI the Retraction Watch screen cannot
+                # run, so admitting this paper would put an *unscreened* article
+                # into the clean class -- and a single idconv 429 used to do
+                # exactly that, silently, for a whole batch. A clean control we
+                # could not verify is worse than one fewer clean control.
+                unscreened += 1
+                continue
+            if doi in retracted or doi in used_dois:
                 logger.info("%s (%s): retracted or already used — excluded",
                             pmcid, doi)
                 continue
@@ -120,7 +129,11 @@ def collect(args) -> list[dict]:
                 pdf_path="",           # filled in by fetch_heldout_packages.py
                 subset=subset))
             kept += 1
-        logger.info("clean/%s: selected %d", subset, kept)
+        logger.info("clean/%s: selected %d (%d candidate(s) dropped unscreened: "
+                    "no DOI resolved)", subset, kept, unscreened)
+        if kept < target:
+            logger.warning("clean/%s: only %d of %d targeted — candidates ran "
+                           "out after screening", subset, kept, target)
 
     return entries
 
