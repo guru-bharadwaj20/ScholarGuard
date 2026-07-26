@@ -517,10 +517,12 @@ def analyze_benchmark(benchmark: dict, eval_settings: dict,
         "figure_count_only": M.ranking_metrics(
             y_true, [float(s) for s in strata], strata=strata),
     }
-    probs = [p.get("fraud_probability") for p in scored]
-    if all(v is not None for v in probs):
-        ranking_baselines["noisy_or_probability"] = M.ranking_metrics(
-            y_true, [float(v) for v in probs], strata=strata)
+    # A figureless paper has no evidence either way, so absent == 0.0. Reports
+    # written before risk_scorer returned the key for that case are still
+    # readable rather than losing the whole baseline over one paper.
+    probs = [p.get("fraud_probability") or 0.0 for p in scored]
+    ranking_baselines["noisy_or_probability"] = M.ranking_metrics(
+        y_true, [float(v) for v in probs], strata=strata)
 
     errors = categorize_errors(figure_records)
     ea_dir = os.path.join(output_dir, "error_analysis")

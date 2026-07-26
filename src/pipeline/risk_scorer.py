@@ -184,8 +184,15 @@ def score_paper(figure_scores: list[dict], settings: Settings) -> dict:
     categories = risk.get("categories", {})
 
     if not figure_scores:
+        # A paper with no figures carries no image evidence either way. Return
+        # the same KEYS as the populated branch, not a shorter dict: consumers
+        # that read fraud_probability across a whole benchmark would otherwise
+        # hit None on this one paper and drop the statistic for the entire run.
         return {"score": 0.0, "category": "low", "n_figures": 0,
+                "max_corroboration": 0,
+                "worst_figure_score": 0.0,
                 "worst_figure_category": None,
+                "fraud_probability": 0.0,
                 "note": "no figures to score"}
 
     scores = [f["score"] for f in figure_scores]

@@ -158,3 +158,22 @@ def test_single_detector_does_not_get_corroboration_floor(settings):
     assert paper["max_corroboration"] == 1
     # only the point-score category applies (no corroboration bump to high)
     assert paper["category"] in ("low", "moderate")
+
+
+def test_empty_paper_returns_the_same_keys_as_a_scored_one():
+    """A figureless paper must not return a shorter dict.
+
+    One clean control in held-out set 3 has zero extractable figures. Because
+    the empty branch omitted fraud_probability, a consumer reading that field
+    across the whole run hit None on that single paper and dropped the noisy-OR
+    ranking for all 73 -- the baseline silently vanished from the report.
+    """
+    from src.config.settings import Settings
+    from src.pipeline.risk_scorer import score_paper
+    settings = Settings()
+    empty = score_paper([], settings)
+    scored = score_paper([{"score": 10.0, "fraud_probability": 0.2,
+                           "n_corroborating_signals": 1}], settings)
+    assert set(scored) - {"note"} <= set(empty)
+    assert empty["fraud_probability"] == 0.0
+    assert empty["max_corroboration"] == 0
