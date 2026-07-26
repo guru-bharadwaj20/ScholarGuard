@@ -15,7 +15,9 @@ ScholarGuard screens a paper's figures for duplication, cross-figure reuse, and 
 
 ## How honest is it? — evaluation, stage by stage
 
-This section is the project's changelog *and* its report card: where the metrics started, what was changed and why, where they landed on **unseen data**, and what is still open. Nothing here is spun — the numbers are unflattering where the tool is weak.
+This section is the project's changelog *and* its report card: where the metrics started, what was changed and why, where they landed on **unseen data**, and what is still open. Nothing here is spun — the numbers are unflattering where the tool is weak, and where a later stage disproved an earlier one, both are left standing so the correction is visible.
+
+**Current state, in short:** the shipped forensics-only configuration reaches ROC-AUC 0.66–0.73 and finds ~70% of known-fraud papers while flagging ~28–46% of clean ones. Copy-move detects roughly half the figures a retraction notice names, at ~0.15 precision. The optional AI classifier measured well on one held-out set and *worse than baseline* on a second — see [Stage 2g](#stage-2g--a-second-held-out-set-overturns-stage-2e-and-recall-becomes-measurable) — so it stays off by default. Every number below is per-set, and the two sets disagree by more than most single changes are worth.
 
 ### Stage 0 — the starting point (in-sample, 25 papers)
 
@@ -249,15 +251,58 @@ Two caveats that stop this from being a clean verdict, in both directions:
 
 **Evaluation is now parallel.** [benchmark_runner.py](src/evaluation/benchmark_runner.py) takes `--workers N`; papers are independent, so 80 of them went from ~11 minutes to **3m21s** on 16 of 32 cores, verified bit-identical (0 mismatches across all 80 paper scores and 2,730 per-figure detector blocks).
 
+### Stage 2g — a second held-out set overturns Stage 2e, and recall becomes measurable
+
+Stage 2f ended with one question: is the AI gain the classifier's, or just a better-placed threshold? Answering it needed a set that none of the three configurations had ever seen. **The answer invalidates Stage 2e's headline.**
+
+**A second held-out set: 30 fraud / 46 clean papers**, disjoint from both the calibration set *and* the Stage 2e set, fetched the same way. The three configurations, unchanged, re-run on it:
+
+| Run | ROC-AUC | Avg precision | Precision / recall | Paper FPR | AI figure FPR |
+|---|---|---|---|---|---|
+| **A** shipped forensics | **0.664** | **0.567** | 0.523 / 0.767 | **0.457** | **5.4%** |
+| **B** forensic ≥ 0.50, no classifier | 0.650 | 0.511 | 0.511 / 0.767 | 0.478 | 10.7% |
+| **C** with classifier | 0.633 | 0.490 | 0.488 / 0.700 | 0.478 | 15.7% |
+
+**The ordering reverses completely.** On Stage 2e's set the ranking was C ≈ B > A; on data none of them was tuned against it is **A > B > C**. The shipped forensics-only configuration wins outright, and the trained classifier is the *worst* of the three — its AI false-alarm rate nearly triples the baseline's (5.4% → 15.7%).
+
+So Stage 2e's "+0.048 ROC-AUC from the classifier" **did not survive contact with a second sample**. Stage 2f had already shown a two-line threshold change reproduced it; Stage 2g shows neither reproduces on fresh data. The lasting result is the method, not the model: *one held-out set is not enough to accept a change in this project*, because a 30/50 split leaves confidence intervals wide enough to swallow an 0.05 AUC difference whole. Note also that the shipped AI detector's own false-alarm rate moved 1.4% → 5.4% between the two sets with no code change at all — a useful calibration of how much any single number here should be trusted.
+
+**Nothing was shipped on the strength of Stage 2e**, which is why this costs nothing to correct: `config.yaml` still holds the forensics-only defaults, compression conditioning is still on, and the classifier remains opt-in. If you trained one following the instructions above, the honest advice is now: **don't enable it.**
+
+### Per-detector recall — measured for the first time
+
+Every previous stage reported recall as *not measurable*: Retraction Watch says a paper was retracted for "Duplication of/in Image", never which figure. [scripts/annotate_fraud_figures.py](scripts/annotate_fraud_figures.py) closes that gap by reading the retraction *notice* — a separate article that often does name figures — via PubMed's `RetractionIn` pointer. It found a notice for **60 of 60 fraud papers** across both sets and extracted figure numbers from 50 of them (the other 10 are bare "Retracted: <title>" with no detail), marking **130 figures** as manipulated.
+
+With those labels, the shipped configuration finally has two-sided numbers, and they replicate across two independent sets:
+
+| Detector | Recall (set 1) | Recall (set 2) | Precision (set 1) | Precision (set 2) |
+|---|---|---|---|---|
+| Copy-move | **0.576** (95% CI 0.46–0.69) | **0.476** (0.36–0.60) | 0.184 (0.14–0.24) | 0.146 (0.10–0.20) |
+| Splice | **0.030** (0.01–0.10) | **0.048** (0.02–0.13) | 0.400 (0.12–0.77) | 0.273 (0.10–0.57) |
+| Cross-figure | *no positives of its type* | — | — | — |
+| AI-generation | *no positives of its type* | — | — | — |
+
+**What this changes:**
+
+- ✅ **Copy-move genuinely works, and now we know how well.** It finds roughly **half** the figures a retraction notice names (0.48–0.58 across two sets) — a real, replicated sensitivity that three prior stages could only guess at. Its precision is low (~0.15–0.18), so it stays a lead generator, but "noisy and useless" and "noisy but catching half of them" are very different tools, and until now we could not tell them apart.
+- 🔴 **Splice is barely detecting anything.** Recall **0.03–0.05**. Stage 2c introduced it at 0.8% FPR and called it "essentially free evidence" — with only one side of the ledger visible. The other side is that it fires on ~1 in 25 of the figures it should. Its precision is the best of any detector, so it is not harmful; it is close to inert.
+- ⚠️ **Cross-figure and AI recall are still unmeasurable**, for a structural reason: each annotated figure inherits a single `fraud_type` from its paper's retraction reason, and no paper's reason mapped to those two modes. Per-figure manipulation *types*, not just locations, are the next annotation step.
+- ⚠️ **These labels are a lower bound.** A notice names the figures it discusses; other figures in the same paper may be manipulated but unmentioned. Detections on unnamed fraud-paper figures are therefore counted as false positives, which makes the precision numbers pessimistic and the fraud-paper false-alarm rate optimistic. Extraction is also automated regex over natural language — every annotation records its notice PMID and the surrounding sentence in `figure_annotations_audit.json` so it can be checked.
+
+### Cross-figure residual gate — implemented, and it does nothing
+
+The roadmap's top detector lever was to promote the residual-clone test from a damping factor to a hard veto on cross-figure matches, as the dense copy-move tier already does. It is implemented ([`residual_veto_independent`](src/config/config.yaml)) — and it **changes nothing at all**: gated and ungated runs produce byte-identical cross-figure output for all **546 figures across 80 papers**.
+
+The reason is worth recording, because it redirects the work. Instrumenting the residual test through the orchestrator gives **30 of 30 verdicts as `CLONE`** (median correlation 1.000) and never `INDEPENDENT` — the veto condition simply never occurs. Cross-figure's false alarms are not honest look-alikes that a noise test can reject; they *pass* the noise test. Two contributors were identified: 4 of 50 clean packages ship byte-identical duplicate image files under different names, and publisher JPEG compression correlates residuals — the same effect this README already notes behind copy-move's spurious `CLONE` calls. The gate is kept (six lines, config-flagged, zero measured cost, plausibly useful on native uncompressed figures) but it is **not** the fix for cross-figure specificity.
+
 ### Stage 3 — what's still to do (in priority order)
 
-1. **Settle A vs B vs C on a set none of them has seen.** Stage 2f leaves the single most consequential question open: whether the AI gain belongs to the classifier (C) or just to a better-placed forensic threshold (B, which matches it without a GPU but was tuned after inspecting this set). A fresh held-out set decides it, and the answer determines whether the classifier is worth shipping at all. Everything needed is in place — `scripts/build_heldout_clean_list.py` + `fetch_heldout_packages.py`, then three `--workers 16` runs at ~3 minutes each.
-2. **Cross-figure specificity is the top remaining detector lever.** With copy-move gated, cross-figure (19.9% FPR, 57 of 184 false positives) is the largest false-positive source that is *fixable* — it flags legitimate dose-response / time-series panel similarity as reuse. Add the residual-clone test (already built) as a confirmation gate on cross-figure matches, and a caption/panel-role check so a labelled series is not read as duplication.
-3. **Improve detector *sensitivity* to real manipulations, not the score fusion.** Copy-move still barely separates at the paper level (LR 1.35, ≈ noise) while producing 114 of 184 false positives; PatchMatch verification and a Zernike-moment rotation-invariant CMFD tier (scoped in the design notes) target the subtle splices SIFT misses.
-4. **Annotate which figures the 30 retraction notices name** — unlocks per-detector *recall* measurement, without which detector improvements can't be steered (we currently measure only clean-figure FPR). This is also the only way to test whether the trained classifier detects *subtle* AI manipulation or merely tells diffusion output from microscopy.
-5. **Retrain the classifier on manipulated photographs, not just diffusion output.** Stage 2f diagnosed why it contributes so little at the paper level: it learned diffusion-vs-micrograph, a distinction almost orthogonal to how these papers were actually faked. A class built from spliced/duplicated real figures — which `src/utils/synth.py` can already produce, and which #4 would let us evaluate — targets the right decision boundary.
-6. **Grow to a larger, balanced held-out set** — 30/50 gives wide Wilson intervals; more papers tighten every estimate and stabilise the LR fits. Now much cheaper to iterate on: `--workers 16` cuts a full evaluation to ~3 minutes.
-7. **Lean the paper score on the detectors that discriminate** (AI, cross-figure) and treat copy-move as a lead-only signal until #2 lands — a low-FPR screening operating point is already reachable (paper FPR ~7% at recall ~0.27).
+1. **Annotate manipulation *type*, not just location.** Copy-move and splice now have recall; cross-figure and AI still do not, purely because each annotated figure inherits one `fraud_type` from its paper's retraction reason and no reason mapped to those modes. The notices already describe the manipulation ("duplicated from", "spliced", "overlapping with Figure X in another paper") — classifying that phrase per figure would complete the picture for every detector. This is the highest-value next step: it is the only thing that makes cross-figure and AI improvements steerable at all.
+2. **Fix cross-figure specificity — but not with the residual test.** It remains the largest fixable false-positive source (27–29% per-figure), and Stage 2g rules out the approach the roadmap previously assumed: the matches pass the noise test rather than failing it. What is left is semantic — a caption/panel-role check so a labelled dose-response or time series is not read as duplication — plus a same-package duplicate-file guard, since 4 of 50 clean packages ship the same image under two names.
+3. **Make splice work, or retire it.** Recall 0.03–0.05 across two sets means it is close to inert. Its 0.8% FPR bought nothing, because it almost never fires on the figures that matter. Either loosen it now that recall is measurable and the trade-off is visible, or drop it and reclaim its 20 risk-score points.
+4. **Improve copy-move precision.** It is the one detector with proven sensitivity (recall ~0.5) and it produces the bulk of the false alarms (precision ~0.15). PatchMatch verification and a Zernike-moment rotation-invariant CMFD tier target the subtle cases SIFT misses; with recall now measurable, both sides of any change are finally visible.
+5. **Adopt two-set validation as the standard.** Stage 2g showed a single 30/50 held-out set can reverse an 0.05 AUC verdict, and that the same detector's FPR moved 1.4% → 5.4% between sets with no code change. No change should be accepted on one set again. At `--workers 16` a full evaluation is ~3 minutes, so this costs almost nothing.
+6. **Retrain the classifier on manipulated photographs, or drop it.** Stage 2f diagnosed why it adds so little and Stage 2g showed it actively hurts on fresh data: it learned diffusion-vs-micrograph, a distinction nearly orthogonal to how these papers were faked. A class built from spliced/duplicated *real* figures targets the right boundary; until then, leave it disabled.
 
 **ScholarGuard is a screening prototype for human reviewers, not an autonomous accusation system. Every flag is a lead to be checked by a person.**
 
@@ -355,17 +400,29 @@ python scripts/fetch_evaluation_set.py --fraud-target 15 --clean-target 10
 python scripts/build_heldout_clean_list.py --clean-target 58
 python scripts/fetch_heldout_packages.py --fraud-target 30
 
+# Figure-level labels: read each paper's RETRACTION NOTICE (via PubMed's
+# RetractionIn link) and record which figures it names. Without this, recall is
+# not measurable at all -- Retraction Watch gives only paper-level reasons.
+# --dry-run first: it prints the notice sentence behind every figure number.
+python scripts/annotate_fraud_figures.py \
+    --labels data/heldout_packages/labels.json --dry-run
+python scripts/annotate_fraud_figures.py --labels data/heldout_packages/labels.json
+
 # Papers are independent, so evaluate them in parallel (~11 min -> ~3 min for
 # 80 papers on 16 cores; results are bit-identical to --workers 1).
 python -m src.evaluation.benchmark_runner \
     --eval-config src/config/eval_config_heldout.yaml --workers 16
 ```
 
+**Build a second set and validate on both.** Stage 2g showed a single held-out set can reverse an 0.05 AUC verdict. Re-run the three commands above with `--exclude` extended to the first set's `labels.json` and a different `--output-dir`, then evaluate on both before accepting any change.
+
 All scripts respect NCBI rate limits, skip already-fetched items via a resumable manifest, and record licensing. Datasets are never committed (see `.gitignore`) — they are re-fetchable from these scripts.
 
 ### Train the AI-generation classifier (optional; measured +0.048 ROC-AUC)
 
-The AI detector ships forensics-only. Training its learned model is the one GPU step in the project, and it measures as **ROC-AUC 0.685 → 0.733, average precision 0.613 → 0.688, for 7 extra false alarms on 288 clean figures** — but read [Stage 2f](#stage-2f--what-the-classifier-is-actually-worth) before trusting it. On that same set a plain threshold change with no classifier at all matched the gain, and offline recalibration found the blended score *less* informative at the paper level than the forensic z-score. A 0.99 validation accuracy does not mean 0.99 in the wild. **Treat this as an experiment worth reproducing, not a settled upgrade.**
+> ⚠️ **Current recommendation: don't.** On the first held-out set the trained classifier looked like a clear win (ROC-AUC 0.685 → 0.733). On a **second** held-out set it was the worst of three configurations, with nearly triple the AI false-alarm rate of the shipped forensics — see [Stage 2g](#stage-2g--a-second-held-out-set-overturns-stage-2e-and-recall-becomes-measurable). The instructions below are kept because the tooling is sound and the experiment is worth repeating with better training data; the resulting model is not currently worth enabling.
+
+The AI detector ships forensics-only, and training its learned model is the one GPU step in the project. A 0.99 validation accuracy does not mean 0.99 in the wild — it measured as a regression on unseen papers.
 
 **The training data matters more than the training.** `data/ai_generated_samples/` holds *synthetic stand-ins* — a real sample bilateral-denoised with a checkerboard added — and [src/utils/synth.py](src/utils/synth.py) says so itself. A classifier trained on those learns `cv2.bilateralFilter`. Generate real diffusion output instead:
 
@@ -393,7 +450,7 @@ The checkpoint format and architecture are kept in lock-step with the inference 
 ## Tests
 
 ```bash
-pytest -q      # 148 passed, 1 skipped
+pytest -q      # 164 passed, 1 skipped
 ```
 
 ---
