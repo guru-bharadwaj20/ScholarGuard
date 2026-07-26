@@ -1,37 +1,47 @@
 # ScholarGuard pipeline (CPU-only). For the web UI backend see server/requirements.txt.
+#
+# Requires Python >= 3.10.
+#
+# These are floors, not exact pins. The previous file pinned numpy==2.5.0, which
+# does not exist (latest is 2.2.x, and 2.5 would need Python >= 3.12), so
+# `pip install -r requirements.txt` failed on its first line for everyone. Floors
+# resolve on any supported Python and still pick up security patches; the exact
+# versions the full test suite was last green against are in the comments.
 
 # Core CV + numerics
-opencv-python==4.13.0.92
-numpy==2.5.0
-scikit-learn==1.7.1
-scipy==1.16.1
-matplotlib==3.10.6
-pillow==12.0.0
+opencv-python>=4.10            # tested 5.0.0.93
+numpy>=1.26,<3                 # tested 2.2.6
+scikit-learn>=1.4              # tested 1.7.2
+scipy>=1.11                    # tested 1.15.3
+matplotlib>=3.8                # tested 3.10.9
+pillow>=10.2                   # tested 12.0.0
 
 # Cross-figure duplicate detection
-imagehash==4.3.2
-faiss-cpu==1.14.3
-tqdm==4.67.1
+imagehash>=4.3.1               # tested 4.3.2
+faiss-cpu>=1.8                 # tested 1.14.3
+tqdm>=4.66                     # tested 4.67.3
 
 # AI-generation forensics (frequency + wavelet noise residual)
-PyWavelets==1.9.0
-# Install the CPU-only torch wheels:
-#   pip install torch==2.9.0 torchvision==0.24.0 --index-url https://download.pytorch.org/whl/cpu
-torch==2.9.0
-torchvision==0.24.0
+PyWavelets>=1.5                # tested 1.8.0
+# Inference is CPU-only; for a CPU-sized install use the CPU wheels:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# A CUDA build also works and is what scripts/train_artifact_classifier.py needs.
+torch>=2.2                     # tested 2.5.1+cu121
+torchvision>=0.17              # tested 0.20.1+cu121
 
 # Pipeline config
-PyYAML==6.0.3
+PyYAML>=6.0                    # tested 6.0.3
 
 # Data acquisition (PubMed Central Open Access + Retraction Watch)
-requests==2.32.4
-pandas==2.3.1
+requests>=2.31                 # tested 2.32.5
+pandas>=2.1                    # tested 2.3.3
 
 # NLP claim-consistency (PDF parsing + Claude API; key read from env, never hardcoded)
-pymupdf==1.28.0
-anthropic==0.116.0
-python-dotenv==1.1.1
-sentence-transformers==5.1.2
+pymupdf>=1.24                  # tested 1.28.0
+anthropic>=0.40                # tested 0.120.0
+python-dotenv>=1.0             # tested 1.2.2
+# sentence-transformers was listed here but is imported nowhere in the codebase;
+# it pulled in a second transformers+torch stack for nothing. Removed.
 
 # Tests
-pytest==8.4.2
+pytest>=8.0                    # tested 9.1.1
