@@ -38,6 +38,8 @@ It finds roughly **7 in 10 known-fraud papers** while flagging **28–46% of cle
 
 Copy-move is the only detector with real, replicated sensitivity: it catches about **half** the figures a retraction notice actually names. Splice fires on ~2% of the figures it should. Cross-figure is at or below chance. AI-generation's recall cannot be measured at all, because no retraction notice in either set describes a figure as generated.
 
+**And one detector has never been evaluated at all.** Claim-consistency needs an `ANTHROPIC_API_KEY`, and every benchmark run above was made without one, so it was skipped on all 1,046 figures and contributes nothing to any number on this page — while still holding 10 of the 100 risk-score points. It is implemented and unit-tested against a mocked LLM; it has never been scored against real papers. Closing that gap needs a key and a re-run, and it is the largest unmeasured surface in the project.
+
 **Three findings worth more than the metrics:**
 
 - **An "improvement" that did not replicate.** A trained AI-generation classifier lifted set 1's ROC-AUC 0.685 → 0.733. On set 2 it was the *worst* of three configurations, with triple the false-alarm rate. It is disabled by default and the whole arc is documented rather than deleted.
