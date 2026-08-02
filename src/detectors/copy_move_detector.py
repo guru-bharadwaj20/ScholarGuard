@@ -198,15 +198,14 @@ class CopyMoveDetector:
         # furniture) must never reach the matcher — it is geometrically
         # indistinguishable from forgery and was the dominant real-data
         # false-positive source.
-        gate = self._resolve_analysis_mask(work, analysis_mask, scale,
-                                           (orig_h, orig_w))
+        gate = self._resolve_analysis_mask(work, analysis_mask)
 
         keypoints, descriptors = self._extract_features(gray, gate)
-        matches = self._self_match(keypoints, descriptors, gray.shape)
+        matches = self._self_match(keypoints, descriptors)
         clusters = self._cluster_and_verify(matches, keypoints, gray.shape)
 
         mask, labeled_mask, regions, grow_stats = self._grow_regions(gray, clusters)
-        confidence = self._score(clusters, mask, gray, grow_stats, len(matches))
+        confidence = self._score(mask, grow_stats)
         forged = bool(confidence >= cfg.confidence_threshold and len(regions) > 0)
 
         # Dense-field escalation: only when the SIFT tier came up short.
@@ -288,8 +287,7 @@ class CopyMoveDetector:
 
     def _resolve_analysis_mask(self, work: np.ndarray,
                                analysis_mask: np.ndarray | None,
-                               scale: float,
-                               orig_shape: tuple[int, int]) -> np.ndarray | None:
+                               ) -> np.ndarray | None:
         """Return a work-resolution gate mask, or None (= analyze everything)."""
         cfg = self.config
         wh, ww = work.shape[:2]
@@ -325,7 +323,7 @@ class CopyMoveDetector:
         return self._extract_features(gray, analysis_mask)
 
     # ------------------------------------------------------ matching stage
-    def _self_match(self, keypoints, descriptors, shape) -> list[tuple[int, int]]:
+    def _self_match(self, keypoints, descriptors) -> list[tuple[int, int]]:
         """Match the image's descriptors against themselves.
 
         Trivial self-matches (same index / ~zero distance) and matches whose
@@ -557,7 +555,7 @@ class CopyMoveDetector:
         return mask, labeled, regions, stats
 
     # ----------------------------------------------------------- scoring
-    def _score(self, clusters, mask, gray, grow_stats, n_matches) -> float:
+    def _score(self, mask, grow_stats) -> float:
         """Confidence in [0, 1] as an *observed vs. expected* statistic.
 
         This replaces the earlier weighted sum of raw counts, whose

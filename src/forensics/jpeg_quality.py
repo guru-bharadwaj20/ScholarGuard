@@ -42,7 +42,7 @@ def estimate_blockiness(gray: np.ndarray) -> float:
     if h < 24 or w < 24:
         return 0.0
 
-    def _axis_blockiness(diffs: np.ndarray, axis_len: int) -> float:
+    def _axis_blockiness(diffs: np.ndarray) -> float:
         # diffs[k] = mean |I[k+1] - I[k]| along the axis.
         best = 0.0
         overall = float(diffs.mean()) + 1e-9
@@ -58,8 +58,8 @@ def estimate_blockiness(gray: np.ndarray) -> float:
 
     col_diffs = np.abs(np.diff(g, axis=1)).mean(axis=0)   # per column boundary
     row_diffs = np.abs(np.diff(g, axis=0)).mean(axis=1)
-    return float(max(0.0, (_axis_blockiness(col_diffs, w)
-                           + _axis_blockiness(row_diffs, h)) / 2.0))
+    return float(max(0.0, (_axis_blockiness(col_diffs)
+                           + _axis_blockiness(row_diffs)) / 2.0))
 
 
 def compression_stratum(gray: np.ndarray) -> tuple[str, float]:

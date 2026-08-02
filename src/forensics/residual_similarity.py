@@ -64,7 +64,6 @@ def residual_clone_test(
     gray_aligned: np.ndarray,
     region_mask: np.ndarray,
     config: ResidualTestConfig | None = None,
-    residual_ref: np.ndarray | None = None,
 ) -> dict:
     """Test whether a matched region is a pixel clone or an honest look-alike.
 
@@ -73,8 +72,6 @@ def residual_clone_test(
         gray_aligned: the *source* content warped into the destination frame
             (same shape as ``gray_ref``).
         region_mask: non-zero over the matched region (destination frame).
-        residual_ref: optional precomputed residual of ``gray_ref`` (callers
-            testing several regions of one image should compute it once).
 
     Returns ``{"verdict", "correlation", "z", "n_pixels", "conclusive",
     "reason"}`` — ``correlation`` is the Pearson correlation of the two
@@ -102,7 +99,6 @@ def residual_clone_test(
     sub_m = m[y0:y1, x0:x1]
     res_a_crop = extract_noise_residual(ref[y0:y1, x0:x1])
     res_b_crop = extract_noise_residual(aligned[y0:y1, x0:x1])
-    _ = residual_ref  # no longer used (local extraction); kept for API stability
 
     a = res_a_crop[sub_m].astype(np.float64)
     b = res_b_crop[sub_m].astype(np.float64)

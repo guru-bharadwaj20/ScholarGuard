@@ -97,7 +97,7 @@ class Panel:
 # --------------------------------------------------------------------------
 # 1. Recursive X-Y cut on uniform gutters
 # --------------------------------------------------------------------------
-def _uniform_runs(stds: np.ndarray, means: np.ndarray, std_max: float,
+def _uniform_runs(stds: np.ndarray, std_max: float,
                   min_len: int) -> list[tuple[int, int]]:
     """Runs of consecutive uniform lines (std < std_max) at least min_len long.
 
@@ -117,7 +117,6 @@ def _uniform_runs(stds: np.ndarray, means: np.ndarray, std_max: float,
             start = None
     if start is not None and len(uniform) - start >= min_len:
         runs.append((start, len(uniform)))
-    _ = means  # reserved for future background-color checks
     return runs
 
 
@@ -152,11 +151,11 @@ def segment_panels(image: np.ndarray,
         if sh == 0 or sw == 0:
             return
         if depth < cfg.max_depth and min(sh, sw) > 2:
-            row_stds, row_means = sub.std(axis=1), sub.mean(axis=1)
-            col_stds, col_means = sub.std(axis=0), sub.mean(axis=0)
-            h_runs = _uniform_runs(row_stds, row_means, cfg.gutter_std_max,
+            row_stds = sub.std(axis=1)
+            col_stds = sub.std(axis=0)
+            h_runs = _uniform_runs(row_stds, cfg.gutter_std_max,
                                    max(2, int(cfg.gutter_min_frac * sh)))
-            v_runs = _uniform_runs(col_stds, col_means, cfg.gutter_std_max,
+            v_runs = _uniform_runs(col_stds, cfg.gutter_std_max,
                                    max(2, int(cfg.gutter_min_frac * sw)))
             h_cuts = _split_positions(h_runs, sh, max(8, int(cfg.min_panel_frac * sh)))
             v_cuts = _split_positions(v_runs, sw, max(8, int(cfg.min_panel_frac * sw)))
