@@ -8,10 +8,10 @@ Stage 3 cross-figure detector (it loads a CNN); the failure modes under test
 are independent of it.
 """
 
+import json
 import os
 
 import fitz  # PyMuPDF
-import pytest
 import yaml
 
 from src.pipeline.orchestrator import run_pipeline
@@ -87,9 +87,14 @@ def test_corrupt_pdf_fails_gracefully(tmp_path):
     report = run_pipeline(str(bad), config_path=cfg, output_dir=str(tmp_path / "out"))
     assert report["status"] == "failed"
     assert report["error"] and "parse" in report["error"].lower()
-    # A report file is still written so the failure is auditable.
-    assert os.path.isfile(report_path := os.path.join(
-        str(tmp_path / "out"), "corrupt_report.json"))
+    # A report file is still written so the failure is auditable, and it
+    # records the same failure the returned dict does.
+    report_path = os.path.join(str(tmp_path / "out"), "corrupt_report.json")
+    assert os.path.isfile(report_path)
+    with open(report_path, encoding="utf-8") as fh:
+        on_disk = json.load(fh)
+    assert on_disk["status"] == "failed"
+    assert on_disk["error"] == report["error"]
 
 
 def test_nonexistent_pdf_fails_gracefully(tmp_path):

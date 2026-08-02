@@ -233,6 +233,7 @@ def test_overwrite_guard_force_replaces_and_marks_synthetic(tmp_path, monkeypatc
     assert labels["papers"], "force must actually regenerate"
     assert all(p["source"] == "synthetic" for p in labels["papers"])
     on_disk = json.loads(labels_path.read_text())
+    assert [p["paper_id"] for p in on_disk["papers"]] ==         [p["paper_id"] for p in labels["papers"]],         "the returned labels must match what was written to disk"
     assert labels_builder.count_real_entries(str(labels_path)) == 0
 
 
