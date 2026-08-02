@@ -109,7 +109,7 @@ def roc_points(y, s):
         m = M.binary_metrics(c)
         pts.append((m["false_positive_rate"] or 0.0, m["recall"] or 0.0))
     pts.append((0.0, 0.0))
-    return zip(*sorted(pts))
+    return zip(*sorted(pts), strict=True)
 
 
 def pr_points(y, s):
@@ -121,7 +121,7 @@ def pr_points(y, s):
         if m["precision"] is not None and m["recall"] is not None:
             pts.append((m["recall"], m["precision"]))
     pts.sort()
-    return zip(*pts) if pts else ([], [])
+    return zip(*pts, strict=True) if pts else ([], [])
 
 
 def style(ax):
@@ -196,7 +196,7 @@ def plot_detectors(runs, out_path):
     if len(runs) == 1:
         axes = [axes]
 
-    for ax, (label, run_dir) in zip(axes, runs):
+    for ax, (label, run_dir) in zip(axes, runs, strict=True):
         style(ax)
         table = load_detector_table(run_dir)
         names, ys = [], []

@@ -203,7 +203,7 @@ def run(args) -> int:
             seen += x.size(0)
         sched.step()
         preds, gts = predict()
-        acc = sum(p == g for p, g in zip(preds, gts)) / max(1, len(gts))
+        acc = sum(p == g for p, g in zip(preds, gts, strict=True)) / max(1, len(gts))
         history.append({"epoch": epoch + 1, "train_loss": running / max(1, seen),
                         "val_accuracy": acc})
         logger.info("epoch %d/%d  loss=%.4f  val_acc=%.4f",

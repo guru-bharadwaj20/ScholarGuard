@@ -46,6 +46,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import itertools
 import json
 import logging
 import os
@@ -153,7 +154,7 @@ def parse_figure_references(text: str) -> dict[int, list[str]]:
     """
     # Sentence spans, so a cue is only credited to the reference it sits with.
     bounds = [0] + [m.end() for m in _SENTENCE_SPLIT.finditer(text)] + [len(text)]
-    spans = list(zip(bounds, bounds[1:]))
+    spans = list(itertools.pairwise(bounds))
 
     def enclosing(index: int) -> str:
         for lo, hi in spans:

@@ -227,13 +227,13 @@ def collect_clean_controls(args, session, limiter, stats) -> list[dict]:
     # Absolute targets: top up what earlier runs already fetched.
     remaining = {s: max(0, t - count_downloaded(args, "clean", s))
                  for s, _terms, t in plan}
-    for subset, _terms, target in plan:
+    for subset, _terms, _plan_target in plan:
         stats[f"clean_{subset}"] = count_downloaded(args, "clean", subset)
 
     progress = tqdm(total=sum(remaining.values()), unit="pdf", desc="clean PDFs",
                     dynamic_ncols=True)
     try:
-        for subset, terms, target in plan:
+        for subset, terms, _plan_target in plan:
             got = 0
             target = remaining[subset]
             if target <= 0:
