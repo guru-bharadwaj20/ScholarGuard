@@ -156,6 +156,34 @@ def _pix_entropy(pix: "fitz.Pixmap") -> float:
     return float(-(p * np.log2(p)).sum())
 
 
+def _save_figure_pixmap(doc: "fitz.Document", xref: int, output_dir: str,
+                        stem: str, counter: int, min_dim: int) -> str | None:
+    """Save one embedded image if it survives the junk filters, else None.
+
+    Owns the Pixmap's lifetime: it is released before returning on every path,
+    including the rejections, so decoded rasters do not accumulate across a
+    long document.
+    """
+    pix = fitz.Pixmap(doc, xref)
+    try:
+        if pix.width < min_dim or pix.height < min_dim:
+            return None
+        aspect = max(pix.width, pix.height) / max(min(pix.width, pix.height), 1)
+        if aspect > _MAX_ASPECT:
+            return None
+        if pix.n >= 5:  # CMYK/alpha -> convert to RGB
+            converted = fitz.Pixmap(fitz.csRGB, pix)
+            del pix            # release the source before rebinding the name
+            pix = converted
+        if _pix_entropy(pix) < _MIN_CONTENT_ENTROPY:
+            return None
+        path = os.path.join(output_dir, f"{stem}_img{counter:02d}.png")
+        pix.save(path)
+        return path
+    finally:
+        del pix
+
+
 def _extract_images(doc: "fitz.Document", output_dir: str, stem: str,
                     min_dim: int = 80) -> list[dict]:
     """Save embedded raster images with their page + placement rect.
@@ -201,18 +229,14 @@ def _extract_images(doc: "fitz.Document", output_dir: str, stem: str,
             except Exception:  # pragma: no cover - malformed xref
                 rects = []
             rect = rects[0] if rects else None
-            pix = fitz.Pixmap(doc, xref)
-            if pix.width < min_dim or pix.height < min_dim:
+            # Each Pixmap holds a fully decoded raster. A long PDF built one
+            # per embedded image and left every one of them to the collector,
+            # so peak memory scaled with the whole document rather than with
+            # the largest figure. Released explicitly on every exit path.
+            path = _save_figure_pixmap(doc, xref, output_dir, stem, counter,
+                                       min_dim)
+            if path is None:
                 continue
-            aspect = max(pix.width, pix.height) / max(min(pix.width, pix.height), 1)
-            if aspect > _MAX_ASPECT:
-                continue
-            if pix.n >= 5:  # CMYK/alpha -> convert to RGB
-                pix = fitz.Pixmap(fitz.csRGB, pix)
-            if _pix_entropy(pix) < _MIN_CONTENT_ENTROPY:
-                continue
-            path = os.path.join(output_dir, f"{stem}_img{counter:02d}.png")
-            pix.save(path)
             seen_digests.add(digest)
             saved.append({
                 "image_path": path, "page": page_index,
@@ -367,8 +391,15 @@ def _figures_by_position(doc, images: list[dict], captions: dict[int, str],
                     doc, group[0]["page"], [g.get("rect") for g in group],
                     composite):
                 image_path = composite
+                # The individual panel PNGs are now superseded by the
+                # composite; nothing references them again, and leaving them
+                # meant every multi-panel figure wrote its panels twice to the
+                # output directory.
+                _discard_files(g["image_path"] for g in group)
             else:  # panels across pages or render failure: keep the largest
                 image_path = max(group, key=_image_area)["image_path"]
+                _discard_files(g["image_path"] for g in group
+                               if g["image_path"] != image_path)
         figures.append({
             "figure_num": fig_num,
             "label": f"Figure {fig_num}",
@@ -385,6 +416,17 @@ def _figures_by_position(doc, images: list[dict], captions: dict[int, str],
             "results_context": "",
         })
     return figures
+
+
+def _discard_files(paths) -> None:
+    """Delete superseded panel images; never fatal if one is already gone."""
+    for path in paths:
+        if not path:
+            continue
+        try:
+            os.remove(path)
+        except OSError:
+            pass
 
 
 def _image_area(img: dict) -> float:
