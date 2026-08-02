@@ -89,6 +89,12 @@ detectors:
     # Optional fine-tuned classifier weights. If the file is absent the
     # pipeline runs on frequency + noise forensics only and says so.
     weights_path: src/models/weights/artifact_classifier.pt
+    # ⚠ THE TWO THRESHOLDS BELOW ARE INERT WHILE condition_on_compression IS
+    # TRUE (the default). The detector then derives its bands from the matching
+    # compression_baselines entry (mean+2sd / mean+3sd) and overwrites whatever
+    # is set here. They apply ONLY with condition_on_compression: false. The
+    # pipeline now says so in its warnings rather than ignoring them silently.
+    #
     # Forensic-score bands, RECALIBRATED 2026-07-11 on the real eval set.
     # Real clean PMC figures score forensic mean 0.357, sd 0.107 (n=83); the
     # old synthetic-tuned 0.35 line sat at that mean and fired on ~half of them

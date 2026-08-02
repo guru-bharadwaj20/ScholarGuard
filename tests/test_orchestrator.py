@@ -115,3 +115,42 @@ def test_ai_weights_state_is_reported_accurately(report):
 
     warned = any("FORENSICS-ONLY" in w for w in report["pipeline_warnings"])
     assert warned is not weights_present
+
+
+def test_inert_ai_thresholds_are_reported_not_ignored(report):
+    """Absolute forensic bands are overwritten by compression conditioning.
+
+    config.yaml ships both `forensic_suspicious_threshold`/`forensic_ai_threshold`
+    AND `condition_on_compression: true`, and the detector derives its bands from
+    the per-stratum baseline in that case -- so editing those two keys changes
+    nothing. That used to be silent. The pipeline must now say so.
+    """
+    from src.config.settings import load_settings
+
+    settings = load_settings()
+    conflict = settings.ai_threshold_conflict()
+    assert conflict is not None, "shipped config has both set; expected a notice"
+    assert conflict in report["pipeline_warnings"]
+
+
+def test_no_inert_threshold_notice_when_conditioning_is_off():
+    """With conditioning off the absolute bands DO apply, so there is no notice."""
+    from src.config.settings import Settings
+
+    off = Settings(raw={"detectors": {"ai_generation": {
+        "condition_on_compression": False,
+        "forensic_suspicious_threshold": 0.57,
+    }}})
+    assert off.ai_threshold_conflict() is None
+    # ...and an empty dict is the detector's documented "conditioning disabled"
+    # signal, which is NOT the same as None ("use the built-in defaults").
+    assert off.ai_compression_baselines() == {}
+
+
+def test_unconfigured_absolute_bands_produce_no_notice():
+    """Only an operator who actually set the keys needs telling they are inert."""
+    from src.config.settings import Settings
+
+    settings = Settings(raw={"detectors": {"ai_generation": {}}})
+    assert settings.ai_threshold_conflict() is None
+    assert settings.ai_compression_baselines() is None

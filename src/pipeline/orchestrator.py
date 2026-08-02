@@ -176,6 +176,13 @@ class Pipeline:
                     f"weights not found at '{wp}' (train via the Stage 4 Colab "
                     f"notebook to enable the learned signal)")
                 logger.warning("AI classifier weights missing at %s", wp)
+            # Inert-config notice: absolute forensic bands are overwritten by
+            # compression conditioning, so an operator editing them would
+            # otherwise see no effect and no explanation.
+            conflict = self.settings.ai_threshold_conflict()
+            if conflict:
+                self.warnings.append(conflict)
+                logger.warning("%s", conflict)
 
         if self.settings.enabled("cross_figure"):
             self._cross_detector = self._build_cross_detector(figures)

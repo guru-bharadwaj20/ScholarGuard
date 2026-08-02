@@ -110,16 +110,47 @@ class Settings:
         return _apply(SpliceConfig(), cfg, ["min_flagged_frac", "min_flagged_blocks"])
 
     def ai_compression_baselines(self) -> dict | None:
-        """Compression-conditioned AI-forensic baselines, or None if disabled.
+        """Compression-conditioned AI-forensic baselines for the AI detector.
 
         Returns the ``{stratum: {mean, std}}`` map when
-        ``condition_on_compression`` is on, else None (fall back to the
-        absolute forensic bands).
+        ``condition_on_compression`` is on and baselines are configured;
+        ``None`` when it is on but none are configured (the detector then uses
+        its own ``DEFAULT_BASELINES``); and an **empty dict** when conditioning
+        is explicitly disabled, which is the detector's documented signal to
+        fall back to the absolute forensic bands.
+
+        The three return values are distinct on purpose -- ``{}`` and ``None``
+        mean opposite things to ``detect_ai_generation``.
         """
         cfg = self._detector("ai_generation")
         if not cfg.get("condition_on_compression", True):
             return {}   # empty dict = conditioning explicitly disabled
         return cfg.get("compression_baselines") or None
+
+    def ai_threshold_conflict(self) -> str | None:
+        """Warn when configured absolute AI bands cannot take effect.
+
+        ``forensic_suspicious_threshold`` / ``forensic_ai_threshold`` are only
+        consulted when compression conditioning is OFF: with it on, the detector
+        derives its bands from the per-stratum baseline (mean + 2sd / mean + 3sd)
+        and overwrites whatever was passed in. Editing those two keys while
+        ``condition_on_compression`` is true therefore changes nothing, which
+        previously happened silently. Returns an explanatory string in that
+        case, else None.
+        """
+        cfg = self._detector("ai_generation")
+        if not cfg.get("condition_on_compression", True):
+            return None
+        configured = [k for k in ("forensic_suspicious_threshold",
+                                  "forensic_ai_threshold")
+                      if cfg.get(k) is not None]
+        if not configured:
+            return None
+        return (f"ai_generation: {' and '.join(configured)} "
+                f"{'are' if len(configured) > 1 else 'is'} IGNORED because "
+                f"condition_on_compression is true -- the bands come from "
+                f"compression_baselines (mean+2sd / mean+3sd) instead. Set "
+                f"condition_on_compression: false to use the absolute bands.")
 
     # -- LLM ----------------------------------------------------------------
     @property
