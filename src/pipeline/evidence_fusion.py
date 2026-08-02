@@ -41,6 +41,11 @@ from dataclasses import dataclass, field
 # (before real calibration) cannot produce over-confident posteriors. Each
 # entry is P(this detector's signal | class). Replace via config after a
 # proper held-out fit.
+#
+# THESE VALUES ARE DUPLICATED in config.yaml under `evidence_fusion:`. Which
+# copy applies depends on whether the caller passed settings, so a
+# recalibration must update BOTH. tests/test_fusion_calibration_sync.py fails
+# if they drift apart.
 DEFAULT_CALIBRATION = {
     "copy_move": {"p_fire_fraud": 0.55, "p_fire_clean": 0.30},
     "cross_figure": {"p_fire_fraud": 0.45, "p_fire_clean": 0.20},

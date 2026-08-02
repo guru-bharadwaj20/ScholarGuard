@@ -251,6 +251,10 @@ risk_scoring:
 # over-claim. `prior` is the fraud base rate among screened papers.
 # ---------------------------------------------------------------------------
 evidence_fusion:
+  # ⚠ These values are DUPLICATED in src/pipeline/evidence_fusion.py
+  # (DEFAULT_CALIBRATION / DEFAULT_PRIOR), which applies when no settings are
+  # passed. Update both together; tests/test_fusion_calibration_sync.py fails
+  # if they drift apart.
   # Per-FIGURE prior of manipulation (low on purpose — most figures are
   # genuine even in fraud papers, and the paper-level noisy-OR compounds
   # across figures). Calibrate on data before trusting the posterior.
