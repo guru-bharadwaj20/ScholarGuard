@@ -4,7 +4,7 @@
 
 [![tests](https://github.com/guru-bharadwaj20/Scientific-Figure-Integrity-Analyzer/actions/workflows/tests.yml/badge.svg)](https://github.com/guru-bharadwaj20/Scientific-Figure-Integrity-Analyzer/actions/workflows/tests.yml)
 &nbsp;![python](https://img.shields.io/badge/python-3.10%2B-blue)
-&nbsp;![tests-count](https://img.shields.io/badge/tests-200%20passing-brightgreen)
+&nbsp;![tests-count](https://img.shields.io/badge/tests-351%20passing-brightgreen)
 &nbsp;![license](https://img.shields.io/badge/flags-leads%2C%20not%20verdicts-orange)
 
 ScholarGuard screens a paper's figures for duplication, cross-figure reuse, splicing and AI-generation artifacts, then checks the text's claims against the figures. It surfaces leads for a human reviewer — and tells you exactly how much to trust each one.
@@ -74,7 +74,7 @@ python run_scholarguard.py --pdf path/to/paper.pdf
 Writes one integrity report (JSON + Markdown) with a paper-level risk score. Without an API key it still runs every image forensic and reports what it skipped. All behaviour lives in [src/config/config.yaml](src/config/config.yaml).
 
 ```bash
-pytest -q                             # 200 passed, 1 skipped
+pytest -q                             # 351 passed, 1 skipped
 docker build -t scholarguard .        # CPU-only image, datasets mounted not baked
 ```
 
@@ -90,7 +90,26 @@ uvicorn server.main:app --port 8000
 cd web && npm install && npm run dev
 ```
 
-Open http://localhost:3000. Upload a PDF or run a bundled real example; progress streams live over Server-Sent Events. The bridge is thin transport with zero pipeline logic.
+Open http://localhost:3000. Upload a PDF or run a bundled real example; progress
+streams live over Server-Sent Events, parsed from the pipeline's own log lines
+rather than fabricated. The bridge is thin transport with zero pipeline logic.
+
+The results view shows **everything the report contains**, because a screening
+tool that cannot be checked is not worth much:
+
+| | |
+|---|---|
+| **Score breakdown** | Points out of each detector's maximum, its status and its finding — including detectors that scored nothing, since "skipped" is information. |
+| **Calibrated evidence** | The likelihood-ratio layer: each detector's `log P(fire\|fraud)/P(fire\|clean)` as a signed bar, so a detector that ran and stayed quiet visibly argues the other way. |
+| **Detector measurements** | Splice's per-cue block counts, the AI classifier's `p(AI)` when loaded, the vision model's observations next to the claims it checked. |
+| **Corroboration** | Flagged on any figure two or more independent detectors agree on — the signal the held-out evaluation found most informative. |
+| **Reliability badges** | Every detector is named alongside its measured false-alarm rate and recall, everywhere it appears. |
+| **Triage** | Sort by agreement (default), score, or document order; filter to figures worth reviewing. |
+| **Downloads** | The JSON report and Markdown summary the pipeline writes, plus the raw JSON inline. |
+| **Backend status** | Reachability and load, so a saturated or stopped backend is visible before you upload rather than after. |
+
+The server caps concurrent analyses (each is minutes of CPU) and refuses beyond
+a queue depth with a 503 the UI explains.
 </details>
 
 ---
@@ -144,16 +163,18 @@ Everything runs CPU-only except the optional AI classifier, which trains on a GP
 ```
 src/
   ├─ preprocessing/   panel segmentation, content typing, text/scale-bar masking
-  ├─ detectors/       copy-move, cross-figure, splice, ai-generation, claim-consistency
+  ├─ detectors/       copy-move (+ dense-field tier), cross-figure, splice, ai-generation
   ├─ forensics/       frequency, noise residual, clone test, JPEG blockiness
-  ├─ pipeline/        orchestrator, risk scorer, evidence fusion, paper inference
-  ├─ evaluation/      benchmark runner, metrics (Wilson CIs, ROC/PR, LOOCV), error analysis
+  ├─ pipeline/        orchestrator, risk scorer, evidence fusion, report builder
+  ├─ evaluation/      benchmark runner, metrics (Wilson CIs, ROC/PR, LOOCV), error analysis,
+  │                   offline recalibration, conformal paper inference (measured, not shipped)
   ├─ nlp/             PDF parser, PMC-package ingestion, claim/vision extraction
-  └─ config/          config.yaml — single source of truth
+  ├─ config/          config.yaml — single source of truth for every detector knob
+  └─ utils/           image I/O (unicode-safe), torch thread policy, synthetic data
 server/     FastAPI bridge (thin transport, zero pipeline logic)
-web/        Next.js 14 + Tailwind + Framer Motion + react-three-fiber
+web/        Next.js 14 + Tailwind + Framer Motion + Recharts + react-three-fiber
 scripts/    data acquisition (PMC Open Access, Retraction Watch)
-tests/      pytest suite — 200 passing, 1 skipped
+tests/      pytest suite — 351 passing, 1 skipped
 ```
 
 ## Documentation
