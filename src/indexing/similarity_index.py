@@ -104,7 +104,12 @@ class SimilarityIndex:
         offset = len(self.paths)
         self.paths.extend(os.path.abspath(p) for p in paths)
         self.phashes.extend(phashes)
-        self._hash_ints = np.array([int(h, 16) for h in self.phashes], np.uint64)
+        # Parse only the NEW hashes and append. This used to re-parse the whole
+        # table on every add(), which is quadratic over an incremental build.
+        self._hash_ints = np.concatenate([
+            self._hash_ints,
+            np.array([int(h, 16) for h in phashes], np.uint64),
+        ])
         self.embeddings = (np.concatenate([self.embeddings, embeddings])
                            .astype(np.float32))
         self.row_to_image = np.concatenate(
@@ -217,10 +222,20 @@ class SimilarityIndex:
             return []
         query = np.uint64(int(phash, 16))
         xor = np.bitwise_xor(self._hash_ints, query)
-        distances = np.array([bin(int(v)).count("1") for v in xor])
-        order = np.argsort(distances)
+        # Genuinely vectorised popcount: view the 64-bit hashes as bytes and
+        # unpack to bits. The docstring has always claimed "vectorized XOR +
+        # popcount ... effectively free", but the implementation was a Python
+        # loop of bin(int(v)).count("1") over every corpus entry -- the one part
+        # of this class that could not survive the corpus size it advertises.
+        distances = np.unpackbits(
+            xor.astype(">u8").view(np.uint8).reshape(-1, 8), axis=1
+        ).sum(axis=1)
+        # Select first, then sort: only the neighbours are ordered, not the
+        # whole corpus.
+        within = np.flatnonzero(distances <= max_distance)
+        order = within[np.argsort(distances[within], kind="stable")]
         return [{"path": self.paths[i], "hamming_distance": int(distances[i])}
-                for i in order if distances[i] <= max_distance]
+                for i in order]
 
     # ---------------------------------------------------------- persistence
     def save(self, directory: str) -> None:
