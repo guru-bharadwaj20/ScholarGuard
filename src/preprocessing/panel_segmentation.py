@@ -163,11 +163,11 @@ def segment_panels(image: np.ndarray,
             if h_cuts or v_cuts:
                 if len(h_cuts) >= len(v_cuts):
                     edges = [0, *h_cuts, sh]
-                    for a, b in zip(edges[:-1], edges[1:]):
+                    for a, b in zip(edges[:-1], edges[1:], strict=True):
                         recurse(x0, y0 + a, x1, y0 + b, depth + 1)
                 else:
                     edges = [0, *v_cuts, sw]
-                    for a, b in zip(edges[:-1], edges[1:]):
+                    for a, b in zip(edges[:-1], edges[1:], strict=True):
                         recurse(x0 + a, y0, x0 + b, y1, depth + 1)
                 return
         kind, stats = classify_region(sub, cfg)

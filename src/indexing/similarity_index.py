@@ -212,8 +212,10 @@ class SimilarityIndex:
         # Per-image best score, per query view.
         best_any: dict[int, float] = {}    # max over all views
         best_whole: dict[int, float] = {}  # query whole view only
-        for view, (view_ids, view_scores) in enumerate(zip(ids, scores)):
-            for row, score in zip(view_ids.tolist(), view_scores.tolist()):
+        for view, (view_ids, view_scores) in enumerate(zip(ids, scores,
+                                                           strict=True)):
+            for row, score in zip(view_ids.tolist(), view_scores.tolist(),
+                                  strict=True):
                 if row < 0:
                     continue
                 image_id = int(self.row_to_image[row])

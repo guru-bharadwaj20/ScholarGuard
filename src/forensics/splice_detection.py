@@ -194,7 +194,7 @@ def detect_splice(image: np.ndarray, config: SpliceConfig | None = None,
     # silently misaligned result for any figure longer than cfg.work_size.
     mask = np.zeros(gray.shape, np.uint8)
     ys, xs = np.where(block_flag)
-    for by, bx in zip(ys, xs):
+    for by, bx in zip(ys, xs, strict=True):
         mask[by * cfg.block:(by + 1) * cfg.block,
              bx * cfg.block:(bx + 1) * cfg.block] = 255
     full_h, full_w = image.shape[:2]

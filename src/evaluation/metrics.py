@@ -452,7 +452,7 @@ def confusion_counts(y_true: list[bool], y_pred: list[bool]) -> dict:
     if len(y_true) != len(y_pred):
         raise ValueError("y_true and y_pred must be the same length")
     tp = fp = fn = tn = 0
-    for t, p in zip(y_true, y_pred):
+    for t, p in zip(y_true, y_pred, strict=True):
         if t and p:
             tp += 1
         elif not t and p:
@@ -562,8 +562,8 @@ def roc_auc(y_true: list[bool], scores: list[float]) -> float | None:
     one; ties count as half. Returns None if one class is absent (AUC
     undefined). Pure stdlib — no sklearn dependency.
     """
-    pos = [s for t, s in zip(y_true, scores) if t]
-    neg = [s for t, s in zip(y_true, scores) if not t]
+    pos = [s for t, s in zip(y_true, scores, strict=True) if t]
+    neg = [s for t, s in zip(y_true, scores, strict=True) if not t]
     if not pos or not neg:
         return None
     # Rank-sum form instead of the nested loop that compared every positive
@@ -614,7 +614,8 @@ def average_precision(y_true: list[bool], scores: list[float]) -> float | None:
     total_pos = sum(1 for t in y_true if t)
     if total_pos == 0:
         return None
-    pairs = sorted(zip(scores, y_true), key=lambda t: t[0], reverse=True)
+    pairs = sorted(zip(scores, y_true, strict=True), key=lambda t: t[0],
+                   reverse=True)
 
     ap = 0.0
     tp = fp = 0
@@ -659,8 +660,9 @@ def count_matched_auc(y_true: list[bool], scores: list[float],
     """
     if not (len(y_true) == len(scores) == len(strata)):
         raise ValueError("y_true, scores and strata must be the same length")
-    pos = [(s, k) for t, s, k in zip(y_true, scores, strata) if t]
-    neg = [(s, k) for t, s, k in zip(y_true, scores, strata) if not t]
+    pos = [(s, k) for t, s, k in zip(y_true, scores, strata, strict=True) if t]
+    neg = [(s, k) for t, s, k in zip(y_true, scores, strata, strict=True)
+           if not t]
     by_stratum: dict[int, list] = {}
     for s, k in neg:
         by_stratum.setdefault(k, []).append(s)
@@ -731,7 +733,7 @@ def loocv_threshold_accuracy(y_true: list[bool], scores: list[float],
         best_thrs: list[float] = []
         for thr in thresholds:
             pred = [s >= thr for s in tr_scores]
-            acc = sum(p == t for p, t in zip(pred, tr_true)) / len(tr_true)
+            acc = sum(p == t for p, t in zip(pred, tr_true, strict=True)) / len(tr_true)
             if acc > best_acc:
                 best_acc, best_thrs = acc, [thr]
             elif acc == best_acc:
@@ -762,9 +764,11 @@ def estimate_fire_calibration(fired_flags: list[bool],
     status. +1/+2 Laplace smoothing keeps the ratio finite on the tiny
     real sets (a 0/10 clean fire rate must not become an infinite LR).
     """
-    fraud_fire = sum(1 for f, y in zip(fired_flags, labels) if y and f)
+    fraud_fire = sum(1 for f, y in zip(fired_flags, labels, strict=True)
+                     if y and f)
     fraud_tot = sum(1 for y in labels if y)
-    clean_fire = sum(1 for f, y in zip(fired_flags, labels) if not y and f)
+    clean_fire = sum(1 for f, y in zip(fired_flags, labels, strict=True)
+                     if not y and f)
     clean_tot = sum(1 for y in labels if not y)
     return {
         "p_fire_fraud": round((fraud_fire + 1) / (fraud_tot + 2), 4),

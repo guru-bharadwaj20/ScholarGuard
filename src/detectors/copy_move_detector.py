@@ -500,7 +500,10 @@ class CopyMoveDetector:
         for cluster in clusters:
             # --- seeds: verified inlier keypoints on the destination side --
             seeds = np.zeros((h, w), np.uint8)
-            for (x, y), ks in zip(cluster.dst_pts, np.resize(cluster.kp_sizes, len(cluster.dst_pts))):
+            for (x, y), ks in zip(cluster.dst_pts,
+                                  np.resize(cluster.kp_sizes,
+                                            len(cluster.dst_pts)),
+                                  strict=True):
                 radius = int(max(cfg.seed_radius, ks))
                 cv2.circle(seeds, (int(round(x)), int(round(y))), radius, 255, -1)
 
