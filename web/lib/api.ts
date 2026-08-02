@@ -20,14 +20,27 @@ export interface DetectorResult {
   n_exact?: number;
   n_region_reuse?: number;
   n_visual_similar?: number;
+  // splice
+  spliced?: boolean;
+  n_flagged_blocks?: number;
+  cues?: {
+    noise_inconsistency_blocks: number;
+    jpeg_ghost_blocks: number;
+    ela_blocks: number;
+  };
   // ai_generation
   verdict?: "likely_real" | "suspicious" | "likely_ai_generated";
   freq_score?: number;
   noise_score?: number;
+  /** p(AI) from the optional trained classifier; null when none is loaded. */
+  classifier_score?: number | null;
   classifier_used?: boolean;
   // claim_consistency
   consistent?: boolean;
   mismatches?: string[];
+  detector_context?: string[];
+  observations?: Record<string, unknown> | null;
+  claims?: Record<string, unknown> | null;
   reason?: string;
   error?: string;
 }
@@ -37,13 +50,33 @@ export interface RiskBreakdownEntry {
   status: string;
   max_points: number;
   points: number;
+  /**
+   * Whether the detector FIRED, recorded separately from the points it scored.
+   * A lead-only detector (weight 0) still corroborates its neighbours, so
+   * inferring this from points > 0 drops it out of the corroboration count.
+   */
+  fired: boolean;
   note: string;
+}
+
+export interface EvidenceContribution {
+  detector: string;
+  fired: boolean | null;
+  log_likelihood_ratio: number;
 }
 
 export interface FigureRisk {
   score: number;
   category: "low" | "moderate" | "high" | "critical";
   breakdown: RiskBreakdownEntry[];
+  /** How many INDEPENDENT detectors fired on this figure. */
+  n_corroborating_signals: number;
+  fraud_probability: number;
+  evidence: {
+    fraud_probability: number;
+    log_odds: number;
+    contributions: EvidenceContribution[];
+  };
 }
 
 export interface FigureReport {
@@ -60,8 +93,12 @@ export interface OverallRisk {
   score: number;
   category: "low" | "moderate" | "high" | "critical" | "unknown";
   n_figures: number;
+  /** The most detectors that agreed on any ONE figure. */
+  max_corroboration?: number;
+  fraud_probability?: number;
   worst_figure_score?: number;
-  worst_figure_category?: string;
+  worst_figure_category?: string | null;
+  note?: string;
 }
 
 export interface PipelineReport {
