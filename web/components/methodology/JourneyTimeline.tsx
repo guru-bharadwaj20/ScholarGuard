@@ -5,11 +5,17 @@ import {
   Bug,
   FlaskConical,
   Microscope,
+  Repeat,
   Scale,
   SearchCheck,
   Wrench,
 } from "lucide-react";
-import { COMBINED, IN_SAMPLE_CAVEAT, JOURNEY } from "@/lib/constants";
+import {
+  COMBINED,
+  IN_SAMPLE_CAVEAT,
+  JOURNEY,
+  TOTAL_PAPERS,
+} from "@/lib/constants";
 import { GlassCard } from "@/components/ui/card";
 
 /**
@@ -49,9 +55,10 @@ const STEPS: Step[] = [
     title: "Real papers broke it — and told the truth",
     body: (
       <>
-        We downloaded {COMBINED.nFraud} formally retracted image-fraud papers
-        (Retraction Watch × PMC Open Access) and {COMBINED.nClean} clean
-        controls, then re-ran the whole benchmark. The result was inverted:
+        We downloaded {JOURNEY.firstRealSetFraud} formally retracted
+        image-fraud papers (Retraction Watch × PMC Open Access) and{" "}
+        {JOURNEY.firstRealSetClean} clean controls, then re-ran the whole
+        benchmark. The result was inverted:
         clean papers scored <em>higher</em> than fraud papers (median{" "}
         {JOURNEY.cleanMedianBefore} vs {JOURNEY.fraudMedianBefore}). At the
         default threshold the pipeline flagged all 25 papers.
@@ -105,30 +112,64 @@ const STEPS: Step[] = [
   {
     icon: <Scale size={18} />,
     phase: "The honest result",
-    title: `A ${COMBINED.bestAccuracyPercent}% ceiling — stated, not hidden`,
+    title: `A ${JOURNEY.firstRealSetAccuracyCeilingPercent}% ceiling — stated, not hidden`,
     body: (
       <>
         After the fixes, the score inversion is gone (fraud median{" "}
         {JOURNEY.fraudMedianAfter} vs clean {JOURNEY.cleanMedianAfter}), and
-        recall is {COMBINED.recallPercent}% ({COMBINED.recallDetail}). But the
-        distributions still overlap: the best paper-level accuracy achievable
-        at any single threshold is {COMBINED.bestAccuracyPercent}% — exactly
-        this evaluation set&apos;s base rate. Copy-move&apos;s remaining false
+        recall is {JOURNEY.firstRealSetRecallPercent}% ({JOURNEY.firstRealSetRecallDetail}).
+        But the distributions still overlap: the best paper-level accuracy
+        achievable at any single threshold is{" "}
+        {JOURNEY.firstRealSetAccuracyCeilingPercent}% — exactly that
+        evaluation set&apos;s base rate. Copy-move&apos;s remaining false
         alarms are an information limitation: legitimate scientific repetition
         is geometrically identical to a copy-paste. No threshold fixes that.
       </>
     ),
     metrics: [
-      { label: "recall on real fraud", value: `${COMBINED.recallPercent}%`, tone: "good" },
-      { label: "best single-threshold accuracy", value: `${COMBINED.bestAccuracyPercent}% (= base rate)`, tone: "bad" },
+      { label: "recall on real fraud", value: `${JOURNEY.firstRealSetRecallPercent}%`, tone: "good" },
+      { label: "best single-threshold accuracy", value: `${JOURNEY.firstRealSetAccuracyCeilingPercent}% (= base rate)`, tone: "bad" },
+    ],
+  },
+  {
+    icon: <Repeat size={18} />,
+    phase: "Held-out replication",
+    title: "Three fresh sets — and the confound that survived them",
+    body: (
+      <>
+        The 60% ceiling above was measured on the same papers the thresholds
+        were tuned against, so it could not be believed. We ran{" "}
+        {COMBINED.sets.length} independent held-out sets ({TOTAL_PAPERS} papers
+        total, no overlap with each other or with anything used for tuning);
+        set 3 was downloaded, screened and run exactly once. ROC-AUC replicated
+        at {COMBINED.sets.map((s) => s.rocAuc.toFixed(3)).join(" / ")}.
+        <br />
+        <br />
+        Then the uncomfortable control: the <em>number of figures in the
+        paper</em>, with no image analysis at all, scores{" "}
+        {COMBINED.sets.map((s) => s.figureCountOnlyAuc.toFixed(3)).join(" / ")}.
+        Retracted papers simply have more figures. Comparing only papers with
+        an identical figure count, the pipeline&apos;s ranking ability is{" "}
+        {COMBINED.pooledCountMatchedAuc} ({COMBINED.pooledCountMatchedCi}) —
+        probably real signal, roughly a fifth as strong as the headline
+        suggests, and still not separable from chance. Every evaluation run
+        prints this control.
+      </>
+    ),
+    metrics: [
+      { label: "ROC-AUC, three sets", value: COMBINED.sets.map((s) => s.rocAuc.toFixed(3)).join(" / "), tone: "neutral" },
+      { label: "figure count alone", value: COMBINED.sets.map((s) => s.figureCountOnlyAuc.toFixed(3)).join(" / "), tone: "bad" },
+      { label: "with figure count controlled", value: `${COMBINED.pooledCountMatchedAuc} (0.5 = chance)`, tone: "bad" },
     ],
   },
   {
     icon: <SearchCheck size={18} />,
     phase: "Methodological caveat",
-    title: "These numbers are in-sample — deliberately disclosed",
-    body: <>{IN_SAMPLE_CAVEAT} A fresh, never-seen real paper set is required
-      before any of the post-fix numbers can be treated as unbiased.</>,
+    title: "What these recall numbers can and cannot say",
+    body: <>{IN_SAMPLE_CAVEAT} Two detectors still have no measured recall at
+      all: no retraction notice in any of the three sets describes a figure as
+      reused-across-papers or AI-generated, so cross-figure and AI-generation
+      are unvalidated on the thing they exist to catch.</>,
   },
 ];
 

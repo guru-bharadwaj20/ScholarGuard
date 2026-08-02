@@ -54,6 +54,20 @@ function flagsFor(fig: FigureReport): Flag[] {
     });
   }
 
+  const sp = d.splice;
+  if (sp?.status === "ok" && sp.spliced) {
+    flags.push({
+      id: "splice",
+      headline: "Possible region pasted in from another source",
+      detail:
+        `${sp.n_flagged_blocks ?? "Some"} block(s) show BOTH a foreign ` +
+        `sensor-noise level and a foreign compression fingerprint ` +
+        `(confidence ${(sp.confidence ?? 0).toFixed(2)} of 1). This is the ` +
+        `most precise signal in the tool — but it fires on only 1 figure in ` +
+        `50 of those it should, so its silence elsewhere means little.`,
+    });
+  }
+
   const ai = d.ai_generation;
   if (ai?.status === "ok" && ai.verdict && ai.verdict !== "likely_real") {
     flags.push({

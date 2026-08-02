@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Microscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { COMBINED, DETECTORS } from "@/lib/constants";
+import { COMBINED, TOTAL_PAPERS } from "@/lib/constants";
 
 // Lazy-load the WebGL scene: never blocks first paint; static poster shown
 // until it mounts (and permanently for reduced-motion users).
@@ -77,8 +77,9 @@ export function HeroSection() {
           ScholarGuard screens the figures of a scientific paper for
           duplication, reuse, and generation artifacts — then tells you
           exactly how much to trust each signal. It is a research prototype,
-          evaluated against {COMBINED.nFraud + COMBINED.nClean} real papers,
-          with every limitation measured and printed next to the result.
+          evaluated against {TOTAL_PAPERS} real papers across{" "}
+          {COMBINED.sets.length} independent held-out sets, with every
+          limitation measured and printed next to the result.
         </motion.p>
 
         <motion.div
@@ -107,16 +108,16 @@ export function HeroSection() {
           className="mt-12 grid max-w-xl grid-cols-3 gap-4"
         >
           <HeroStat
-            value={`${COMBINED.recallPercent}%`}
-            label={`recall on ${COMBINED.nFraud} real fraud papers`}
+            value={COMBINED.recallRangeText}
+            label="of known-fraud papers found"
           />
           <HeroStat
-            value={`${COMBINED.bestAccuracyPercent}%`}
-            label="accuracy ceiling vs. clean papers"
+            value={COMBINED.cleanFlaggedRangeText}
+            label="of clean papers also flagged"
           />
           <HeroStat
-            value={`${DETECTORS.ai_generation.fprPercent}%`}
-            label="best detector's false-alarm rate"
+            value={`${COMBINED.pooledCountMatchedAuc}`}
+            label="ranking ability once figure count is controlled (0.5 = chance)"
           />
         </motion.dl>
       </div>

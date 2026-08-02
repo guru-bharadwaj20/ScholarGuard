@@ -3,7 +3,12 @@ import { JourneyTimeline } from "@/components/methodology/JourneyTimeline";
 import { DetectorRadarChart } from "@/components/analysis/DetectorRadarChart";
 import { DetectorReliabilityBadge } from "@/components/analysis/DetectorReliabilityBadge";
 import { GlassCard, CardTitle } from "@/components/ui/card";
-import { COMBINED, DETECTORS, DETECTOR_ORDER } from "@/lib/constants";
+import {
+  COMBINED,
+  DETECTORS,
+  DETECTOR_ORDER,
+  TOTAL_PAPERS,
+} from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Methodology — ScholarGuard",
@@ -22,10 +27,11 @@ export default function MethodologyPage() {
         <p className="type-body mt-4">
           Most demos show you the version that works. This page shows the
           whole arc: a pipeline that looked strong on synthetic data, an
-          evaluation against {COMBINED.nFraud + COMBINED.nClean} real papers
-          that inverted its scores, the root-cause hunt that followed, and a
-          fix that improved things — up to an honestly-measured ceiling. The
-          debugging is the feature.
+          evaluation against real papers that inverted its scores, the
+          root-cause hunt that followed, and a fix that improved things — up
+          to an honestly-measured ceiling, re-checked on{" "}
+          {COMBINED.sets.length} independent held-out sets ({TOTAL_PAPERS}{" "}
+          papers). The debugging is the feature.
         </p>
       </header>
 

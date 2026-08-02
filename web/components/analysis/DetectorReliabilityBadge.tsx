@@ -1,4 +1,9 @@
-import { AlertTriangle, CheckCircle2, CircleDashed } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  CircleDashed,
+  MinusCircle,
+} from "lucide-react";
 import { DETECTORS, type DetectorId, type ReliabilityTier } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +26,13 @@ const TIER_STYLES: Record<ReliabilityTier, { chip: string; icon: React.ReactNode
   unvalidated: {
     chip: "border-neutralsev/40 bg-neutralsev/10 text-neutralsev",
     icon: <CircleDashed size={12} />,
+  },
+  // Measured, precise when it fires, but so insensitive that silence from it
+  // carries almost no information. Distinct from "unvalidated", which means
+  // never measured at all.
+  inert: {
+    chip: "border-neutralsev/40 bg-neutralsev/10 text-neutralsev",
+    icon: <MinusCircle size={12} />,
   },
 };
 
