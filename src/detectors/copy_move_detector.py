@@ -636,11 +636,25 @@ class CopyMoveDetector:
 
 
 def _dense_region(dense: dict, verdict: str | None, lead_only: bool) -> dict:
-    """Build a region dict for a dense-field detection (confirmed or lead-only)."""
+    """Build a region dict for a dense-field detection (confirmed or lead-only).
+
+    ``transform`` is mandatory: every region produced here flows through
+    :meth:`CopyMoveDetector._rescale_region` whenever the input was downscaled
+    (any figure whose longest side exceeds ``max_dim``), and that helper reads
+    ``region["transform"]``. Omitting it raised KeyError there, which the
+    orchestrator caught as a detector "error" — so copy-move silently scored 0
+    on exactly the large, smooth blot/gel figures the dense tier exists for.
+
+    The dense tier recovers a pure translation, so the affine is the identity
+    rotation with the recovered ``(dx, dy)`` offset in the translation column —
+    which is also what ``_rescale_region`` scales correctly.
+    """
     bbox = cv2.boundingRect(dense["mask"])
+    dx, dy = dense.get("offset") or (0, 0)
     return {
         "source_bbox": bbox,
         "dup_bbox": bbox,
+        "transform": [[1.0, 0.0, float(dx)], [0.0, 1.0, float(dy)]],
         "n_inliers": int(dense["n_support"]),
         "inlier_ratio": 1.0,
         "noise_residual_verdict": verdict or "n/a (dense-field tier)",

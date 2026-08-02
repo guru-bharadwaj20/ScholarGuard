@@ -166,3 +166,53 @@ def test_confirmed_dense_hit_drives_score(monkeypatch):
     assert r["forged"] is True
     assert r["confidence"] >= 0.45
     assert not any(reg.get("lead_only") for reg in r["regions"])
+
+
+# ---------------------------------------------------------------------------
+# Downscale path: a dense region must survive _rescale_region.
+#
+# Any figure whose longest side exceeds max_dim is analyzed downscaled, so every
+# region is mapped back through _rescale_region -- which reads region["transform"].
+# Dense regions used to omit that key, so the whole detector raised KeyError and
+# the orchestrator recorded copy-move as "error" (scoring 0) on precisely the
+# large smooth blot/gel figures the dense tier was added to catch.
+# ---------------------------------------------------------------------------
+def _fake_dense_at(shape, verdict):
+    mask = np.zeros(shape, np.uint8)
+    mask[200:400, 1200:1500] = 255
+    return {"forged": True, "confidence": 0.8, "mask": mask, "n_support": 150,
+            "offset": (600, 0), "mean_zncc": 0.9, "residual_verdict": verdict}
+
+
+@pytest.mark.parametrize("verdict, expect_lead_only", [("clone", False),
+                                                       ("inconclusive", True)])
+def test_dense_region_survives_downscale_rescale(monkeypatch, verdict,
+                                                 expect_lead_only):
+    """A dense hit on an over-max_dim figure must not raise (regression)."""
+    import src.detectors.dense_cmfd as dense_mod
+
+    cfg = DetectorConfig(use_dense_tier=True)
+    # Larger than max_dim on the long side, so detect() downscales and rescales.
+    height, width = 1500, 2000
+    assert max(height, width) > cfg.max_dim
+    gray = np.full((height, width), 200, np.uint8)   # flat -> SIFT finds nothing
+
+    work_shape = (int(height * cfg.max_dim / width), cfg.max_dim)
+    monkeypatch.setattr(dense_mod, "detect_dense_copy_move",
+                        lambda *a, **k: _fake_dense_at(work_shape, verdict))
+
+    det = CopyMoveDetector(cfg)
+    r = det.detect(cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR))
+
+    assert r["dense_tier_used"] is True
+    assert r["mask"].shape == (height, width)
+    regions = [reg for reg in r["regions"] if reg.get("tier", "").startswith("dense")]
+    assert regions, "the dense hit should be reported as a region"
+    for reg in regions:
+        assert bool(reg["lead_only"]) is expect_lead_only
+        # Rescaled back to original coordinates: the translation column is
+        # scaled by 1/scale, the rotation block is untouched.
+        transform = np.array(reg["transform"], dtype=np.float64)
+        assert transform.shape == (2, 3)
+        np.testing.assert_allclose(transform[:, :2], np.eye(2))
+        assert transform[0, 2] > 600   # 600 px at work scale -> more at full scale
