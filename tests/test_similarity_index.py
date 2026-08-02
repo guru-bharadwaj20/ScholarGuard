@@ -197,3 +197,91 @@ def test_incremental_add_keeps_every_hash():
     assert len(index._hash_ints) == 4
     hits = index.query_phash("0000000000000000", max_distance=64)
     assert len(hits) == 4
+
+
+# ----------------------------------------------------------- cache staleness
+def _write_corpus_image(path, value):
+    import cv2
+
+    cv2.imwrite(str(path), np.full((64, 64, 3), value, np.uint8))
+
+
+def test_cache_is_rebuilt_when_an_image_is_edited_in_place(tmp_path,
+                                                           monkeypatch):
+    """Staleness was judged on the filename list alone.
+
+    Editing an image and re-running therefore served the old embeddings and the
+    old pHash forever -- silently, with nothing in the output to indicate it.
+    """
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    image = corpus / "fig.png"
+    _write_corpus_image(image, 40)
+
+    builds = []
+
+    class _StubExtractor:
+        embedding_dim = 4
+
+        def extract_folder(self, folder, show_progress=True, tiles=True):
+            from src.utils.image_io import list_images
+
+            paths = list_images(folder)
+            builds.append(len(builds))
+            # A hash that depends on content, so a rebuild is observable.
+            phashes = [f"{np.asarray(_read(p)).sum() % (2**60):016x}"
+                       for p in paths]
+            rows = np.zeros((len(paths), 4), np.float32)
+            return paths, phashes, rows, np.arange(len(paths), dtype=np.int64)
+
+    def _read(path):
+        import cv2
+
+        return cv2.imread(path)
+
+    extractor = _StubExtractor()
+    first = SimilarityIndex.build_or_load(str(corpus), extractor=extractor,
+                                          backend="numpy", show_progress=False)
+    assert len(builds) == 1
+
+    # Unchanged corpus -> cache hit, no rebuild.
+    SimilarityIndex.build_or_load(str(corpus), extractor=extractor,
+                                  backend="numpy", show_progress=False)
+    assert len(builds) == 1
+
+    # Same filename, different content -> must rebuild.
+    _write_corpus_image(image, 200)
+    os.utime(image, ns=(0, 10 ** 18))
+    rebuilt = SimilarityIndex.build_or_load(str(corpus), extractor=extractor,
+                                            backend="numpy", show_progress=False)
+    assert len(builds) == 2, "an in-place edit did not invalidate the cache"
+    assert rebuilt.phashes != first.phashes
+
+
+def test_cache_is_rebuilt_when_an_image_is_added(tmp_path):
+    corpus = tmp_path / "corpus2"
+    corpus.mkdir()
+    _write_corpus_image(corpus / "a.png", 40)
+
+    builds = []
+
+    class _StubExtractor:
+        embedding_dim = 4
+
+        def extract_folder(self, folder, show_progress=True, tiles=True):
+            from src.utils.image_io import list_images
+
+            paths = list_images(folder)
+            builds.append(1)
+            return (paths, [f"{i:016x}" for i in range(len(paths))],
+                    np.zeros((len(paths), 4), np.float32),
+                    np.arange(len(paths), dtype=np.int64))
+
+    extractor = _StubExtractor()
+    SimilarityIndex.build_or_load(str(corpus), extractor=extractor,
+                                  backend="numpy", show_progress=False)
+    _write_corpus_image(corpus / "b.png", 90)
+    index = SimilarityIndex.build_or_load(str(corpus), extractor=extractor,
+                                          backend="numpy", show_progress=False)
+    assert len(builds) == 2
+    assert len(index) == 2

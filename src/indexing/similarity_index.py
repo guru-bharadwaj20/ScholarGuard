@@ -34,6 +34,24 @@ from src.indexing.feature_extractor import FeatureExtractor
 INDEX_DIRNAME = ".scholarguard_index"
 
 
+def _fingerprint_folder(paths: list[str]) -> dict[str, list]:
+    """``{abspath: [size, mtime_ns]}`` for every corpus image.
+
+    Content identity is approximated by size + modification time rather than a
+    hash: hashing every image on every startup would cost more than the cache
+    saves, while size+mtime catches the in-place edit that a filename-only
+    check misses entirely.
+    """
+    out: dict[str, list] = {}
+    for path in paths:
+        try:
+            stat = os.stat(path)
+        except OSError:
+            continue
+        out[os.path.abspath(path)] = [stat.st_size, stat.st_mtime_ns]
+    return out
+
+
 def angular_distance_to_cosine(distance: float) -> float:
     """Annoy angular distance -> cosine similarity, for L2-normalized vectors.
 
@@ -238,16 +256,19 @@ class SimilarityIndex:
                 for i in order]
 
     # ---------------------------------------------------------- persistence
-    def save(self, directory: str) -> None:
+    def save(self, directory: str, fingerprints: dict | None = None) -> None:
         os.makedirs(directory, exist_ok=True)
         np.save(os.path.join(directory, "embeddings.npy"), self.embeddings)
         np.save(os.path.join(directory, "row_to_image.npy"), self.row_to_image)
         with open(os.path.join(directory, "meta.json"), "w", encoding="utf-8") as fh:
             json.dump({"paths": self.paths, "phashes": self.phashes,
-                       "embedding_dim": self.embedding_dim}, fh)
+                       "embedding_dim": self.embedding_dim,
+                       "fingerprints": fingerprints or {}}, fh)
 
     @classmethod
-    def load(cls, directory: str, backend: str = "auto") -> "SimilarityIndex":
+    def load(cls, directory: str,
+             backend: str = "auto") -> tuple["SimilarityIndex", dict]:
+        """Load a cached index. Returns ``(index, fingerprints)``."""
         with open(os.path.join(directory, "meta.json"), encoding="utf-8") as fh:
             meta = json.load(fh)
         index = cls(meta["embedding_dim"], backend=backend)
@@ -255,7 +276,7 @@ class SimilarityIndex:
                   np.load(os.path.join(directory, "embeddings.npy")),
                   meta["phashes"],
                   np.load(os.path.join(directory, "row_to_image.npy")))
-        return index
+        return index, meta.get("fingerprints") or {}
 
     # ------------------------------------------------------- one-call build
     @classmethod
@@ -288,21 +309,24 @@ class SimilarityIndex:
     ) -> "SimilarityIndex":
         """Load the cached index for a corpus, rebuilding when stale.
 
-        The cache lives in ``<corpus_dir>/.scholarguard_index`` and is
-        considered stale when the corpus image list changed.
+        The cache lives in ``<corpus_dir>/.scholarguard_index`` and is stale
+        when any image was added, removed, **or modified in place**. Staleness
+        used to be judged on the filename list alone, so editing an image and
+        re-running served the old embeddings and the old pHash indefinitely --
+        silently, and with no way to tell from the output.
         """
         from src.utils.image_io import list_images
 
         cache_dir = os.path.join(corpus_dir, INDEX_DIRNAME)
-        current = sorted(os.path.abspath(p) for p in list_images(corpus_dir))
+        current = _fingerprint_folder(list_images(corpus_dir))
         if not force_rebuild and os.path.isfile(os.path.join(cache_dir, "meta.json")):
             try:
-                index = cls.load(cache_dir, backend=backend)
-                if sorted(index.paths) == current:
+                index, cached = cls.load(cache_dir, backend=backend)
+                if cached == current:
                     return index
             except (OSError, KeyError, ValueError):
                 pass  # stale/corrupt cache -> rebuild
         index = cls.build_from_folder(corpus_dir, extractor=extractor,
                                       backend=backend, show_progress=show_progress)
-        index.save(cache_dir)
+        index.save(cache_dir, fingerprints=current)
         return index
