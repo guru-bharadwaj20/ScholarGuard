@@ -40,3 +40,6 @@ server/uploads/
 server/__pycache__/
 
 # README screenshots in images/ are intentionally tracked (do not ignore).
+
+# TypeScript incremental build cache
+web/tsconfig.tsbuildinfo
