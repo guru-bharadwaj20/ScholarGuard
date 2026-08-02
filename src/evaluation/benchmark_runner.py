@@ -154,8 +154,6 @@ def run_benchmark(
     report = _load_existing(report_path) if resume else {"results": {}}
     results = report["results"]
 
-    from src.pipeline.orchestrator import run_pipeline
-
     papers = evaluation_set["papers"]
     todo = [p for p in papers if p["paper_id"] not in results]
     already = len(papers) - len(todo)

@@ -20,8 +20,6 @@ import cv2
 import fitz  # PyMuPDF
 import numpy as np
 
-from src.utils.synth import make_base_figure
-
 
 def _blot_with_lanes(rng: np.random.Generator, n_lanes: int,
                      size: tuple[int, int] = (240, 420)) -> np.ndarray:

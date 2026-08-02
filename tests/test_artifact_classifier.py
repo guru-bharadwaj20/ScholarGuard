@@ -6,7 +6,6 @@ exact format the Colab notebook writes will load and run through
 once done, pays off with zero glue work.
 """
 
-import os
 
 import cv2
 import numpy as np
