@@ -129,6 +129,34 @@ def apply_copy_move(
     return forged, mask
 
 
+#: Filename prefixes this generator owns. Anything else in a target directory
+#: is somebody's real data, and must not be mixed with synthetic output.
+_SYNTH_PREFIXES = ("forged_", "clean_", "paper", "dup", "reuse", "real_", "ai_")
+
+
+def _refuse_to_pollute(target_dir: str) -> None:
+    """Abort if ``target_dir`` already holds images this module did not write.
+
+    ``data/clean/`` is the REAL PMC control corpus: the regression tests read
+    it, and scripts/train_artifact_classifier.py uses it as the *real* class
+    when training the AI detector. Dropping synthetic figures in there
+    contaminates both, and since data/ is gitignored nothing would flag it.
+    Rather than trust the caller to pass the right path, refuse the write.
+    """
+    from src.utils.image_io import list_images
+
+    foreign = [os.path.basename(p) for p in list_images(target_dir)
+               if not os.path.basename(p).startswith(_SYNTH_PREFIXES)]
+    if foreign:
+        raise ValueError(
+            f"refusing to write synthetic figures into '{target_dir}': it "
+            f"already contains {len(foreign)} image(s) this generator did not "
+            f"produce (e.g. {', '.join(sorted(foreign)[:3])}). That directory "
+            f"looks like real data — the regression tests and the AI "
+            f"classifier's 'real' training class both read data/clean/. Pass a "
+            f"different --clean-dir/--output.")
+
+
 def generate_dataset(
     output_dir: str,
     n_forged: int = 12,
@@ -142,8 +170,13 @@ def generate_dataset(
     Forged images + ``_mask.png`` ground truths go to ``output_dir``;
     clean (unforged) images go to ``clean_dir`` if given, else alongside
     with an all-zero mask.
+
+    Raises ``ValueError`` if either target already holds images this generator
+    did not write (see :func:`_refuse_to_pollute`).
     """
     rng = np.random.default_rng(seed)
+    _refuse_to_pollute(output_dir)
+    _refuse_to_pollute(clean_dir or output_dir)
     os.makedirs(output_dir, exist_ok=True)
     written = {"forged": [], "clean": []}
 
@@ -372,7 +405,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="generate synthetic forgeries")
     parser.add_argument("--output", default="data/synthetic")
-    parser.add_argument("--clean-dir", default="data/clean")
+    # NOT data/clean — that is the real PMC control corpus, read by the
+    # regression tests and used as the REAL class when training the AI
+    # classifier. The old default dropped synthetic figures straight into it.
+    parser.add_argument("--clean-dir", default="data/synthetic_clean",
+                        help="where synthetic CLEAN images go "
+                             "(default: %(default)s). Never data/clean — that "
+                             "is the real PMC control corpus.")
     parser.add_argument("--n-forged", type=int, default=12)
     parser.add_argument("--n-clean", type=int, default=6)
     parser.add_argument("--seed", type=int, default=42)
