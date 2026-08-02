@@ -17,9 +17,18 @@ import { UploadDropzone } from "@/components/upload/UploadDropzone";
 import { ExamplePaperPicker } from "@/components/upload/ExamplePaperPicker";
 import { LiveProgressPanel } from "@/components/analysis/LiveProgressPanel";
 import { OverallSummaryCard } from "@/components/analysis/OverallSummaryCard";
+import { PaperDetailCard } from "@/components/analysis/PaperDetailCard";
 import { DetectorRadarChart } from "@/components/analysis/DetectorRadarChart";
 import { FigureReportCard } from "@/components/analysis/FigureReportCard";
-import { SCREENING_DISCLAIMER } from "@/lib/constants";
+import {
+  FigureFilterBar,
+  filterFigures,
+  sortFigures,
+  type FigureFilter,
+  type FigureSort,
+} from "@/components/analysis/FigureFilterBar";
+import { BackendStatusBanner } from "@/components/layout/BackendStatusBanner";
+import { RISK_ZONES, SCREENING_DISCLAIMER } from "@/lib/constants";
 
 type Phase = "idle" | "running" | "done" | "failed";
 
@@ -30,8 +39,14 @@ function AnalyzeInner() {
   const [events, setEvents] = React.useState<ProgressEvent[]>([]);
   const [report, setReport] = React.useState<PipelineReport | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [sort, setSort] = React.useState<FigureSort>("corroboration");
+  const [filter, setFilter] = React.useState<FigureFilter>("all");
   const unsubscribe = React.useRef<(() => void) | null>(null);
   const autoStarted = React.useRef(false);
+
+  // The screening trigger, mirrored from config.yaml risk_scoring.categories.
+  const reviewThreshold =
+    RISK_ZONES.find((z) => z.id === "moderate")?.from ?? 25;
 
   const begin = React.useCallback((jobId: string, jobLabel: string) => {
     setPhase("running");
@@ -79,6 +94,11 @@ function AnalyzeInner() {
     }
   }, [search, phase, begin]);
 
+  const visibleFigures = React.useMemo(() => {
+    const figures = report?.figures ?? [];
+    return filterFigures(sortFigures(figures, sort), filter, reviewThreshold);
+  }, [report, sort, filter, reviewThreshold]);
+
   const reset = () => {
     unsubscribe.current?.();
     setPhase("idle");
@@ -100,6 +120,7 @@ function AnalyzeInner() {
 
       {phase === "idle" && (
         <div className="space-y-10">
+          <BackendStatusBanner />
           <UploadDropzone
             onFile={async (file) => {
               const { job_id } = await startUpload(file);
@@ -143,14 +164,38 @@ function AnalyzeInner() {
               <h2 className="type-card-title text-slate-200">
                 Per-figure findings
               </h2>
-              {report.figures.length === 0 && (
+              {report.figures.length === 0 ? (
                 <p className="type-body">No figures were extracted.</p>
+              ) : (
+                <>
+                  <FigureFilterBar
+                    sort={sort}
+                    onSort={setSort}
+                    filter={filter}
+                    onFilter={setFilter}
+                    shown={visibleFigures.length}
+                    total={report.figures.length}
+                    threshold={reviewThreshold}
+                  />
+                  {visibleFigures.length === 0 && (
+                    <p className="type-body text-sm">
+                      Nothing fired on any figure in this paper. That is not
+                      evidence they are authentic — clear the filter to see
+                      them all.
+                    </p>
+                  )}
+                  {visibleFigures.map((fig, i) => (
+                    <FigureReportCard
+                      key={`${fig.figure}-${fig.figure_num ?? i}`}
+                      fig={fig}
+                      index={i}
+                    />
+                  ))}
+                </>
               )}
-              {report.figures.map((fig, i) => (
-                <FigureReportCard key={i} fig={fig} index={i} />
-              ))}
             </div>
             <div className="space-y-6">
+              <PaperDetailCard report={report} />
               <DetectorRadarChart />
               <Button variant="ghost" onClick={reset} className="w-full">
                 <RotateCcw size={15} /> Analyze another paper
