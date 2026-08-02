@@ -70,3 +70,41 @@ def test_result_shape_and_keys():
     assert set(r) >= {"spliced", "confidence", "n_flagged_blocks",
                       "flagged_fraction", "mask", "cues"}
     assert 0.0 <= r["confidence"] <= 1.0
+
+
+def test_mask_matches_the_input_image_size():
+    """The mask must be image-sized, as documented -- not work-sized.
+
+    detect_splice bounds its analysis to cfg.work_size (1024) for speed, and
+    the mask used to be returned at that reduced resolution while the docstring
+    promised "image-sized". Overlaying it on the original figure was therefore
+    silently misaligned for any figure with a side longer than work_size.
+    """
+    from src.forensics.splice_detection import SpliceConfig, detect_splice
+
+    rng = np.random.default_rng(4)
+    # Deliberately larger than work_size on both axes, and non-square so a
+    # transposed resize would show up too.
+    big = rng.integers(0, 255, (1400, 1800, 3), dtype=np.uint8)
+    assert max(big.shape[:2]) > SpliceConfig().work_size
+
+    result = detect_splice(big)
+    assert result["mask"].shape == big.shape[:2]
+    assert result["mask"].dtype == np.uint8
+
+    # A figure already inside the bound is returned untouched.
+    small = rng.integers(0, 255, (300, 400, 3), dtype=np.uint8)
+    assert detect_splice(small)["mask"].shape == small.shape[:2]
+
+
+def test_mask_flags_line_up_with_the_reported_block_count():
+    """Resizing must not invent or erase flagged area."""
+    from src.forensics.splice_detection import detect_splice
+
+    rng = np.random.default_rng(9)
+    img = rng.integers(0, 255, (1400, 1800, 3), dtype=np.uint8)
+    result = detect_splice(img)
+    if result["n_flagged_blocks"] == 0:
+        assert not result["mask"].any()
+    else:
+        assert result["mask"].any()

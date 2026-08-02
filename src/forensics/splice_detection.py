@@ -188,11 +188,19 @@ def detect_splice(image: np.ndarray, config: SpliceConfig | None = None,
         if spliced else float(np.clip(frac / (2.0 * cfg.min_flagged_frac), 0.0, 0.44))
 
     # Upsample the block map to an image-sized mask for visualization/overlap.
+    # Built at the bounded working resolution, then resized back to the INPUT
+    # image's dimensions -- the docstring promises an image-sized mask, and a
+    # caller overlaying a work-sized one on the original figure would have got a
+    # silently misaligned result for any figure longer than cfg.work_size.
     mask = np.zeros(gray.shape, np.uint8)
     ys, xs = np.where(block_flag)
     for by, bx in zip(ys, xs):
         mask[by * cfg.block:(by + 1) * cfg.block,
              bx * cfg.block:(bx + 1) * cfg.block] = 255
+    full_h, full_w = image.shape[:2]
+    if mask.shape != (full_h, full_w):
+        mask = cv2.resize(mask, (full_w, full_h),
+                          interpolation=cv2.INTER_NEAREST)
 
     return {
         "spliced": spliced,
