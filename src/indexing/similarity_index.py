@@ -34,6 +34,23 @@ from src.indexing.feature_extractor import FeatureExtractor
 INDEX_DIRNAME = ".scholarguard_index"
 
 
+def angular_distance_to_cosine(distance: float) -> float:
+    """Annoy angular distance -> cosine similarity, for L2-normalized vectors.
+
+    Annoy defines angular distance as ``sqrt(2 * (1 - cos(u, v)))``, so the
+    inverse is exact::
+
+        cos = 1 - d**2 / 2
+
+    which maps d=0 to +1 (identical) and d=2 to -1 (opposite). Every threshold
+    in this project (``embed_review``, ``embed_high``) is a cosine similarity,
+    so the conversion has to happen before any comparison. Clamped to [-1, 1]
+    against float error.
+    """
+    cosine = 1.0 - (float(distance) ** 2) / 2.0
+    return max(-1.0, min(1.0, cosine))
+
+
 def _pick_backend() -> str:
     try:
         import faiss  # noqa: F401
@@ -105,7 +122,15 @@ class SimilarityIndex:
         if self.backend == "annoy":
             from annoy import AnnoyIndex
 
-            index = AnnoyIndex(self.embedding_dim, "dot")
+            # ANGULAR, not "dot". Annoy always returns a *distance*, and its
+            # dot-metric distance is a negated inner product whose sign
+            # convention has varied across releases -- feeding it straight into
+            # the cosine thresholds (embed_review=0.85, embed_high=0.985)
+            # ranked candidates backwards and silently. Angular distance has a
+            # documented, stable definition that inverts exactly for the
+            # L2-normalized vectors this index stores; see
+            # :func:`angular_distance_to_cosine`.
+            index = AnnoyIndex(self.embedding_dim, "angular")
             for i, vec in enumerate(self.embeddings):
                 index.add_item(i, vec)
             index.build(20)
@@ -149,10 +174,12 @@ class SimilarityIndex:
         elif self.backend == "annoy":
             ids, scores = [], []
             for query in queries:
-                i, s = self._ann.get_nns_by_vector(query, k_rows,
-                                                   include_distances=True)
+                i, distances = self._ann.get_nns_by_vector(
+                    query, k_rows, include_distances=True)
                 ids.append(i)
-                scores.append(s)
+                # Annoy hands back DISTANCES; everything downstream (and every
+                # configured threshold) is in cosine similarity.
+                scores.append([angular_distance_to_cosine(d) for d in distances])
             ids, scores = np.array(ids), np.array(scores)
         else:  # exact numpy
             sims = queries @ self.embeddings.T  # (T, n_rows)
