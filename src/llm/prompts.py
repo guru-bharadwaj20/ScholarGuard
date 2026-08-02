@@ -61,6 +61,10 @@ CLAIM_EXTRACTION_SCHEMA = {
                         "type": "string",
                         "enum": ["p_value", "fold_change", "percent",
                                  "correlation", "ratio", "other"],
+                        "description": "What kind of statistic this is. Use "
+                                       "'other' when the value does not fit "
+                                       "any of the named kinds rather than "
+                                       "forcing it into the nearest one.",
                     },
                     "value": {
                         "type": "number",
