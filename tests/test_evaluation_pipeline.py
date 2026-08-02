@@ -330,3 +330,39 @@ def test_cross_figure_evaluator_survives_an_empty_ground_truth(tmp_path):
     assert summary["n_reuse_cases"] == 0
     header = open(summary["csv_path"], encoding="utf-8").readline().strip()
     assert header.split(",") == metrics._CROSS_FIGURE_CSV_FIELDS
+
+
+def test_roc_auc_rank_sum_matches_the_pairwise_definition():
+    """The fast form must reproduce the definition exactly, ties included.
+
+    roc_auc compared every positive against every negative in nested Python
+    loops. The rank-sum form is the same statistic in O(n log n); ties get the
+    average rank, which is precisely the "count a tie as half" rule.
+    """
+    import random
+
+    def pairwise(y_true, scores):
+        pos = [v for t, v in zip(y_true, scores) if t]
+        neg = [v for t, v in zip(y_true, scores) if not t]
+        if not pos or not neg:
+            return None
+        wins = sum(1.0 if p > n else 0.5 if p == n else 0.0
+                   for p in pos for n in neg)
+        return round(wins / (len(pos) * len(neg)), 4)
+
+    rng = random.Random(17)
+    for _ in range(300):
+        n = rng.randint(2, 40)
+        y = [rng.random() < 0.5 for _ in range(n)]
+        # One decimal place, so ties are common -- that is where a rank-based
+        # implementation goes wrong if it handles them naively.
+        s = [round(rng.random(), 1) for _ in range(n)]
+        assert metrics.roc_auc(y, s) == pairwise(y, s)
+
+
+def test_roc_auc_edge_cases():
+    assert metrics.roc_auc([True, True], [1.0, 2.0]) is None    # no negatives
+    assert metrics.roc_auc([False, False], [1.0, 2.0]) is None  # no positives
+    assert metrics.roc_auc([True, False], [1.0, 0.0]) == 1.0
+    assert metrics.roc_auc([True, False], [0.0, 1.0]) == 0.0
+    assert metrics.roc_auc([True, False], [1.0, 1.0]) == 0.5    # all tied

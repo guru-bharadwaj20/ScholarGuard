@@ -566,14 +566,30 @@ def roc_auc(y_true: list[bool], scores: list[float]) -> float | None:
     neg = [s for t, s in zip(y_true, scores) if not t]
     if not pos or not neg:
         return None
-    wins = 0.0
-    for p in pos:
-        for n in neg:
-            if p > n:
-                wins += 1.0
-            elif p == n:
-                wins += 0.5
-    return round(wins / (len(pos) * len(neg)), 4)
+    # Rank-sum form instead of the nested loop that compared every positive
+    # against every negative: identical result, O(n log n) rather than O(n^2).
+    # Ties get the average rank, which is exactly the "count a tie as half"
+    # rule the docstring states.
+    ranks = _average_ranks(pos + neg)
+    rank_sum_pos = sum(ranks[: len(pos)])
+    u = rank_sum_pos - len(pos) * (len(pos) + 1) / 2.0
+    return round(u / (len(pos) * len(neg)), 4)
+
+
+def _average_ranks(values: list[float]) -> list[float]:
+    """1-based ranks of ``values``, tied entries sharing their average rank."""
+    order = sorted(range(len(values)), key=lambda i: values[i])
+    ranks = [0.0] * len(values)
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and values[order[j + 1]] == values[order[i]]:
+            j += 1
+        shared = (i + j) / 2.0 + 1.0          # average of the 1-based ranks
+        for k in range(i, j + 1):
+            ranks[order[k]] = shared
+        i = j + 1
+    return ranks
 
 
 def average_precision(y_true: list[bool], scores: list[float]) -> float | None:
