@@ -94,3 +94,84 @@ def test_log_level_custody_is_thread_safe():
     assert seen == [logging.INFO] * 12, "a worker saw a suppressed log level"
     assert bridge._log_level_users == 0
     assert logger.level == logging.WARNING
+
+
+# ------------------------------------------------------------- job lifecycle
+def _job(**kw):
+    return bridge.Job(job_id="j1", pdf_path="p.pdf", output_dir="o", **kw)
+
+
+def test_finish_publishes_report_and_finish_time_together():
+    """A /result landing mid-completion must never see a half-written job.
+
+    report, error, finished_at and status used to be assigned one at a time, so
+    a request between `job.report = report` and the `finally` that set
+    finished_at read a finished report with finished_at None and computed
+    (0 - started_at): a large negative runtime the UI printed verbatim.
+    """
+    job = _job()
+    job.finish("completed", report={"status": "completed"})
+
+    state = job.snapshot()
+    assert state["status"] == "completed"
+    assert state["report"] == {"status": "completed"}
+    assert state["runtime_sec"] is not None
+    assert state["runtime_sec"] >= 0
+
+
+def test_snapshot_of_a_running_job_has_no_runtime():
+    job = _job()
+    job.set_status("running")
+    state = job.snapshot()
+    assert state["status"] == "running"
+    assert state["report"] is None
+    assert state["runtime_sec"] is None
+
+
+def test_runtime_is_never_negative_under_concurrent_completion():
+    """Hammer snapshot() while finish() runs; no reader may see a negative."""
+    job = _job()
+    seen: list[float | None] = []
+    stop = threading.Event()
+
+    def reader():
+        while not stop.is_set():
+            seen.append(job.snapshot()["runtime_sec"])
+
+    t = threading.Thread(target=reader)
+    t.start()
+    time.sleep(0.02)
+    job.finish("completed", report={"status": "completed"})
+    time.sleep(0.02)
+    stop.set()
+    t.join()
+
+    assert seen, "reader never sampled"
+    assert all(v is None or v >= 0 for v in seen)
+
+
+def test_failed_job_without_a_report_still_carries_its_error():
+    job = _job()
+    job.finish("failed", error="boom")
+    state = job.snapshot()
+    assert state["status"] == "failed"
+    assert state["report"] is None
+    assert state["error"] == "boom"
+    assert state["runtime_sec"] >= 0
+
+
+def test_terminal_event_is_recorded_before_the_status_flips():
+    """The SSE generator stops on a terminal status; the last event must exist.
+
+    _run emits its "completed"/"failed" event before calling finish(), so a
+    stream that wakes on the status flip always finds the final event already
+    in the list.
+    """
+    job = _job()
+    job.emit("completed", "Analysis complete")
+    job.finish("completed", report={"status": "completed"})
+
+    with job.lock:
+        kinds = [e["kind"] for e in job.events]
+    assert kinds[-1] == "completed"
+    assert job.status_now() == "completed"

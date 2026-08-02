@@ -64,6 +64,45 @@ class Job:
                 **extra,
             })
 
+    def set_status(self, status: str) -> None:
+        with self.lock:
+            self.status = status
+
+    def status_now(self) -> str:
+        with self.lock:
+            return self.status
+
+    def finish(self, status: str, report: dict | None = None,
+               error: str | None = None) -> None:
+        """Publish the terminal state in ONE locked update.
+
+        report, error, finished_at and status have to become visible together.
+        They used to be assigned separately, so a /result request landing
+        between `job.report = report` and the `finally` that set finished_at saw
+        a finished report with finished_at still None and computed
+        `(0) - started_at` -- a large negative runtime that the UI rendered
+        verbatim.
+
+        Callers must emit their terminal progress event BEFORE calling this: the
+        SSE generator stops as soon as it sees a terminal status with no
+        unsent events, so flipping the status first can drop the last event.
+        """
+        with self.lock:
+            if report is not None:
+                self.report = report
+            self.error = error
+            self.finished_at = time.time()
+            self.status = status
+
+    def snapshot(self) -> dict:
+        """A consistent view of the job for the HTTP layer."""
+        with self.lock:
+            runtime = (round(self.finished_at - self.started_at, 1)
+                       if self.finished_at is not None else None)
+            return {"job_id": self.job_id, "label": self.label,
+                    "status": self.status, "report": self.report,
+                    "error": self.error, "runtime_sec": runtime}
+
 
 _jobs: dict[str, Job] = {}
 _jobs_lock = threading.Lock()
@@ -195,24 +234,23 @@ def _run(job: Job) -> None:
     handler = _JobLogHandler(job, threading.get_ident())
     logger.addHandler(handler)
 
-    job.status = "running"
+    job.set_status("running")
     job.emit("started", "Parsing PDF…")
     try:
         report = run_pipeline(job.pdf_path, output_dir=job.output_dir)
-        job.report = report
         if report.get("status") == "failed":
-            job.status = "failed"
-            job.error = report.get("error") or "the pipeline could not read this PDF"
-            job.emit("failed", job.error)
+            error = report.get("error") or "the pipeline could not read this PDF"
+            # Terminal event first, THEN the status flip: the SSE generator
+            # exits as soon as it sees a terminal status with nothing unsent.
+            job.emit("failed", error)
+            job.finish("failed", report=report, error=error)
         else:
-            job.status = "completed"
             job.emit("completed", "Analysis complete")
+            job.finish("completed", report=report)
     except Exception as exc:  # noqa: BLE001 - report, never crash the server
-        job.status = "failed"
-        job.error = str(exc)
         job.emit("failed", f"Pipeline error: {exc}")
+        job.finish("failed", error=str(exc))
     finally:
-        job.finished_at = time.time()
         logger.removeHandler(handler)
         _release_progress_logging(logger)
 

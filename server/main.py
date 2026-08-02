@@ -147,11 +147,16 @@ async def stream(job_id: str) -> EventSourceResponse:
         while True:
             with job.lock:
                 pending = job.events[sent:]
+                # Read the status inside the SAME lock as the event list, so a
+                # job finishing between the two reads cannot make the loop
+                # believe it has drained a list it has not yet seen grow.
+                status = job.status
+                total = len(job.events)
             for ev in pending:
                 sent += 1
                 yield {"event": ev["kind"], "data": json.dumps(ev)}
-            if job.status in ("completed", "failed") and sent >= len(job.events):
-                yield {"event": "end", "data": json.dumps({"status": job.status})}
+            if status in ("completed", "failed") and sent >= total:
+                yield {"event": "end", "data": json.dumps({"status": status})}
                 return
             await asyncio.sleep(0.3)
 
@@ -163,14 +168,17 @@ def result(job_id: str) -> dict:
     job = bridge.get_job(job_id)
     if job is None:
         raise HTTPException(404, "Unknown job.")
-    if job.status == "failed" and job.report is None:
-        return {"status": "failed", "error": job.error}
-    if job.report is None:
+    # One consistent view: status, report and runtime are published together,
+    # so this can never see a finished report with an unset finish time.
+    state = job.snapshot()
+    if state["status"] == "failed" and state["report"] is None:
+        return {"status": "failed", "error": state["error"]}
+    if state["report"] is None:
         raise HTTPException(409, "Analysis still running.")
 
     # Rewrite local figure paths into API URLs; add whether a copy-move
     # overlay is offered (only when that detector actually fired).
-    report = json.loads(json.dumps(job.report))  # deep copy, JSON-safe
+    report = json.loads(json.dumps(state["report"]))  # deep copy, JSON-safe
     for i, fig in enumerate(report.get("figures") or []):
         has_image = bridge.figure_image_path(job, i) is not None
         fig["image_url"] = f"/analyze/{job_id}/figures/{i}/image" if has_image else None
@@ -180,8 +188,8 @@ def result(job_id: str) -> dict:
             if has_image and cm.get("status") == "ok" and cm.get("forged")
             else None)
         fig.pop("image_path", None)  # local filesystem detail, not for clients
-    report["job"] = {"job_id": job.job_id, "label": job.label,
-                     "runtime_sec": round((job.finished_at or 0) - job.started_at, 1)}
+    report["job"] = {"job_id": state["job_id"], "label": state["label"],
+                     "runtime_sec": state["runtime_sec"]}
     return report
 
 
