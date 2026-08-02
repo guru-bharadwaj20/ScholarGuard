@@ -249,9 +249,14 @@ def report_download(job_id: str, fmt: str) -> FileResponse:
     path = bridge.report_file_path(job, fmt)
     if path is None:
         raise HTTPException(409, "The report is not written yet.")
-    stem = os.path.splitext(job.report["paper"]["filename"])[0]
+    # Name the download after what the user uploaded, not after the stored
+    # file: uploads get a random hex prefix for uniqueness, so the on-disk stem
+    # is "a39aa724_paper" and offering that back is just noise. job.label holds
+    # the original filename (or the example's title).
+    stem = os.path.splitext(job.label or job.report["paper"]["filename"])[0]
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "_", stem).strip("_") or "report"
     return FileResponse(path, media_type=spec["media_type"],
-                        filename=f"{stem}_scholarguard_report.{fmt}")
+                        filename=f"{safe}_scholarguard_report.{fmt}")
 
 
 # ---------------------------------------------------------------------------

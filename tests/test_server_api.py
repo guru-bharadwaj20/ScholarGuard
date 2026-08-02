@@ -218,3 +218,29 @@ def test_report_path_falls_back_to_the_naming_convention(tmp_path):
     assert bridge.report_file_path(job, "json") is not None
     assert bridge.report_file_path(job, "md") is not None
     assert bridge.report_file_path(job, "csv") is None
+
+
+def test_download_is_named_after_the_uploaded_file(client, tmp_path):
+    """Uploads get a random hex prefix on disk; the download should not.
+
+    The stored file is "a39aa724_paper.pdf" so the report stem was
+    "a39aa724_paper" -- offering that back to the reviewer is noise. job.label
+    holds what they actually uploaded.
+    """
+    job = _completed_job(tmp_path)
+    job.label = "Müller et al 2024.pdf"
+    _write_saved_reports(job, tmp_path)
+
+    disposition = client.get("/analyze/jid/report.json") \
+        .headers["content-disposition"]
+    assert "a39aa724" not in disposition
+    assert "M_ller_et_al_2024_scholarguard_report.json" in disposition
+
+
+def test_download_filename_falls_back_when_there_is_no_label(client, tmp_path):
+    job = _completed_job(tmp_path)
+    job.label = ""
+    _write_saved_reports(job, tmp_path)
+    disposition = client.get("/analyze/jid/report.md") \
+        .headers["content-disposition"]
+    assert "paper_scholarguard_report.md" in disposition
