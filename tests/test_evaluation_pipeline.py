@@ -286,3 +286,47 @@ def test_benchmark_no_resume_reruns_all(tmp_path, monkeypatch):
     benchmark_runner.run_benchmark(evaluation_set, "src/config/config.yaml",
                                    output_dir=str(tmp_path / "o"), resume=False)
     assert calls == ["a.pdf"]
+
+
+def test_evaluators_survive_an_empty_dataset(tmp_path):
+    """An empty/misnamed data dir must give an empty report, not IndexError.
+
+    All three evaluators built their CSV header from `rows[0].keys()`, so a
+    directory with no images crashed with `IndexError: list index out of range`
+    instead of reporting that nothing was found.
+    """
+    empty = tmp_path / "no_images"
+    empty.mkdir()
+    out = tmp_path / "out"
+
+    summary = metrics.evaluate_dataset(str(empty), str(out),
+                                       save_visualizations=False)
+    assert summary["n_images"] == 0
+    assert summary["detection_accuracy"] == 0.0
+    header = open(summary["csv_path"], encoding="utf-8").readline().strip()
+    assert header.split(",") == metrics._DATASET_CSV_FIELDS
+
+    ai_summary = metrics.evaluate_ai_generation(str(empty), str(empty),
+                                                output_dir=str(out / "ai"))
+    assert ai_summary["n_real"] == 0 and ai_summary["n_ai"] == 0
+    ai_header = open(ai_summary["csv_path"], encoding="utf-8").readline().strip()
+    assert ai_header.split(",") == metrics._AI_GENERATION_CSV_FIELDS
+
+
+def test_cross_figure_evaluator_survives_an_empty_ground_truth(tmp_path):
+    import json as _json
+
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    (corpus / "ground_truth.json").write_text(
+        _json.dumps({"pairs": [], "clean": []}), encoding="utf-8")
+
+    class _NoDetector:
+        def detect(self, path):    # never called: no pairs, no clean figures
+            raise AssertionError("should not run on an empty ground truth")
+
+    summary = metrics.evaluate_cross_figure(
+        str(corpus), output_dir=str(tmp_path / "out"), detector=_NoDetector())
+    assert summary["n_reuse_cases"] == 0
+    header = open(summary["csv_path"], encoding="utf-8").readline().strip()
+    assert header.split(",") == metrics._CROSS_FIGURE_CSV_FIELDS

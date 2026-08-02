@@ -32,6 +32,37 @@ from src.utils.image_io import (
 from src.utils.visualization import save_side_by_side
 
 
+def _write_rows_csv(rows: list[dict], path: str, fieldnames: list[str]) -> str:
+    """Write per-item rows to CSV, tolerating an empty result set.
+
+    Every evaluator used ``csv.DictWriter(fieldnames=list(rows[0].keys()))``,
+    which raised ``IndexError: list index out of range`` whenever the dataset
+    directory was empty or misnamed -- an opaque crash in place of an empty
+    report. Declaring the columns explicitly writes a valid header either way,
+    and pins the schema so a renamed row key fails loudly here rather than
+    silently reshaping the CSV.
+    """
+    with open(path, "w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+    return path
+
+
+#: Column schemas for the three per-item evaluation CSVs.
+_DATASET_CSV_FIELDS = ["image", "ground_truth_forged", "predicted_forged",
+                       "confidence", "iou", "precision", "recall", "f1",
+                       "n_regions", "runtime_sec"]
+_CROSS_FIGURE_CSV_FIELDS = ["query", "expected_source", "reuse_type",
+                            "found_by_phash", "found_by_embedding",
+                            "region_reuse_verified", "found_any",
+                            "n_candidates_flagged", "runtime_sec"]
+_AI_GENERATION_CSV_FIELDS = ["image", "true_label", "verdict", "freq_score",
+                             "noise_score", "classifier_score",
+                             "flagged_ai_strict", "flagged_ai_lenient",
+                             "runtime_sec"]
+
+
 def compute_iou(pred_mask: np.ndarray, gt_mask: np.ndarray) -> float:
     """Pixel-level Intersection-over-Union between two binary masks.
 
@@ -122,11 +153,9 @@ def evaluate_dataset(
                 gt_mask if gt_path else None,
             )
 
-    csv_path = os.path.join(output_dir, "per_image_results.csv")
-    with open(csv_path, "w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(rows)
+    csv_path = _write_rows_csv(rows, os.path.join(output_dir,
+                                                  "per_image_results.csv"),
+                               _DATASET_CSV_FIELDS)
 
     forged_rows = [r for r in rows if r["ground_truth_forged"]]
     clean_rows = [r for r in rows if not r["ground_truth_forged"]]
@@ -224,11 +253,9 @@ def evaluate_cross_figure(
             if hits - paired:
                 false_flags += 1
 
-    csv_path = os.path.join(output_dir, "cross_figure_results.csv")
-    with open(csv_path, "w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(rows)
+    csv_path = _write_rows_csv(rows, os.path.join(output_dir,
+                                                  "cross_figure_results.csv"),
+                               _CROSS_FIGURE_CSV_FIELDS)
 
     found = [r for r in rows if r["found_any"]]
     summary = {
@@ -289,11 +316,9 @@ def evaluate_ai_generation(
             "runtime_sec": round(elapsed, 2),
         })
 
-    csv_path = os.path.join(output_dir, "ai_generation_results.csv")
-    with open(csv_path, "w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(rows)
+    csv_path = _write_rows_csv(rows, os.path.join(output_dir,
+                                                  "ai_generation_results.csv"),
+                               _AI_GENERATION_CSV_FIELDS)
 
     ai_rows = [r for r in rows if r["true_label"] == "ai_generated"]
     real_rows = [r for r in rows if r["true_label"] == "real"]
