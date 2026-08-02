@@ -90,7 +90,7 @@ def test_paper_fires_respects_threshold():
     # figures[] is the authoritative per-figure view (paper_fires aggregates the
     # same rule the figure-level path uses, so the two cannot disagree); the
     # flat lists are what the quantile/baseline fits consume.
-    p = Paper("x", True, cm_conf=[0.4, 0.6], cf_fire=[False, False],
+    p = Paper("x", True, cm_conf=[0.4, 0.6],
               ai_forensic=[0.3, 0.9], ai_blend=[],
               figures=[{"cm_conf": 0.4, "cf_fire": False, "ai_forensic": 0.3,
                         "ai_blend": None},

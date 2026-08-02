@@ -77,7 +77,6 @@ class Paper:
     gt_fraud: bool
     # per-figure signals (flat, one entry per figure the detector ran on)
     cm_conf: list[float]        # copy-move confidence, one per figure
-    cf_fire: list[bool]         # cross-figure fired (exact or region reuse)
     ai_forensic: list[float]    # 0.5*(freq+noise) per figure
     ai_blend: list[float]       # the pipeline's blended AI score per figure,
                                 # empty when the run had no classifier weights
@@ -95,7 +94,7 @@ def load_papers(report: dict) -> list[Paper]:
         rep = entry.get("pipeline_report")
         if entry.get("status") != "ok" or not rep or not rep.get("figures"):
             continue
-        cm_conf, cf_fire, ai_forensic, ai_blend = [], [], [], []
+        cm_conf, ai_forensic, ai_blend = [], [], []
         figures: list[dict] = []
         for fig in rep["figures"]:
             d = fig["detectors"]
@@ -109,7 +108,6 @@ def load_papers(report: dict) -> list[Paper]:
             if cf.get("status") == "ok":
                 rec["cf_fire"] = (cf.get("n_exact", 0) > 0
                                   or cf.get("n_region_reuse", 0) > 0)
-                cf_fire.append(rec["cf_fire"])
             ai = d.get("ai_generation", {})
             if ai.get("status") == "ok" and ai.get("freq_score") is not None:
                 rec["ai_forensic"] = 0.5 * (float(ai["freq_score"])
@@ -127,8 +125,7 @@ def load_papers(report: dict) -> list[Paper]:
         papers.append(Paper(
             paper_id=pid,
             gt_fraud=bool(entry["ground_truth"]["is_fraudulent"]),
-            cm_conf=cm_conf, cf_fire=cf_fire, ai_forensic=ai_forensic,
-            ai_blend=ai_blend,
+            cm_conf=cm_conf, ai_forensic=ai_forensic, ai_blend=ai_blend,
             figures=figures,
             stored_score=float(rep["overall_risk"].get("score", 0.0)),
             stored_prob=float(rep["overall_risk"].get("fraud_probability", 0.0)),
