@@ -143,15 +143,15 @@ def _encode_image_jpeg_b64(image_path: str, max_side: int = 1536,
 
     from PIL import Image
 
-    with Image.open(image_path) as img:
-        img = img.convert("RGB")
-        longest = max(img.size)
-        if longest > max_side:
-            scale = max_side / longest
-            img = img.resize((max(1, int(img.width * scale)),
-                              max(1, int(img.height * scale))))
-        buf = io.BytesIO()
-        img.save(buf, format="JPEG", quality=quality)
+    with Image.open(image_path) as source:
+        rgb = source.convert("RGB")
+    longest = max(rgb.size)
+    if longest > max_side:
+        scale = max_side / longest
+        rgb = rgb.resize((max(1, int(rgb.width * scale)),
+                          max(1, int(rgb.height * scale))))
+    buf = io.BytesIO()
+    rgb.save(buf, format="JPEG", quality=quality)
     return base64.b64encode(buf.getvalue()).decode("ascii")
 
 

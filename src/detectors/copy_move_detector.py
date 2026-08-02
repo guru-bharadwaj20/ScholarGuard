@@ -46,6 +46,7 @@ import json
 import math
 import os
 from dataclasses import dataclass, field
+from functools import lru_cache
 
 import cv2
 import numpy as np
@@ -797,7 +798,17 @@ def keep_seeded_components(mask: np.ndarray, seeds: np.ndarray, min_area: int) -
 # --------------------------------------------------------------------------
 # Public functional API (stable signature for later stages)
 # --------------------------------------------------------------------------
-_default_detector: CopyMoveDetector | None = None
+@lru_cache(maxsize=1)
+def _default_detector() -> CopyMoveDetector:
+    """The stock-configuration detector, built once per process.
+
+    Was a module-level `_default_detector = None` rebound through a `global`
+    statement, so any caller could observe another's partially-initialised
+    value. Note this uses DetectorConfig() defaults, NOT config.yaml -- callers
+    that need the configured thresholds must build their own detector from
+    Settings.copy_move_config().
+    """
+    return CopyMoveDetector()
 
 
 def detect_copy_move(image_path: str) -> dict:
@@ -812,11 +823,7 @@ def detect_copy_move(image_path: str) -> dict:
         "visualization": np.ndarray    # BGR image with regions highlighted
     }
     """
-    global _default_detector
-    if _default_detector is None:
-        _default_detector = CopyMoveDetector()
-    image = load_image(image_path)
-    return _default_detector.detect(image)
+    return _default_detector().detect(load_image(image_path))
 
 
 # --------------------------------------------------------------------------
