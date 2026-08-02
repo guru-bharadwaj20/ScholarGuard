@@ -1,5 +1,12 @@
 """Paper-level inference: conformal p-values + Benjamini-Yekutieli FDR control.
 
+This lives in ``src.evaluation``, not ``src.pipeline``, and that placement is
+the point: **nothing in the shipped pipeline ranks papers with any of it.** It
+is a measurement instrument and a recorded negative result (see "Measured
+outcome" below), kept because it is the diagnostic that produced that table and
+because a future per-figure statistic with fewer ties could change the answer.
+It sat under ``src/pipeline/`` for a while, where it read as shipped code.
+
 Why this exists (the measurement that forced it)
 ------------------------------------------------
 The shipped paper score is ``0.7 * worst_figure + 0.3 * mean_figure``. On

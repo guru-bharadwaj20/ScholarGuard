@@ -332,7 +332,7 @@ On set 2 the figure counter **beats** the forensic pipeline. Sets 1 and 2 had bo
 
 So there is probably real forensic signal in the paper ranking — the point estimate is above chance in all six cells — but it is **roughly a fifth as strong as the uncontrolled headline implies**, and even pooled across 439 matched pairs from three independent sets the 95% interval still touches 0.5. Every run now prints this line and both reference rankings, so the confound cannot go unreported again.
 
-**A change measured, and not adopted.** The obvious fix is to correct for the count explicitly. [src/pipeline/paper_inference.py](src/pipeline/paper_inference.py) does it properly: split-conformal p-values per figure against a clean calibration set, then Benjamini–Yekutieli across the paper's figures (BY not BH — figures within a paper share instrument, compression and authors, and BY's `C(m)` factor is valid under arbitrary dependence). Leave-one-paper-out calibrated on set 1, every count-corrected combiner **lost**:
+**A change measured, and not adopted.** The obvious fix is to correct for the count explicitly. [src/evaluation/paper_inference.py](src/evaluation/paper_inference.py) does it properly: split-conformal p-values per figure against a clean calibration set, then Benjamini–Yekutieli across the paper's figures (BY not BH — figures within a paper share instrument, compression and authors, and BY's `C(m)` factor is valid under arbitrary dependence). Leave-one-paper-out calibrated on set 1, every count-corrected combiner **lost**:
 
 | Combiner | ROC-AUC | AP | | Combiner | ROC-AUC | AP |
 |---|---|---|---|---|---|---|

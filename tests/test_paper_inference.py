@@ -16,7 +16,7 @@ import random
 
 import pytest
 
-from src.pipeline.paper_inference import (
+from src.evaluation.paper_inference import (
     ConformalCalibrator,
     by_adjusted_pvalues,
     conformal_pvalues,
