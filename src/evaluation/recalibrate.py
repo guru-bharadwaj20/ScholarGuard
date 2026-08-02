@@ -59,7 +59,14 @@ from src.detectors.ai_generation_detector import (
 from src.evaluation import metrics as M
 
 _EPS = 1e-6
-DETECTORS = ("copy_move", "cross_figure", "ai_generation")
+#: Detectors fused here. Must stay in step with
+#: src.pipeline.evidence_fusion._FUSION_DETECTORS: this list used to hold only
+#: copy_move, cross_figure and ai_generation, so splice (20 risk points) and
+#: claim_consistency (10) were absent from the likelihood-ratio table, the
+#: LOOCV posterior and the corroboration count -- 30% of the shipped score
+#: invisible to the analysis used to argue about the shipped weights.
+DETECTORS = ("copy_move", "cross_figure", "splice", "ai_generation",
+             "claim_consistency")
 
 #: AI fire modes. ``blend`` uses the pipeline's classifier-blended score with a
 #: cutoff refit to a target clean-figure FPR; ``forensic`` z-scores the
@@ -98,8 +105,8 @@ def load_papers(report: dict) -> list[Paper]:
         figures: list[dict] = []
         for fig in rep["figures"]:
             d = fig["detectors"]
-            rec = {"cm_conf": None, "cf_fire": None, "ai_forensic": None,
-                   "ai_blend": None}
+            rec = {"cm_conf": None, "cf_fire": None, "splice_fire": None,
+                   "cc_fire": None, "ai_forensic": None, "ai_blend": None}
             cm = d.get("copy_move", {})
             if cm.get("status") == "ok":
                 rec["cm_conf"] = float(cm.get("confidence", 0.0))
@@ -108,6 +115,12 @@ def load_papers(report: dict) -> list[Paper]:
             if cf.get("status") == "ok":
                 rec["cf_fire"] = (cf.get("n_exact", 0) > 0
                                   or cf.get("n_region_reuse", 0) > 0)
+            sp = d.get("splice", {})
+            if sp.get("status") == "ok":
+                rec["splice_fire"] = bool(sp.get("spliced"))
+            cc = d.get("claim_consistency", {})
+            if cc.get("status") == "ok":
+                rec["cc_fire"] = cc.get("consistent") is False
             ai = d.get("ai_generation", {})
             if ai.get("status") == "ok" and ai.get("freq_score") is not None:
                 rec["ai_forensic"] = 0.5 * (float(ai["freq_score"])
@@ -149,11 +162,20 @@ def _ai_figure_fires(fig: dict, cal: "Calibration") -> bool:
 
 
 def _figure_fires(fig: dict, cal: "Calibration") -> dict:
-    """Which detectors fire on a SINGLE figure under a calibration."""
+    """Which detectors fire on a SINGLE figure under a calibration.
+
+    The boolean detectors use the same rules as
+    :func:`src.pipeline.evidence_fusion.detector_fired`, so the offline
+    analysis and the shipped inference cannot disagree about what "fired"
+    means. Only copy-move and (in blend mode) AI have a refittable threshold;
+    splice, cross-figure and claim-consistency report a verdict.
+    """
     cm = fig["cm_conf"] is not None and fig["cm_conf"] >= cal.cm_threshold
-    cf = bool(fig["cf_fire"])
-    return {"copy_move": cm, "cross_figure": cf,
-            "ai_generation": _ai_figure_fires(fig, cal)}
+    return {"copy_move": cm,
+            "cross_figure": bool(fig.get("cf_fire")),
+            "splice": bool(fig.get("splice_fire")),
+            "ai_generation": _ai_figure_fires(fig, cal),
+            "claim_consistency": bool(fig.get("cc_fire"))}
 
 
 def paper_scores(paper: Paper, cal: "Calibration") -> dict:

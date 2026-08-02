@@ -163,3 +163,71 @@ def test_blend_mode_reads_classifier_score_and_refits_cutoff():
     assert fires_clean["ai_generation"] is False
     pf, pc = cal.lrs["ai_generation"]
     assert pf > pc
+
+
+# ---------------------------------------------------------------------------
+# Detector coverage: the offline analysis must see the whole shipped score.
+# ---------------------------------------------------------------------------
+def test_recalibration_covers_every_fused_detector():
+    """DETECTORS used to omit splice (20 pts) and claim_consistency (10 pts).
+
+    Those 30 of the 100 shipped risk points were invisible to the likelihood
+    ratio table, the LOOCV posterior and the corroboration count -- including
+    when that table was used to argue about splice's own weight in config.yaml.
+    """
+    from src.evaluation.recalibrate import DETECTORS
+    from src.pipeline.evidence_fusion import _FUSION_DETECTORS
+
+    assert set(DETECTORS) == set(_FUSION_DETECTORS)
+
+
+def test_splice_and_claim_consistency_fires_are_loaded_and_scored():
+    from src.evaluation.recalibrate import (
+        Calibration, _figure_fires, load_papers, paper_scores,
+    )
+
+    report = {"results": {"p1": {
+        "status": "ok",
+        "ground_truth": {"is_fraudulent": True},
+        "pipeline_report": {
+            "overall_risk": {"score": 40.0, "fraud_probability": 0.4},
+            "figures": [{"detectors": {
+                "copy_move": {"status": "ok", "confidence": 0.9},
+                "cross_figure": {"status": "ok", "n_exact": 0,
+                                 "n_region_reuse": 0},
+                "splice": {"status": "ok", "spliced": True},
+                "ai_generation": {"status": "ok", "freq_score": 0.2,
+                                  "noise_score": 0.2},
+                "claim_consistency": {"status": "ok", "consistent": False},
+            }}],
+        },
+    }}}
+
+    papers = load_papers(report)
+    assert len(papers) == 1
+    fig = papers[0].figures[0]
+    assert fig["splice_fire"] is True
+    assert fig["cc_fire"] is True
+
+    cal = Calibration(cm_threshold=0.5, ai_mean=0.3, ai_std=0.1, ai_z=2.0,
+                      lrs={}, prior=0.3)
+    fires = _figure_fires(fig, cal)
+    assert fires["splice"] is True
+    assert fires["claim_consistency"] is True
+    assert fires["copy_move"] is True
+    assert fires["cross_figure"] is False
+
+    # Corroboration can now reach 5, and counts the two new signals.
+    assert paper_scores(papers[0], cal)["max_cofire"] == 3
+
+
+def test_detectors_absent_from_a_report_do_not_fire():
+    """Older reports predate splice; a missing detector is not a fire."""
+    from src.evaluation.recalibrate import Calibration, _figure_fires
+
+    cal = Calibration(cm_threshold=0.5, ai_mean=0.3, ai_std=0.1, ai_z=2.0,
+                      lrs={}, prior=0.3)
+    fires = _figure_fires({"cm_conf": None, "cf_fire": None,
+                           "ai_forensic": None, "ai_blend": None}, cal)
+    assert fires["splice"] is False
+    assert fires["claim_consistency"] is False
