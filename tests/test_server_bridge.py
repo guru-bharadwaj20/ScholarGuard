@@ -261,3 +261,91 @@ def test_starting_a_job_prunes_the_registry(tmp_path, monkeypatch):
 
     assert "stale" not in bridge._jobs
     assert job.job_id in bridge._jobs
+
+
+# --------------------------------------------------------- admission control
+@pytest.fixture
+def _no_pipeline(monkeypatch, tmp_path):
+    """start_job without actually running a pipeline; threads are stubbed."""
+    monkeypatch.setattr(bridge, "JOBS_DIR", str(tmp_path / "jobs"))
+    started = []
+
+    class _Thread:
+        def __init__(self, *a, **k):
+            started.append(k.get("name"))
+
+        def start(self):
+            pass
+
+    monkeypatch.setattr(bridge.threading, "Thread", _Thread)
+    monkeypatch.setattr(bridge, "_inflight", 0)
+    return started
+
+
+def test_refuses_work_beyond_the_inflight_limit(_no_pipeline, monkeypatch,
+                                                tmp_path):
+    """An unbounded thread-per-request spawn is how this box falls over.
+
+    Each analysis is minutes of CPU-saturating work, so accepting an unlimited
+    number of them made every one of them slower than running in sequence.
+    """
+    monkeypatch.setattr(bridge, "MAX_INFLIGHT_ANALYSES", 3)
+
+    for i in range(3):
+        bridge.start_job(str(tmp_path / f"{i}.pdf"), label=f"job{i}")
+    assert bridge.inflight_count() == 3
+
+    with pytest.raises(bridge.CapacityError, match="already queued or running"):
+        bridge.start_job(str(tmp_path / "overflow.pdf"), label="overflow")
+
+    # The refused job left no trace in the registry.
+    assert len(bridge._jobs) == 3
+
+
+def test_inflight_drops_when_a_job_finishes(_no_pipeline, monkeypatch, tmp_path):
+    monkeypatch.setattr(bridge, "MAX_INFLIGHT_ANALYSES", 2)
+    job = bridge.start_job(str(tmp_path / "a.pdf"), label="a")
+    assert bridge.inflight_count() == 1
+
+    # _run releases the slot in its finally, even when the pipeline explodes.
+    monkeypatch.setattr(bridge, "_run_admitted",
+                        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("x")))
+    with pytest.raises(RuntimeError):
+        bridge._run(job)
+    assert bridge.inflight_count() == 0
+
+
+def test_concurrency_slots_serialise_runs(monkeypatch):
+    """Only MAX_CONCURRENT_ANALYSES pipelines may execute at the same time."""
+    monkeypatch.setattr(bridge, "_run_slots", threading.BoundedSemaphore(2))
+    monkeypatch.setattr(bridge, "_inflight", 0)
+
+    peak = 0
+    current = 0
+    counter_lock = threading.Lock()
+
+    def fake_admitted(job, run_pipeline):
+        nonlocal peak, current
+        with counter_lock:
+            current += 1
+            peak = max(peak, current)
+        time.sleep(0.05)
+        with counter_lock:
+            current -= 1
+
+    monkeypatch.setattr(bridge, "_run_admitted", fake_admitted)
+
+    jobs = [bridge.Job(job_id=f"j{i}", pdf_path="p", output_dir="o")
+            for i in range(6)]
+    threads = [threading.Thread(target=bridge._run, args=(j,)) for j in jobs]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert peak <= 2, f"{peak} pipelines ran concurrently against a cap of 2"
+
+
+def test_concurrency_default_is_sane():
+    assert bridge.MAX_CONCURRENT_ANALYSES >= 1
+    assert bridge.MAX_INFLIGHT_ANALYSES > bridge.MAX_CONCURRENT_ANALYSES

@@ -77,7 +77,13 @@ EXAMPLES: dict[str, dict] = {
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok"}
+    """Liveness plus current load, so a caller can back off before uploading."""
+    return {
+        "status": "ok",
+        "inflight": bridge.inflight_count(),
+        "max_concurrent": bridge.MAX_CONCURRENT_ANALYSES,
+        "max_inflight": bridge.MAX_INFLIGHT_ANALYSES,
+    }
 
 
 @app.get("/examples")
@@ -115,7 +121,11 @@ async def analyze(file: UploadFile) -> dict:
     with open(pdf_path, "wb") as fh:
         fh.write(data)
 
-    job = bridge.start_job(pdf_path, label=name, owns_pdf=True)
+    try:
+        job = bridge.start_job(pdf_path, label=name, owns_pdf=True)
+    except bridge.CapacityError as exc:
+        os.remove(pdf_path)          # do not keep an upload we refused to run
+        raise HTTPException(503, str(exc)) from exc
     return {"job_id": job.job_id, "label": job.label}
 
 
@@ -126,7 +136,10 @@ def analyze_example(example_id: str) -> dict:
         raise HTTPException(404, "Unknown example.")
     if not os.path.isfile(ex["path"]):
         raise HTTPException(404, "Example PDF is not present in this checkout.")
-    job = bridge.start_job(ex["path"], label=ex["title"])
+    try:
+        job = bridge.start_job(ex["path"], label=ex["title"])
+    except bridge.CapacityError as exc:
+        raise HTTPException(503, str(exc)) from exc
     return {"job_id": job.job_id, "label": job.label}
 
 

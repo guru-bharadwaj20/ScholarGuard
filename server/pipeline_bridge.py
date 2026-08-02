@@ -119,6 +119,37 @@ _jobs_lock = threading.Lock()
 MAX_RETAINED_JOBS = 50
 JOB_TTL_SECONDS = 60 * 60
 
+# ---------------------------------------------------------------------------
+# Admission control.
+#
+# One analysis is minutes of CPU-saturating OpenCV/torch work. start_job used
+# to spawn a thread per request with no cap at all, so N concurrent uploads
+# meant N pipelines fighting over the same cores -- every one of them slower
+# than running them in sequence, with no bound on N. Cap how many run at once,
+# queue a few behind them, and refuse the rest with a clear error instead of
+# accepting work the box cannot do.
+# ---------------------------------------------------------------------------
+def _default_concurrency() -> int:
+    raw = os.environ.get("SCHOLARGUARD_MAX_CONCURRENT_ANALYSES")
+    if raw and raw.strip().isdigit() and int(raw) > 0:
+        return int(raw)
+    return max(1, min(2, (os.cpu_count() or 2) // 2))
+
+
+MAX_CONCURRENT_ANALYSES = _default_concurrency()
+MAX_INFLIGHT_ANALYSES = MAX_CONCURRENT_ANALYSES + 8   # running + queued
+_run_slots = threading.BoundedSemaphore(MAX_CONCURRENT_ANALYSES)
+_inflight = 0
+
+
+class CapacityError(RuntimeError):
+    """Raised when too many analyses are already queued or running."""
+
+
+def inflight_count() -> int:
+    with _jobs_lock:
+        return _inflight
+
 
 def get_job(job_id: str) -> Job | None:
     with _jobs_lock:
@@ -228,15 +259,26 @@ def start_job(pdf_path: str, label: str, owns_pdf: bool = False) -> Job:
     ``owns_pdf`` marks an uploaded file the bridge may delete when the job is
     evicted; the bundled example papers are repo files and must not be.
     """
+    global _inflight
+
     _evict_stale_jobs()
     job_id = uuid.uuid4().hex[:12]
     output_dir = os.path.join(JOBS_DIR, job_id)
-    os.makedirs(output_dir, exist_ok=True)
     job = Job(job_id=job_id, pdf_path=pdf_path, output_dir=output_dir,
               label=label, owns_pdf=owns_pdf)
+
+    # Admit or refuse under the registry lock, so simultaneous requests cannot
+    # both see room for the last slot.
     with _jobs_lock:
+        if _inflight >= MAX_INFLIGHT_ANALYSES:
+            raise CapacityError(
+                f"{_inflight} analyses are already queued or running "
+                f"(limit {MAX_INFLIGHT_ANALYSES}). Each one takes minutes of "
+                f"CPU; try again when the current batch finishes.")
+        _inflight += 1
         _jobs[job_id] = job
 
+    os.makedirs(output_dir, exist_ok=True)
     thread = threading.Thread(target=_run, args=(job,), daemon=True,
                               name=f"scholarguard-job-{job_id}")
     thread.start()
@@ -277,9 +319,26 @@ def _release_progress_logging(logger: logging.Logger) -> None:
 
 
 def _run(job: Job) -> None:
-    """Worker: attach the log tap, call run_pipeline(), record the outcome."""
+    """Worker: wait for a run slot, attach the log tap, run, record the outcome."""
+    global _inflight
+
     from src.pipeline.orchestrator import run_pipeline  # existing, unmodified
 
+    try:
+        # Blocks while the machine is already running its allotted analyses;
+        # the job stays "queued" and its SSE stream stays open meanwhile.
+        _run_slots.acquire()
+        try:
+            _run_admitted(job, run_pipeline)
+        finally:
+            _run_slots.release()
+    finally:
+        with _jobs_lock:
+            _inflight = max(0, _inflight - 1)
+
+
+def _run_admitted(job: Job, run_pipeline) -> None:
+    """The actual run, once a concurrency slot has been acquired."""
     logger = logging.getLogger("scholarguard")
     _acquire_progress_logging(logger)
     handler = _JobLogHandler(job, threading.get_ident())
