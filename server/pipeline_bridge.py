@@ -19,6 +19,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+import shutil
 import sys
 import threading
 import time
@@ -53,6 +54,9 @@ class Job:
     started_at: float = field(default_factory=time.time)
     finished_at: float | None = None
     n_figures_total: int | None = None
+    #: True when the bridge wrote pdf_path itself (an upload) and may delete it
+    #: on eviction. False for the bundled example papers, which are repo files.
+    owns_pdf: bool = False
     lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def emit(self, kind: str, message: str, **extra) -> None:
@@ -107,10 +111,51 @@ class Job:
 _jobs: dict[str, Job] = {}
 _jobs_lock = threading.Lock()
 
+# Retention policy for finished jobs. Each entry pins a whole report dict in
+# memory and a directory of figure images + overlays on disk, and nothing ever
+# removed them: a long-lived server grew without bound in both. Finished jobs
+# are kept long enough for the UI to fetch the result and for a reload to still
+# work, then reclaimed. Running jobs are never evicted.
+MAX_RETAINED_JOBS = 50
+JOB_TTL_SECONDS = 60 * 60
+
 
 def get_job(job_id: str) -> Job | None:
     with _jobs_lock:
         return _jobs.get(job_id)
+
+
+def _discard_job_artifacts(job: Job) -> None:
+    """Delete the job's output directory, and its upload if we wrote it."""
+    shutil.rmtree(job.output_dir, ignore_errors=True)
+    if job.owns_pdf and job.pdf_path:
+        try:
+            os.remove(job.pdf_path)
+        except OSError:
+            pass
+
+
+def _evict_stale_jobs(now: float | None = None) -> list[Job]:
+    """Drop finished jobs past the TTL, then the oldest beyond the cap.
+
+    Returns the evicted jobs so the caller can reclaim their disk outside the
+    registry lock. Jobs still queued or running are never touched, however old.
+    """
+    now = time.time() if now is None else now
+    with _jobs_lock:
+        finished = [(jid, j) for jid, j in _jobs.items()
+                    if j.finished_at is not None]
+        doomed = {jid for jid, j in finished
+                  if now - j.finished_at > JOB_TTL_SECONDS}
+        survivors = [(jid, j) for jid, j in finished if jid not in doomed]
+        overflow = len(_jobs) - len(doomed) - MAX_RETAINED_JOBS
+        if overflow > 0:
+            survivors.sort(key=lambda item: item[1].finished_at)
+            doomed.update(jid for jid, _ in survivors[:overflow])
+        evicted = [_jobs.pop(jid) for jid in doomed]
+    for job in evicted:
+        _discard_job_artifacts(job)
+    return evicted
 
 
 # ---------------------------------------------------------------------------
@@ -177,12 +222,18 @@ class _JobLogHandler(logging.Handler):
 # ---------------------------------------------------------------------------
 
 
-def start_job(pdf_path: str, label: str) -> Job:
-    """Create a Job and run the existing pipeline on a background thread."""
+def start_job(pdf_path: str, label: str, owns_pdf: bool = False) -> Job:
+    """Create a Job and run the existing pipeline on a background thread.
+
+    ``owns_pdf`` marks an uploaded file the bridge may delete when the job is
+    evicted; the bundled example papers are repo files and must not be.
+    """
+    _evict_stale_jobs()
     job_id = uuid.uuid4().hex[:12]
     output_dir = os.path.join(JOBS_DIR, job_id)
     os.makedirs(output_dir, exist_ok=True)
-    job = Job(job_id=job_id, pdf_path=pdf_path, output_dir=output_dir, label=label)
+    job = Job(job_id=job_id, pdf_path=pdf_path, output_dir=output_dir,
+              label=label, owns_pdf=owns_pdf)
     with _jobs_lock:
         _jobs[job_id] = job
 

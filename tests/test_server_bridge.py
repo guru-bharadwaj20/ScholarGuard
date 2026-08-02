@@ -7,6 +7,7 @@ about the bridge's own state machine, not about detection.
 """
 
 import logging
+import os
 import threading
 import time
 
@@ -175,3 +176,88 @@ def test_terminal_event_is_recorded_before_the_status_flips():
         kinds = [e["kind"] for e in job.events]
     assert kinds[-1] == "completed"
     assert job.status_now() == "completed"
+
+
+# ------------------------------------------------------------- job retention
+def _finished_job(jid, finished_at, tmp_path, owns_pdf=False):
+    out = tmp_path / jid
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "report.json").write_text("{}", encoding="utf-8")
+    pdf = tmp_path / f"{jid}.pdf"
+    pdf.write_bytes(b"%PDF-1.4")
+    job = bridge.Job(job_id=jid, pdf_path=str(pdf), output_dir=str(out),
+                     owns_pdf=owns_pdf)
+    job.finished_at = finished_at
+    job.status = "completed"
+    return job
+
+
+def test_finished_jobs_past_the_ttl_are_evicted(tmp_path, monkeypatch):
+    now = time.time()
+    fresh = _finished_job("fresh", now - 10, tmp_path)
+    stale = _finished_job("stale", now - bridge.JOB_TTL_SECONDS - 60, tmp_path)
+    monkeypatch.setattr(bridge, "_jobs", {"fresh": fresh, "stale": stale})
+
+    bridge._evict_stale_jobs(now=now)
+
+    assert set(bridge._jobs) == {"fresh"}
+    assert not os.path.exists(stale.output_dir), "disk was not reclaimed"
+    assert os.path.exists(fresh.output_dir)
+
+
+def test_running_jobs_are_never_evicted(tmp_path, monkeypatch):
+    now = time.time()
+    running = bridge.Job(job_id="run", pdf_path="p.pdf",
+                         output_dir=str(tmp_path / "run"))
+    running.status = "running"
+    running.started_at = now - bridge.JOB_TTL_SECONDS * 10   # ancient
+    stale = _finished_job("old", now - bridge.JOB_TTL_SECONDS - 1, tmp_path)
+    monkeypatch.setattr(bridge, "_jobs", {"run": running, "old": stale})
+
+    bridge._evict_stale_jobs(now=now)
+    assert "run" in bridge._jobs, "an in-flight analysis was discarded"
+
+
+def test_oldest_finished_jobs_are_dropped_beyond_the_cap(tmp_path, monkeypatch):
+    now = time.time()
+    monkeypatch.setattr(bridge, "MAX_RETAINED_JOBS", 3)
+    jobs = {f"j{i}": _finished_job(f"j{i}", now - (10 - i), tmp_path)
+            for i in range(6)}          # j0 oldest ... j5 newest
+    monkeypatch.setattr(bridge, "_jobs", dict(jobs))
+
+    bridge._evict_stale_jobs(now=now)
+
+    assert set(bridge._jobs) == {"j3", "j4", "j5"}
+    for gone in ("j0", "j1", "j2"):
+        assert not os.path.exists(jobs[gone].output_dir)
+
+
+def test_eviction_deletes_uploads_but_never_bundled_examples(tmp_path,
+                                                             monkeypatch):
+    now = time.time()
+    upload = _finished_job("up", now - bridge.JOB_TTL_SECONDS - 1, tmp_path,
+                           owns_pdf=True)
+    example = _finished_job("ex", now - bridge.JOB_TTL_SECONDS - 1, tmp_path,
+                            owns_pdf=False)
+    monkeypatch.setattr(bridge, "_jobs", {"up": upload, "ex": example})
+
+    bridge._evict_stale_jobs(now=now)
+
+    assert not os.path.exists(upload.pdf_path), "the upload should be reclaimed"
+    assert os.path.exists(example.pdf_path), (
+        "a bundled example paper is a repo file and must never be deleted")
+
+
+def test_starting_a_job_prunes_the_registry(tmp_path, monkeypatch):
+    now = time.time()
+    stale = _finished_job("stale", now - bridge.JOB_TTL_SECONDS - 60, tmp_path)
+    monkeypatch.setattr(bridge, "_jobs", {"stale": stale})
+    monkeypatch.setattr(bridge, "JOBS_DIR", str(tmp_path / "jobs"))
+    # Do not actually run the pipeline.
+    monkeypatch.setattr(bridge.threading, "Thread",
+                        lambda *a, **k: type("T", (), {"start": lambda self: None})())
+
+    job = bridge.start_job(str(tmp_path / "new.pdf"), label="new")
+
+    assert "stale" not in bridge._jobs
+    assert job.job_id in bridge._jobs

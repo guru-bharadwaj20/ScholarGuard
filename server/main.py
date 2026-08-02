@@ -115,7 +115,7 @@ async def analyze(file: UploadFile) -> dict:
     with open(pdf_path, "wb") as fh:
         fh.write(data)
 
-    job = bridge.start_job(pdf_path, label=name)
+    job = bridge.start_job(pdf_path, label=name, owns_pdf=True)
     return {"job_id": job.job_id, "label": job.label}
 
 
