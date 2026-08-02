@@ -6,6 +6,8 @@ never run here; jobs are injected directly into the registry.
 """
 
 
+import os
+
 import cv2
 import numpy as np
 import pytest
@@ -152,3 +154,67 @@ def test_figure_image_content_type_follows_the_file(client, tmp_path, name,
 def test_unknown_extension_falls_back_to_octet_stream():
     assert server_main._media_type_for("x.dat") == "application/octet-stream"
     assert server_main._media_type_for("X.JPEG") == "image/jpeg"
+
+
+# ------------------------------------------------------------- report files
+def _write_saved_reports(job, tmp_path):
+    """Mimic what report_builder.save_report leaves next to the job."""
+    json_path = os.path.join(job.output_dir, "paper_report.json")
+    md_path = os.path.join(job.output_dir, "paper_report.md")
+    with open(json_path, "w", encoding="utf-8") as fh:
+        fh.write('{"status": "completed"}')
+    with open(md_path, "w", encoding="utf-8") as fh:
+        fh.write("# ScholarGuard Integrity Report — paper.pdf\n")
+    job.report["report_paths"] = {"json": json_path, "markdown": md_path}
+    return json_path, md_path
+
+
+def test_result_never_leaks_server_filesystem_paths(client, tmp_path):
+    """report_paths holds ABSOLUTE server paths and was sent to the browser."""
+    job = _completed_job(tmp_path)
+    _write_saved_reports(job, tmp_path)
+
+    body = client.get("/analyze/jid/result").json()
+    assert "report_paths" not in body
+    assert body["downloads"] == {"json": "/analyze/jid/report.json",
+                                 "md": "/analyze/jid/report.md"}
+
+
+def test_downloads_are_absent_until_the_files_exist(client, tmp_path):
+    _completed_job(tmp_path)          # no report files written
+    assert client.get("/analyze/jid/result").json()["downloads"] == {}
+    assert client.get("/analyze/jid/report.json").status_code == 409
+
+
+@pytest.mark.parametrize("fmt, media, needle", [
+    ("json", "application/json", '"status": "completed"'),
+    ("md", "text/markdown", "ScholarGuard Integrity Report"),
+])
+def test_report_download_serves_the_saved_file(client, tmp_path, fmt, media,
+                                               needle):
+    job = _completed_job(tmp_path)
+    _write_saved_reports(job, tmp_path)
+
+    r = client.get(f"/analyze/jid/report.{fmt}")
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith(media)
+    assert needle in r.text
+    assert f"paper_scholarguard_report.{fmt}" in \
+        r.headers["content-disposition"]
+
+
+def test_report_download_rejects_unknown_format_and_job(client, tmp_path):
+    job = _completed_job(tmp_path)
+    _write_saved_reports(job, tmp_path)
+    assert client.get("/analyze/jid/report.csv").status_code == 404
+    assert client.get("/analyze/nope/report.json").status_code == 404
+
+
+def test_report_path_falls_back_to_the_naming_convention(tmp_path):
+    """Reports written before report_paths existed are still reachable."""
+    job = _completed_job(tmp_path)
+    _write_saved_reports(job, tmp_path)
+    del job.report["report_paths"]
+    assert bridge.report_file_path(job, "json") is not None
+    assert bridge.report_file_path(job, "md") is not None
+    assert bridge.report_file_path(job, "csv") is None

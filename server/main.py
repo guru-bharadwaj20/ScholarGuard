@@ -32,6 +32,7 @@ app.add_middleware(
 )
 
 UPLOADS_DIR = os.path.join(bridge.REPO_ROOT, "server", "uploads")
+MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB — larger than any eval-set PDF
 
 # Figure images are whatever the source carried: PDF extraction writes PNG, but
 # PMC packages ship .jpg and .tif directly (src/nlp/pmc_package prefers TIFF for
@@ -47,7 +48,7 @@ _FIGURE_MEDIA_TYPES = {
 def _media_type_for(path: str) -> str:
     return _FIGURE_MEDIA_TYPES.get(os.path.splitext(path)[1].lower(),
                                    "application/octet-stream")
-MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB — larger than any eval-set PDF
+
 
 # Bundled example papers from the REAL Stage 7 evaluation set. The clean
 # example is deliberately one that still scores moderately because of the
@@ -216,9 +217,41 @@ def result(job_id: str) -> dict:
             if has_image and cm.get("status") == "ok" and cm.get("forged")
             else None)
         fig.pop("image_path", None)  # local filesystem detail, not for clients
+    # report_paths holds ABSOLUTE server paths. It was being sent to the
+    # browser verbatim -- useless there, and it discloses the server's
+    # filesystem layout. Replace it with the URLs that actually serve them.
+    report.pop("report_paths", None)
+    report["downloads"] = {
+        fmt: f"/analyze/{job_id}/report.{fmt}"
+        for fmt in bridge.REPORT_FORMATS
+        if bridge.report_file_path(job, fmt) is not None
+    }
     report["job"] = {"job_id": state["job_id"], "label": state["label"],
                      "runtime_sec": state["runtime_sec"]}
     return report
+
+
+@app.get("/analyze/{job_id}/report.{fmt}")
+def report_download(job_id: str, fmt: str) -> FileResponse:
+    """Serve the saved report so a reviewer can keep it.
+
+    The pipeline writes both a machine-readable JSON and a human-readable
+    Markdown summary next to the job's outputs; neither was reachable over
+    HTTP, so the artefact a reviewer would attach to a case had to be pulled
+    off the server by hand.
+    """
+    spec = bridge.REPORT_FORMATS.get(fmt)
+    if spec is None:
+        raise HTTPException(404, "Unknown report format.")
+    job = bridge.get_job(job_id)
+    if job is None:
+        raise HTTPException(404, "Unknown job.")
+    path = bridge.report_file_path(job, fmt)
+    if path is None:
+        raise HTTPException(409, "The report is not written yet.")
+    stem = os.path.splitext(job.report["paper"]["filename"])[0]
+    return FileResponse(path, media_type=spec["media_type"],
+                        filename=f"{stem}_scholarguard_report.{fmt}")
 
 
 # ---------------------------------------------------------------------------

@@ -370,6 +370,38 @@ def _run_admitted(job: Job, run_pipeline) -> None:
 # ---------------------------------------------------------------------------
 
 
+#: Report formats the pipeline writes to disk, and how to serve each.
+REPORT_FORMATS = {
+    "json": {"key": "json", "media_type": "application/json",
+             "suffix": "_report.json"},
+    "md": {"key": "markdown", "media_type": "text/markdown; charset=utf-8",
+           "suffix": "_report.md"},
+}
+
+
+def report_file_path(job: Job, fmt: str) -> str | None:
+    """Absolute path of the saved report in ``fmt`` ("json" or "md"), or None.
+
+    The pipeline already writes both files next to the job's outputs and
+    records them under ``report_paths``; nothing served them, so the reports a
+    reviewer would actually keep were unreachable from the UI. Falls back to
+    the documented ``<stem>_report.<ext>`` naming when an older in-memory
+    report predates that key.
+    """
+    spec = REPORT_FORMATS.get(fmt)
+    if spec is None or not job.report:
+        return None
+    recorded = (job.report.get("report_paths") or {}).get(spec["key"])
+    if recorded and os.path.isfile(recorded):
+        return recorded
+    filename = job.report.get("paper", {}).get("filename") or ""
+    stem = os.path.splitext(filename)[0]
+    if not stem:
+        return None
+    candidate = os.path.join(job.output_dir, f"{stem}{spec['suffix']}")
+    return candidate if os.path.isfile(candidate) else None
+
+
 def figure_image_path(job: Job, index: int) -> str | None:
     """Absolute path of the extracted image for figure ``index`` (0-based)."""
     if not job.report:
