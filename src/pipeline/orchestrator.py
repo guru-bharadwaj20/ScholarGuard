@@ -159,7 +159,8 @@ class Pipeline:
         try:
             from src.llm.client import LLMClient
             return LLMClient(model=self.settings.llm_model,
-                             max_retries=self.settings.llm_max_retries)
+                             max_retries=self.settings.llm_max_retries,
+                             timeout=self.settings.llm_timeout_seconds)
         except Exception as exc:  # LLMConfigError (no key), import error, etc.
             self.warnings.append(
                 f"claim-consistency will be SKIPPED for all figures: {exc} "

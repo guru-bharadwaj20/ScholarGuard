@@ -21,6 +21,11 @@ from typing import Any
 
 DEFAULT_MODEL = "claude-opus-4-8"
 DEFAULT_MAX_TOKENS = 2048
+#: Per-request wall-clock cap. Without one the SDK waits on its own
+#: default, and a stalled connection can hang a whole benchmark run --
+#: config.yaml has carried `llm.timeout_seconds: 60` since the start, but
+#: nothing read it, so no timeout was ever applied.
+DEFAULT_TIMEOUT_SECONDS = 60.0
 
 
 class LLMConfigError(RuntimeError):
@@ -31,7 +36,8 @@ class LLMClient:
     """Wrapper around ``anthropic.Anthropic`` for JSON-constrained calls."""
 
     def __init__(self, model: str = DEFAULT_MODEL, api_key: str | None = None,
-                 max_retries: int = 3):
+                 max_retries: int = 3,
+                 timeout: float | None = DEFAULT_TIMEOUT_SECONDS):
         # anthropic is imported lazily so the rest of ScholarGuard (and the
         # unit tests, which mock this client) works without the SDK/key.
         try:
@@ -52,7 +58,9 @@ class LLMClient:
             )
         self._anthropic = anthropic
         self.model = model
-        self.client = anthropic.Anthropic(api_key=key, max_retries=max_retries)
+        self.timeout = timeout
+        self.client = anthropic.Anthropic(api_key=key, max_retries=max_retries,
+                                          timeout=timeout)
 
     # ------------------------------------------------------------------ API
     def extract_json(
@@ -95,6 +103,11 @@ class LLMClient:
         except self._anthropic.APIStatusError as exc:  # 4xx/5xx after retries
             raise LLMResponseError(f"Claude API error {exc.status_code}: "
                                    f"{exc.message}") from exc
+        except self._anthropic.APITimeoutError as exc:
+            raise LLMResponseError(
+                f"the Claude API did not respond within {self.timeout}s "
+                f"(llm.timeout_seconds). Raise it, or check the network."
+            ) from exc
         except self._anthropic.APIConnectionError as exc:
             raise LLMResponseError("could not reach the Claude API (network "
                                    "error).") from exc

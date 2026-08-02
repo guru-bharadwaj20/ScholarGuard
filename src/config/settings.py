@@ -161,6 +161,19 @@ class Settings:
     def llm_max_retries(self) -> int:
         return int(self.raw.get("llm", {}).get("max_retries", 3))
 
+    @property
+    def llm_timeout_seconds(self) -> float:
+        """Per-request wall-clock cap for Claude calls.
+
+        config.yaml has carried this key since the beginning but nothing read
+        it, so requests ran with no timeout of ours at all -- a stalled
+        connection could hang a whole benchmark.
+        """
+        from src.llm.client import DEFAULT_TIMEOUT_SECONDS
+
+        return float(self.raw.get("llm", {}).get("timeout_seconds",
+                                                 DEFAULT_TIMEOUT_SECONDS))
+
     # -- optimization -------------------------------------------------------
     @property
     def skip_llm_when_image_risk(self) -> bool:
