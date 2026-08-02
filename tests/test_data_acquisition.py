@@ -262,3 +262,47 @@ def test_rate_limiter_auto_detects_api_key(monkeypatch):
     assert RateLimiter().requests_per_second == 3.0
     monkeypatch.setenv("NCBI_API_KEY", "abc123")
     assert RateLimiter().requests_per_second == 10.0
+
+
+def test_rate_limiter_does_not_hold_its_lock_while_sleeping():
+    """Threads must block on the RATE, not on the mutex.
+
+    wait() used to sleep inside `with self._lock`, so a limiter shared between
+    threads serialised them through the sleep even when the window had room.
+    Six threads against a 3/s limit should take about one window, not six.
+    """
+    import threading
+    import time as _time
+
+    from src.data_acquisition.rate_limiter import RateLimiter
+
+    limiter = RateLimiter(requests_per_second=3)
+    start = _time.monotonic()
+    threads = [threading.Thread(target=limiter.wait) for _ in range(6)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    elapsed = _time.monotonic() - start
+
+    # 6 requests at 3/s needs one full window of waiting, and no more.
+    assert 0.9 <= elapsed < 2.0, f"took {elapsed:.2f}s"
+
+
+def test_rate_limiter_never_exceeds_its_budget_under_contention():
+    import threading
+
+    from src.data_acquisition.rate_limiter import RateLimiter
+
+    limiter = RateLimiter(requests_per_second=4)
+    threads = [threading.Thread(target=limiter.wait) for _ in range(12)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    # Whatever the interleaving, no rolling second may hold more than 4.
+    stamps = sorted(limiter._times)
+    for i, stamp in enumerate(stamps):
+        in_window = sum(1 for other in stamps[i:] if other - stamp < 1.0)
+        assert in_window <= 4

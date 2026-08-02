@@ -94,26 +94,48 @@ def _find_nxml(package_dir: str) -> str | None:
     return None
 
 
-def _resolve_graphic(href: str, package_dir: str) -> str | None:
+def _index_package_images(package_dir: str) -> dict[str, list[str]]:
+    """``{stem: [filenames]}`` for every raster in the package, listed once.
+
+    _resolve_graphic used to call os.listdir for EVERY figure, so a package
+    with many supplementary files did O(figures x files) directory work. The
+    listing is identical each time; take it once.
+    """
+    index: dict[str, list[str]] = {}
+    try:
+        names = os.listdir(package_dir)
+    except OSError:
+        return index
+    for name in names:
+        base, ext = os.path.splitext(name)
+        if ext.lower() in _IMAGE_EXT_PREFERENCE:
+            index.setdefault(base, []).append(name)
+    for candidates in index.values():
+        candidates.sort(key=lambda n: _IMAGE_EXT_PREFERENCE.index(
+            os.path.splitext(n)[1].lower()))
+    return index
+
+
+def _resolve_graphic(href: str, package_dir: str,
+                     image_index: dict[str, list[str]] | None = None) -> str | None:
     """Map a JATS graphic href to an actual image file in the package.
 
     Hrefs are usually stored WITHOUT an extension (``JO2021-5572402.001``);
     the package holds one or more raster files with that stem. Return the
     highest-resolution available (see ``_IMAGE_EXT_PREFERENCE``).
+
+    ``image_index`` is the shared listing from :func:`_index_package_images`;
+    when omitted it is built on the spot, so the function still works alone.
     """
+    if image_index is None:
+        image_index = _index_package_images(package_dir)
     stem = os.path.basename(href)
-    candidates: list[str] = []
-    for name in os.listdir(package_dir):
-        base, ext = os.path.splitext(name)
-        if base == stem and ext.lower() in _IMAGE_EXT_PREFERENCE:
-            candidates.append(name)
+    candidates = image_index.get(stem)
     if not candidates:
         # Some packages already include the extension in the href.
         if os.path.isfile(os.path.join(package_dir, stem)):
             return os.path.join(package_dir, stem)
         return None
-    candidates.sort(key=lambda n: _IMAGE_EXT_PREFERENCE.index(
-        os.path.splitext(n)[1].lower()))
     return os.path.join(package_dir, candidates[0])
 
 
@@ -218,6 +240,7 @@ def parse_pmc_package(source: str, extract_dir: str | None = None) -> dict:
     if not sections:  # fall back to the header-splitting heuristic
         sections = split_sections(full_text)
 
+    image_index = _index_package_images(package_dir)
     figures: list[dict] = []
     for ordinal, fig in enumerate(
             (e for e in root.iter() if _strip_ns(e.tag) == "fig"), start=1):
@@ -228,7 +251,8 @@ def parse_pmc_package(source: str, extract_dir: str | None = None) -> dict:
         label = _text_of(label_elem) if label_elem is not None else f"Figure {ordinal}"
         caption = _text_of(caption_elem) if caption_elem is not None else ""
         href = _href_of(graphic) if graphic is not None else None
-        image_path = _resolve_graphic(href, package_dir) if href else None
+        image_path = (_resolve_graphic(href, package_dir, image_index)
+                      if href else None)
         fig_num = _figure_number(label, fig.get("id", ""), ordinal)
         figures.append({
             "figure_num": fig_num,

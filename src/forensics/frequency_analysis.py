@@ -188,7 +188,9 @@ def analyze_frequency_spectrum(
       * ``anomaly_score``   — combined score in [0, 1], higher == synthetic
       * ``spectral_slope``  — fitted power-law exponent alpha
       * ``slope_r2``        — goodness of the power-law fit (0..1)
-      * ``high_freq_ratio`` — energy fraction in the upper spectrum half
+      * ``high_freq_falloff`` — log-power gap between the high and mid
+        bands (negative; more negative == high frequencies more suppressed)
+      * ``azimuthal_anisotropy`` — off-axis angular concentration (GAN grid)
       * ``periodicity``     — periodic-peak strength (0..1)
       * ``sub_scores``      — the individual [0,1] components
 

@@ -32,6 +32,10 @@ class LLMConfigError(RuntimeError):
     """Raised when the LLM client can't be configured (e.g. no API key)."""
 
 
+class LLMResponseError(RuntimeError):
+    """Raised when the LLM returns an unusable response (refusal/truncation)."""
+
+
 class LLMClient:
     """Wrapper around ``anthropic.Anthropic`` for JSON-constrained calls."""
 
@@ -125,10 +129,6 @@ class LLMClient:
         except json.JSONDecodeError as exc:  # pragma: no cover - shouldn't happen
             raise LLMResponseError(f"model returned non-JSON output: {text[:200]}") \
                 from exc
-
-
-class LLMResponseError(RuntimeError):
-    """Raised when the LLM returns an unusable response (refusal/truncation)."""
 
 
 def _encode_image_jpeg_b64(image_path: str, max_side: int = 1536,

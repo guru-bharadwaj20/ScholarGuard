@@ -31,16 +31,24 @@ class RateLimiter:
         self._lock = threading.Lock()
 
     def wait(self) -> None:
-        """Block until issuing one more request stays within the rate limit."""
-        with self._lock:
-            self._evict(time.monotonic())
-            if len(self._times) >= self.requests_per_second:
-                # Sleep until the oldest in-window request ages out.
-                sleep_for = self._window - (time.monotonic() - self._times[0])
-                if sleep_for > 0:
-                    time.sleep(sleep_for)
-                self._evict(time.monotonic())
-            self._times.append(time.monotonic())
+        """Block until issuing one more request stays within the rate limit.
+
+        The sleep happens OUTSIDE the lock. Holding it across time.sleep() made
+        every other thread block on the mutex rather than on the rate limit, so
+        a limiter shared between threads serialised them through the sleep even
+        when the window had room. Re-checking in a loop keeps the budget exact:
+        another thread may have consumed the slot we woke up for.
+        """
+        while True:
+            with self._lock:
+                now = time.monotonic()
+                self._evict(now)
+                if len(self._times) < self.requests_per_second:
+                    self._times.append(now)
+                    return
+                sleep_for = self._window - (now - self._times[0])
+            if sleep_for > 0:
+                time.sleep(sleep_for)
 
     def _evict(self, now: float) -> None:
         while self._times and now - self._times[0] >= self._window:
