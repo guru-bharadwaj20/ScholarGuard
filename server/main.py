@@ -32,6 +32,21 @@ app.add_middleware(
 )
 
 UPLOADS_DIR = os.path.join(bridge.REPO_ROOT, "server", "uploads")
+
+# Figure images are whatever the source carried: PDF extraction writes PNG, but
+# PMC packages ship .jpg and .tif directly (src/nlp/pmc_package prefers TIFF for
+# resolution). Serving all of them as image/png was wrong for every non-PNG --
+# browsers sniff JPEG, but a TIFF labelled image/png simply does not render.
+_FIGURE_MEDIA_TYPES = {
+    ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+    ".tif": "image/tiff", ".tiff": "image/tiff", ".webp": "image/webp",
+    ".bmp": "image/bmp", ".gif": "image/gif",
+}
+
+
+def _media_type_for(path: str) -> str:
+    return _FIGURE_MEDIA_TYPES.get(os.path.splitext(path)[1].lower(),
+                                   "application/octet-stream")
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB — larger than any eval-set PDF
 
 # Bundled example papers from the REAL Stage 7 evaluation set. The clean
@@ -219,7 +234,7 @@ def figure_image(job_id: str, index: int) -> FileResponse:
     path = bridge.figure_image_path(job, index)
     if path is None:
         raise HTTPException(404, "No image for this figure.")
-    return FileResponse(path, media_type="image/png")
+    return FileResponse(path, media_type=_media_type_for(path))
 
 
 @app.get("/analyze/{job_id}/figures/{index}/overlay")
@@ -236,4 +251,6 @@ def figure_overlay(job_id: str, index: int) -> FileResponse:
     path = bridge.overlay_image_path(job, index)
     if path is None:
         raise HTTPException(404, "Overlay unavailable.")
-    return FileResponse(path, media_type="image/png")
+    # Overlays are always written as PNG by save_image, but derive it anyway so
+    # the two endpoints cannot drift.
+    return FileResponse(path, media_type=_media_type_for(path))
