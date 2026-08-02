@@ -51,6 +51,7 @@ import cv2
 import numpy as np
 from sklearn.cluster import DBSCAN
 
+from src.detectors.dense_cmfd import DenseCMFDConfig
 from src.forensics.residual_similarity import clone_factor, residual_clone_test
 from src.preprocessing.panel_segmentation import PanelSegConfig, build_analysis_mask
 from src.utils.image_io import load_image, save_image, save_mask
@@ -129,6 +130,11 @@ class DetectorConfig:
     # misses. Escalation-only keeps the extra ~1s/figure cost off clear hits.
     use_dense_tier: bool = True
     dense_escalate_below: float = 0.45   # run dense only when SIFT conf < this
+    #: The dense tier's own knobs (block size, support floor, residual gate).
+    #: Nested so config.yaml can reach them: detect_dense_copy_move was called
+    #: without a cfg argument, so every one of them was frozen at its default
+    #: and unreachable from configuration.
+    dense: DenseCMFDConfig = field(default_factory=DenseCMFDConfig)
     # A dense hit only drives the fraud score when its noise-residual test
     # CONFIRMS a clone. An unconfirmed hit (INCONCLUSIVE residual on a
     # smooth/compressed block) is demoted to a LEAD — surfaced in the report
@@ -211,8 +217,10 @@ class CopyMoveDetector:
         # Dense-field escalation: only when the SIFT tier came up short.
         dense_used = False
         if cfg.use_dense_tier and confidence < cfg.dense_escalate_below:
+            # Imported here, not at module scope: the dense tier is the
+            # escalation path, and tests substitute it on its own module.
             from src.detectors.dense_cmfd import detect_dense_copy_move
-            dense = detect_dense_copy_move(gray, analysis_mask=gate)
+            dense = detect_dense_copy_move(gray, cfg.dense, analysis_mask=gate)
             if dense["confidence"] > confidence:
                 dense_used = True
                 verdict = dense.get("residual_verdict")

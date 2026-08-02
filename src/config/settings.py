@@ -10,6 +10,7 @@ config.yaml -> Settings -> existing DetectorConfig/CrossFigureConfig -> detector
 
 from __future__ import annotations
 
+import dataclasses
 import os
 from dataclasses import dataclass, field
 from typing import Any
@@ -42,32 +43,26 @@ class Settings:
 
     # -- Stage 2 / 3 config-object builders (no detector source edits) ------
     def copy_move_config(self):
-        """Build a Stage 2 DetectorConfig from config.yaml threshold values."""
+        """Build a Stage 2 DetectorConfig from config.yaml threshold values.
+
+        Every DetectorConfig field is settable, including the nested
+        ``dense:`` block of DenseCMFDConfig knobs.
+        """
         from src.detectors.copy_move_detector import DetectorConfig
 
-        cfg = self._detector("copy_move")
-        return _apply(DetectorConfig(), cfg, [
-            "confidence_threshold", "ratio_threshold", "min_inliers",
-            "sift_contrast_threshold", "max_dim",
-            "surprise_midpoint", "surprise_width",
-            "localization_scale", "localization_floor",
-            "use_analysis_mask", "residual_independent_factor",
-            "residual_inconclusive_factor",
-            "use_dense_tier", "dense_escalate_below",
-        ])
+        return _apply(DetectorConfig(), self._detector("copy_move"),
+                      ignore=("enabled",))
 
     def cross_figure_config(self):
-        """Build a Stage 3 CrossFigureConfig from config.yaml threshold values."""
+        """Build a Stage 3 CrossFigureConfig from config.yaml threshold values.
+
+        ``corpus_dir`` is read separately (it is a path, not a threshold), and
+        the nested ``stage2:`` block reaches the shared SIFT/ZNCC settings.
+        """
         from src.detectors.cross_figure_detector import CrossFigureConfig
 
-        cfg = self._detector("cross_figure")
-        return _apply(CrossFigureConfig(), cfg, [
-            "phash_max_distance", "embed_review", "embed_high",
-            "min_inliers", "min_region_area", "top_k",
-            "use_analysis_mask", "min_content_entropy",
-            "residual_independent_factor", "residual_inconclusive_factor",
-            "residual_veto_independent",
-        ])
+        return _apply(CrossFigureConfig(), self._detector("cross_figure"),
+                      ignore=("enabled", "corpus_dir"))
 
     # -- Stage 4 / 5 --------------------------------------------------------
     @property
@@ -106,8 +101,8 @@ class Settings:
         """Build a SpliceConfig from config.yaml threshold values."""
         from src.forensics.splice_detection import SpliceConfig
 
-        cfg = self._detector("splice")
-        return _apply(SpliceConfig(), cfg, ["min_flagged_frac", "min_flagged_blocks"])
+        return _apply(SpliceConfig(), self._detector("splice"),
+                      ignore=("enabled",))
 
     def ai_compression_baselines(self) -> dict | None:
         """Compression-conditioned AI-forensic baselines for the AI detector.
@@ -217,11 +212,42 @@ class Settings:
                 raise ConfigError(f"risk_scoring.categories missing '{c}'")
 
 
-def _apply(config_obj, values: dict, keys: list[str]):
-    """Set the listed keys on a dataclass config object from a dict, if present."""
-    for key in keys:
-        if key in values and values[key] is not None:
-            setattr(config_obj, key, values[key])
+def _apply(config_obj, values: dict, ignore: tuple[str, ...] = ()):
+    """Apply every config.yaml key that names a field on a dataclass config.
+
+    This used to take a hand-maintained whitelist of key names, which meant
+    roughly 35 documented knobs across DetectorConfig, CrossFigureConfig and
+    SpliceConfig were silently inert -- including
+    ``copy_move.dense_confirmed_only`` (described in-source as "the precision
+    gate") and all three of splice's MAD z-thresholds, which are the entirety
+    of that detector's sensitivity. config.yaml states that values are edited
+    there rather than in detector source; for those keys it was the opposite.
+
+    Every dataclass field is now settable, nested dataclass fields are applied
+    recursively from a nested mapping, and an unrecognised key raises rather
+    than being ignored -- a typo in a threshold name was previously
+    indistinguishable from leaving it at the default.
+
+    ``ignore`` lists keys that belong to the section but are consumed elsewhere
+    (``enabled``, ``corpus_dir``, ...), so they are not mistaken for typos.
+    """
+    spec = {f.name: f for f in dataclasses.fields(config_obj)}
+    unknown = sorted(set(values) - set(spec) - set(ignore))
+    if unknown:
+        raise ConfigError(
+            f"unknown {type(config_obj).__name__} option(s) in config.yaml: "
+            f"{', '.join(unknown)}. Valid options: {', '.join(sorted(spec))}")
+
+    for key, value in values.items():
+        if key not in spec or value is None:
+            continue
+        current = getattr(config_obj, key)
+        if dataclasses.is_dataclass(current) and isinstance(value, dict):
+            _apply(current, value)          # nested section, e.g. copy_move.dense
+        elif isinstance(current, tuple) and isinstance(value, list):
+            setattr(config_obj, key, tuple(value))   # YAML lists -> tuple fields
+        else:
+            setattr(config_obj, key, value)
     return config_obj
 
 
