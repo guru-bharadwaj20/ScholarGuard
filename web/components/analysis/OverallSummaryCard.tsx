@@ -9,12 +9,15 @@ import { RiskGauge } from "./RiskGauge";
 export function OverallSummaryCard({ report }: { report: PipelineReport }) {
   const figures = report.figures ?? [];
   const flagged = figures.filter((f) => f.risk.score >= 25);
-  const strongMultiSignal = figures.filter((f) => {
-    const firing = f.risk.breakdown.filter(
-      (b) => b.status === "ok" && b.points > 0,
-    );
-    return firing.length >= 2 && f.risk.score >= 50;
-  });
+  // Corroboration comes from the backend, which already computes it as
+  // n_corroborating_signals. This used to be recomputed here as
+  // `breakdown.filter(b => b.points > 0).length`, reintroducing the exact bug
+  // the risk scorer added its `fired` field to avoid: a lead-only detector
+  // (weight 0) fires and corroborates its neighbours while scoring no points,
+  // so counting points dropped it from the agreement count.
+  const strongMultiSignal = figures.filter(
+    (f) => (f.risk.n_corroborating_signals ?? 0) >= 2,
+  );
 
   const plainSentence =
     figures.length === 0
