@@ -19,10 +19,42 @@ IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"}
 MASK_SUFFIXES = ("_mask", "_gt")  # recognised ground-truth naming suffixes
 
 
+def imread_unicode(path: str, flag: int = cv2.IMREAD_COLOR) -> np.ndarray | None:
+    """``cv2.imread`` that survives non-ASCII paths. None if unreadable.
+
+    ``cv2.imread`` passes the filename to the C++ layer as bytes in the system
+    locale encoding, so on Windows it silently returns None for any path
+    containing a character outside the active code page. That is not exotic
+    here: inputs are user-uploaded PDFs and PMC filenames, and the project's
+    primary environment is Windows. Reading the bytes ourselves and decoding
+    from memory sidesteps the filename entirely.
+    """
+    try:
+        buffer = np.fromfile(path, dtype=np.uint8)
+    except OSError:
+        return None
+    if buffer.size == 0:
+        return None
+    return cv2.imdecode(buffer, flag)
+
+
+def imwrite_unicode(path: str, image: np.ndarray) -> bool:
+    """``cv2.imwrite`` that survives non-ASCII paths. See :func:`imread_unicode`."""
+    extension = os.path.splitext(path)[1] or ".png"
+    ok, encoded = cv2.imencode(extension, image)
+    if not ok:
+        return False
+    try:
+        encoded.tofile(path)
+    except OSError:
+        return False
+    return True
+
+
 def load_image(path: str, grayscale: bool = False) -> np.ndarray:
     """Load an image as BGR (or grayscale) uint8. Raises on failure."""
     flag = cv2.IMREAD_GRAYSCALE if grayscale else cv2.IMREAD_COLOR
-    image = cv2.imread(path, flag)
+    image = imread_unicode(path, flag)
     if image is None:
         raise FileNotFoundError(f"could not read image: {path}")
     return image
@@ -31,13 +63,13 @@ def load_image(path: str, grayscale: bool = False) -> np.ndarray:
 def save_image(image: np.ndarray, path: str) -> None:
     """Save a BGR/grayscale image, creating parent directories as needed."""
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    if not cv2.imwrite(path, image):
+    if not imwrite_unicode(path, image):
         raise IOError(f"could not write image: {path}")
 
 
 def load_mask(path: str) -> np.ndarray:
     """Load a binary mask as uint8 {0, 255} regardless of how it was saved."""
-    mask = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+    mask = imread_unicode(path, cv2.IMREAD_GRAYSCALE)
     if mask is None:
         raise FileNotFoundError(f"could not read mask: {path}")
     return ((mask > 127) * 255).astype(np.uint8)

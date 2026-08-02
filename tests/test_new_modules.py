@@ -4,6 +4,8 @@ clone test, JPEG-blockiness estimation, likelihood-ratio evidence fusion,
 and the new threshold-free / LOOCV evaluation metrics.
 """
 
+import os
+
 import numpy as np
 import pytest
 
@@ -341,3 +343,56 @@ def test_estimate_fire_calibration_smoothed():
     labels = [True, True, True, False, False, False]
     cal = estimate_fire_calibration(fired, labels)
     assert 0.0 < cal["p_fire_clean"] < cal["p_fire_fraud"] < 1.0
+
+
+# ---------------------------------------------------------------------------
+# Non-ASCII paths. cv2.imread hands the filename to the C++ layer in the system
+# locale encoding, so on Windows it silently returns None for any path outside
+# the active code page -- and this project's inputs are user-uploaded PDFs and
+# PMC filenames, on a Windows-primary environment.
+# ---------------------------------------------------------------------------
+def test_image_io_round_trips_a_non_ascii_path(tmp_path):
+    import numpy as np
+
+    from src.utils.image_io import load_image, load_mask, save_image, save_mask
+
+    folder = tmp_path / "Müller_étude_日本語"
+    folder.mkdir()
+    path = str(folder / "figuré_ünï.png")
+
+    original = np.dstack([
+        np.full((30, 40), 10, np.uint8),
+        np.full((30, 40), 120, np.uint8),
+        np.full((30, 40), 250, np.uint8),
+    ])
+    save_image(original, path)
+    assert os.path.isfile(path)
+
+    loaded = load_image(path)
+    assert loaded.shape == original.shape
+    np.testing.assert_array_equal(loaded, original)
+
+    gray = load_image(path, grayscale=True)
+    assert gray.ndim == 2
+
+    mask_path = str(folder / "figuré_ünï_mask.png")
+    mask = np.zeros((30, 40), np.uint8)
+    mask[5:15, 5:15] = 255
+    save_mask(mask, mask_path)
+    np.testing.assert_array_equal(load_mask(mask_path), mask)
+
+
+def test_load_image_still_raises_for_a_missing_file(tmp_path):
+    from src.utils.image_io import load_image
+
+    with pytest.raises(FileNotFoundError):
+        load_image(str(tmp_path / "nope_ünï.png"))
+
+
+def test_load_image_raises_for_a_non_image(tmp_path):
+    from src.utils.image_io import load_image
+
+    junk = tmp_path / "nöt_an_image.png"
+    junk.write_bytes(b"definitely not a PNG")
+    with pytest.raises(FileNotFoundError):
+        load_image(str(junk))

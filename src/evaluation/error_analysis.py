@@ -22,6 +22,7 @@ import numpy as np
 
 from src.evaluation import metrics as M
 from src.evaluation.ground_truth_loader import fraud_type_for_figure
+from src.utils.image_io import imread_unicode, imwrite_unicode
 
 # Map a detector name -> the ground-truth fraud_type it is responsible for.
 DETECTOR_TO_FRAUD_TYPE = {
@@ -289,7 +290,7 @@ def _annotate(rec: dict, out_dir: str, idx: int, category: str) -> str | None:
     img_path = rec.get("image_path")
     if not img_path or not os.path.isfile(img_path):
         return None
-    img = cv2.imread(img_path)
+    img = imread_unicode(img_path)
     if img is None:
         return None
     img = cv2.resize(img, (min(480, img.shape[1] * 2), min(360, img.shape[0] * 2)),
@@ -307,7 +308,8 @@ def _annotate(rec: dict, out_dir: str, idx: int, category: str) -> str | None:
                 cv2.FONT_HERSHEY_SIMPLEX, 0.36, (180, 180, 180), 1, cv2.LINE_AA)
     canvas = np.vstack([header, img])
     path = os.path.join(out_dir, f"{idx:02d}_{rec['paper_id']}_{rec['detector']}.png")
-    cv2.imwrite(path, canvas)
+    if not imwrite_unicode(path, canvas):
+        return None
     return path
 
 
