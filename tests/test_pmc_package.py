@@ -104,3 +104,54 @@ def test_orchestrator_accepts_package(package_dir, tmp_path):
     assert report["status"] == "completed"
     assert report["paper"]["n_figures"] == 2
     assert "overall_risk" in report
+
+
+# ---------------------------------------------------------------------------
+# Figure numbering: supplementary series must not collide with the main one.
+# ---------------------------------------------------------------------------
+@pytest.mark.parametrize("label, fig_id, expected", [
+    # Main series -- the number is real.
+    ("Figure 1", "fig1", 1),
+    ("Fig. 2", "f2", 2),
+    ("Figure 10", "fig10", 10),
+    ("FIGURE 7", "", 7),
+    ("F1", "F1", 1),
+    ("Figure 1a", "fig1a", 1),          # panel letter after the number is fine
+    ("", "fig4", 4),                    # falls through to the id
+    # Lettered / supplementary series -- no main-series number exists.
+    ("Figure S1", "figS1", None),
+    ("Fig. S2", "fs2", None),
+    ("Supplementary Figure 1", "supp1", None),
+    ("Supplemental Fig 4", "s4", None),
+    ("Extended Data Fig 3", "ed3", None),
+    ("Appendix Figure 2", "app2", None),
+    ("Figure E2", "e2", None),
+])
+def test_figure_number_separates_supplementary_from_main(label, fig_id, expected):
+    """`Figure S1` must not resolve to 1 and shadow the real Figure 1.
+
+    figure_num is the key both fraud_type_for_figure and the results-context
+    lookup use, so a supplementary figure taking the first digit in its label
+    could absorb a main figure's ground-truth annotation. PMC packages ship
+    both routinely -- the checked-in clean set has ppat.1014415.s001..s008
+    next to g001..g009.
+    """
+    from src.nlp.pmc_package import _figure_number
+
+    assert _figure_number(label, fig_id, ordinal=99) == expected
+
+
+def test_figure_number_falls_back_to_ordinal_when_unnumbered():
+    from src.nlp.pmc_package import _figure_number
+
+    assert _figure_number("", "", ordinal=12) == 12
+    assert _figure_number("Figa", "figa", ordinal=11) == 11
+
+
+def test_supplementary_and_main_figures_do_not_share_a_number():
+    from src.nlp.pmc_package import _figure_number
+
+    main = _figure_number("Figure 1", "fig1", ordinal=1)
+    supp = _figure_number("Figure S1", "figS1", ordinal=2)
+    assert main == 1
+    assert supp is None and supp != main

@@ -117,12 +117,58 @@ def _resolve_graphic(href: str, package_dir: str) -> str | None:
     return os.path.join(package_dir, candidates[0])
 
 
+# Words that mark a figure as belonging to a supplementary/appendix series
+# rather than the main numbered sequence.
+_SUPPLEMENTARY_WORDS = re.compile(
+    r"(?i)\b(?:supplementary|supplemental|supplement|appendix|extended\s+data)\b")
+# A leading "Figure"/"Fig."/"F" tag, which is not part of the series letter.
+_FIGURE_TAG = re.compile(r"(?i)^\s*(?:f(?:ig(?:ure)?)?s?)?\s*[.:_\-]?\s*")
+# What remains: either a bare number (main series) or a letter-prefixed one
+# (S1, E2, A3 -- supplementary, extended-data and appendix series).
+_LETTERED_NUMBER = re.compile(r"(?i)^([a-z]+)\s*[.:_\-]?\s*(\d+)")
+_PLAIN_NUMBER = re.compile(r"^\s*(\d+)")
+
+
+def _series_number(source: str) -> tuple[str, int | None]:
+    """Classify one label/id as ("main"|"lettered"|"none", number).
+
+    ``"lettered"`` means a non-main series (``Figure S1``, ``Extended Data
+    Fig 2``): its integer must NOT be used, because it collides with the main
+    figure of the same number.
+    """
+    if not source:
+        return "none", None
+    text = source.strip()
+    if _SUPPLEMENTARY_WORDS.search(text):
+        return "lettered", None
+    rest = _FIGURE_TAG.sub("", text, count=1)
+    if _LETTERED_NUMBER.match(rest):
+        return "lettered", None
+    m = _PLAIN_NUMBER.match(rest)
+    if m:
+        return "main", int(m.group(1))
+    return "none", None
+
+
 def _figure_number(label: str, fig_id: str, ordinal: int) -> int | None:
-    """Best-effort integer figure number from the label / id."""
+    """Main-series integer figure number from the label / id, else None.
+
+    Supplementary and extended-data figures return **None** rather than the
+    bare integer in their label. Taking the first digit meant ``Figure S1``
+    resolved to ``1``, colliding with the paper's real Figure 1 -- and since
+    ``figure_num`` is the key both ``fraud_type_for_figure`` and the results-
+    context lookup use, a supplementary figure could absorb a main figure's
+    ground-truth annotation. PMC packages routinely ship both (the checked-in
+    clean set has ppat.1014415.s001 through s008 alongside g001-g009).
+
+    A figure with no usable number at all falls back to its ordinal, as before.
+    """
     for source in (label, fig_id):
-        m = re.search(r"(\d+)", source or "")
-        if m:
-            return int(m.group(1))
+        kind, number = _series_number(source)
+        if kind == "main":
+            return number
+        if kind == "lettered":
+            return None      # a real series marker: do not guess past it
     return ordinal
 
 
