@@ -27,6 +27,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from src.utils.image_io import list_images
+from src.utils.torch_config import configure_torch_threads
 
 # torch is imported lazily so hash-only workflows don't pay its startup
 # cost (and so the module still imports if torch is missing).
@@ -82,9 +83,13 @@ class FeatureExtractor:
             net = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
             model = torch.nn.Sequential(*list(net.children())[:-1], torch.nn.Flatten(1))
         model.eval()
-        # Figures are processed one query at a time; keep torch off the
-        # remaining cores so the rest of the app stays responsive.
-        torch.set_num_threads(max(1, (os.cpu_count() or 2) - 1))
+        # Figures are processed one query at a time, so leave a core for the
+        # rest of the app -- but honour SCHOLARGUARD_TORCH_THREADS, because the
+        # parallel benchmark runner pins each worker to one thread and
+        # set_num_threads is process-global. This used to hardcode
+        # cpu_count-1 and, since cross-figure indexes every paper, silently
+        # undid that pinning inside every worker.
+        configure_torch_threads()
         return model
 
     def _preprocess(self, bgr: np.ndarray) -> np.ndarray:

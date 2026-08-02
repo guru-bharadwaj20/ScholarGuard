@@ -115,11 +115,13 @@ def classify_artifact(image_path: str, weights_path: str | None = None) -> dict 
         model.load_state_dict(checkpoint["state_dict"])
         model.eval()
         # One process gets the machine; N parallel processes must not each take
-        # it (the benchmark runner sets this to 1 in every worker, otherwise 32
-        # processes would open 31 threads apiece and thrash).
-        threads = os.environ.get("SCHOLARGUARD_TORCH_THREADS")
-        torch.set_num_threads(int(threads) if threads and threads.isdigit()
-                              else max(1, (os.cpu_count() or 2) - 1))
+        # it (the benchmark runner sets SCHOLARGUARD_TORCH_THREADS to 1 in every
+        # worker, otherwise 32 processes would open 31 threads apiece and
+        # thrash). Shared with the feature extractor so the policy is decided
+        # once — see src.utils.torch_config.
+        from src.utils.torch_config import configure_torch_threads
+
+        configure_torch_threads()
         _loaded[weights_path] = checkpoint, model
     checkpoint, model = _loaded[weights_path]
 
