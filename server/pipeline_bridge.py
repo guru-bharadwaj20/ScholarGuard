@@ -153,14 +153,45 @@ def start_job(pdf_path: str, label: str) -> Job:
     return job
 
 
+# ---------------------------------------------------------------------------
+# Log-level custody, shared by every concurrently-running job.
+#
+# The "scholarguard" logger is process-global, so each worker used to save the
+# level, raise it to INFO, and restore it in its own `finally`. With two jobs
+# running, the first to finish restored the level captured BEFORE it started --
+# silencing the second job's progress stream for the rest of its run. Refcount
+# instead: the first job in raises the level, the last job out restores it.
+# ---------------------------------------------------------------------------
+_log_level_lock = threading.Lock()
+_log_level_users = 0
+_log_level_saved: int | None = None
+
+
+def _acquire_progress_logging(logger: logging.Logger) -> None:
+    global _log_level_users, _log_level_saved
+    with _log_level_lock:
+        if _log_level_users == 0:
+            _log_level_saved = logger.level
+            if logger.level > logging.INFO or logger.level == logging.NOTSET:
+                logger.setLevel(logging.INFO)
+        _log_level_users += 1
+
+
+def _release_progress_logging(logger: logging.Logger) -> None:
+    global _log_level_users, _log_level_saved
+    with _log_level_lock:
+        _log_level_users = max(0, _log_level_users - 1)
+        if _log_level_users == 0 and _log_level_saved is not None:
+            logger.setLevel(_log_level_saved)
+            _log_level_saved = None
+
+
 def _run(job: Job) -> None:
     """Worker: attach the log tap, call run_pipeline(), record the outcome."""
     from src.pipeline.orchestrator import run_pipeline  # existing, unmodified
 
     logger = logging.getLogger("scholarguard")
-    prior_level = logger.level
-    if logger.level > logging.INFO or logger.level == logging.NOTSET:
-        logger.setLevel(logging.INFO)
+    _acquire_progress_logging(logger)
     handler = _JobLogHandler(job, threading.get_ident())
     logger.addHandler(handler)
 
@@ -183,7 +214,7 @@ def _run(job: Job) -> None:
     finally:
         job.finished_at = time.time()
         logger.removeHandler(handler)
-        logger.setLevel(prior_level)
+        _release_progress_logging(logger)
 
 
 # ---------------------------------------------------------------------------
