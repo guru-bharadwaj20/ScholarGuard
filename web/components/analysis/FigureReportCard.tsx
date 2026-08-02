@@ -7,6 +7,9 @@ import type { DetectorResult, FigureReport } from "@/lib/api";
 import { DETECTORS, type DetectorId } from "@/lib/constants";
 import { GlassCard } from "@/components/ui/card";
 import { DetectorReliabilityBadge } from "./DetectorReliabilityBadge";
+import { DetectorScoreTable } from "./DetectorScoreTable";
+import { DetectorDetail } from "./DetectorDetail";
+import { EvidencePanel } from "./EvidencePanel";
 import { ImageOverlayToggle } from "./ImageOverlayToggle";
 import { cn } from "@/lib/utils";
 
@@ -114,6 +117,10 @@ export function FigureReportCard({
   const [open, setOpen] = React.useState(false);
   const flags = flagsFor(fig);
   const skipped = skippedDetectors(fig);
+  // Straight from the report. Agreement between independent detectors on ONE
+  // figure is the signal the held-out evaluation found most informative, so it
+  // is shown before the score rather than buried in the breakdown.
+  const corroborating = fig.risk?.n_corroborating_signals ?? 0;
 
   return (
     <motion.div
@@ -140,6 +147,14 @@ export function FigureReportCard({
               <span className="type-meta truncate">
                 {flags.length} signal{flags.length > 1 ? "s" : ""} ·{" "}
                 {flags.map((f) => DETECTORS[f.id].shortName).join(", ")}
+              </span>
+            )}
+            {corroborating >= 2 && (
+              <span
+                className="shrink-0 rounded-full border border-caution/40 bg-caution/10 px-2 py-0.5 font-mono text-[10px] text-caution"
+                title="Independent detectors agreeing on one figure is the strongest signal this tool has"
+              >
+                {corroborating} detectors agree
               </span>
             )}
           </div>
@@ -228,6 +243,19 @@ export function FigureReportCard({
                     </p>
                   )}
                 </div>
+              </div>
+
+              {/* The arithmetic, the calibrated reading of it, and the raw
+                  measurements — so the headline number can be checked. */}
+              <div className="grid gap-6 border-t border-ink-line p-5 lg:grid-cols-2">
+                <DetectorScoreTable
+                  breakdown={fig.risk?.breakdown ?? []}
+                  score={fig.risk?.score ?? 0}
+                />
+                <EvidencePanel risk={fig.risk} />
+              </div>
+              <div className="border-t border-ink-line p-5">
+                <DetectorDetail fig={fig} />
               </div>
             </motion.div>
           )}

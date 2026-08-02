@@ -111,7 +111,16 @@ export interface PipelineReport {
   figures: FigureReport[];
   pipeline_warnings: string[];
   disclaimer: string;
+  /** Present only once the pipeline has written the files. */
+  downloads?: Partial<Record<"json" | "md", string>>;
   job?: { job_id: string; label: string; runtime_sec: number };
+}
+
+export interface BackendHealth {
+  status: string;
+  inflight: number;
+  max_concurrent: number;
+  max_inflight: number;
 }
 
 export interface ExampleMeta {
@@ -146,12 +155,14 @@ export interface ProgressEvent {
 // Calls
 // ---------------------------------------------------------------------------
 
-export async function getHealth(): Promise<boolean> {
+/** Backend liveness + current load, or null when it cannot be reached. */
+export async function getHealth(): Promise<BackendHealth | null> {
   try {
     const res = await fetch(`${BASE}/health`, { cache: "no-store" });
-    return res.ok;
+    if (!res.ok) return null;
+    return (await res.json()) as BackendHealth;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -165,26 +176,36 @@ export async function startUpload(file: File): Promise<{ job_id: string }> {
   const form = new FormData();
   form.append("file", file);
   const res = await fetch(`${BASE}/analyze`, { method: "POST", body: form });
-  if (!res.ok) {
-    const detail = await res.json().catch(() => null);
-    throw new Error(detail?.detail ?? "The upload could not be started.");
-  }
+  if (!res.ok) throw await apiError(res, "The upload could not be started.");
   return res.json();
 }
 
 export async function startExample(id: string): Promise<{ job_id: string }> {
   const res = await fetch(`${BASE}/analyze/example/${id}`, { method: "POST" });
-  if (!res.ok) {
-    const detail = await res.json().catch(() => null);
-    throw new Error(detail?.detail ?? "The example could not be started.");
-  }
+  if (!res.ok) throw await apiError(res, "The example could not be started.");
   return res.json();
 }
 
 export async function getResult(jobId: string): Promise<PipelineReport> {
-  const res = await fetch(`${BASE}/analyze/${jobId}/result`, { cache: "no-store" });
-  if (!res.ok) throw new Error("Result not available yet.");
+  const res = await fetch(`${BASE}/analyze/${jobId}/result`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw await apiError(res, "The result is not available.");
   return res.json();
+}
+
+/**
+ * The server's own explanation, not a generic one. A 503 from /analyze carries
+ * a capacity message worth reading, and the old blanket strings hid genuine
+ * 500s behind "Result not available yet".
+ */
+async function apiError(res: Response, fallback: string): Promise<Error> {
+  const detail = await res.json().catch(() => null);
+  const message =
+    typeof detail?.detail === "string" ? detail.detail : fallback;
+  const error = new Error(message) as Error & { status?: number };
+  error.status = res.status;
+  return error;
 }
 
 /** Absolute (same-origin) URL for a figure image path returned by the API. */
