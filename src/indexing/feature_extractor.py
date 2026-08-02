@@ -60,11 +60,6 @@ class FeatureExtractor:
         with Image.open(image_path) as img:
             return imagehash.phash(img.convert("L"), hash_size=hash_size)
 
-    @staticmethod
-    def phash_distance(hash_a: str, hash_b: str) -> int:
-        """Hamming distance between two hex-encoded pHashes (0..64)."""
-        return imagehash.hex_to_hash(hash_a) - imagehash.hex_to_hash(hash_b)
-
     # ---------------------------------------------------------- embeddings
     def _build_model(self):
         try:
@@ -198,16 +193,3 @@ class FeatureExtractor:
         stacked = (np.concatenate(embeddings) if embeddings
                    else np.zeros((0, self.embedding_dim), np.float32))
         return paths, phashes, stacked, np.array(row_to_image, np.int64)
-
-
-# Module-level default so the simple functional API doesn't rebuild the
-# CNN for every call.
-_default_extractor: FeatureExtractor | None = None
-
-
-def extract_features(image_path: str) -> dict:
-    """Extract {"phash": str, "embedding": np.ndarray} for one image."""
-    global _default_extractor
-    if _default_extractor is None:
-        _default_extractor = FeatureExtractor()
-    return _default_extractor.extract(image_path)

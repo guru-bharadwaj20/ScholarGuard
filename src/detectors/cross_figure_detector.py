@@ -403,15 +403,6 @@ class CrossFigureDetector:
         }
 
 
-def detect_cross_figure_duplicates(query_image_path: str, corpus_dir: str) -> dict:
-    """One-shot functional API (builds/loads the corpus index on demand).
-
-    For many queries against the same corpus, construct a
-    :class:`CrossFigureDetector` once and call ``.detect()`` repeatedly.
-    """
-    return CrossFigureDetector(corpus_dir).detect(query_image_path)
-
-
 # --------------------------------------------------------------------------
 # CLI
 # --------------------------------------------------------------------------

@@ -28,7 +28,7 @@ import pytest
 from src.detectors.copy_move_detector import (
     CopyMoveDetector,
     _bbox_area_frac,
-    _chance_cell_matches,
+    _uniform_chance_mu,
     _logistic,
 )
 from src.detectors.ai_generation_detector import detect_ai_generation
@@ -62,16 +62,16 @@ def test_logistic_is_bounded_and_monotonic():
     assert all(b > a for a, b in zip(ys, ys[1:]))
 
 
-def test_chance_cell_matches_scales_sensibly():
+def test_uniform_chance_mu_scales_sensibly():
     # No matches -> no chance mass.
-    assert _chance_cell_matches(0, 500, 500, 24.0) == 0.0
+    assert _uniform_chance_mu(0, 500, 500, 24.0) == 0.0
     # More matches -> proportionally higher expected count per cell.
-    lo = _chance_cell_matches(100, 500, 500, 24.0)
-    hi = _chance_cell_matches(1000, 500, 500, 24.0)
+    lo = _uniform_chance_mu(100, 500, 500, 24.0)
+    hi = _uniform_chance_mu(1000, 500, 500, 24.0)
     assert hi > lo > 0.0
     assert hi == pytest.approx(10 * lo, rel=1e-6)
     # A bigger image spreads the same matches thinner (smaller chance/cell).
-    big = _chance_cell_matches(1000, 1000, 1000, 24.0)
+    big = _uniform_chance_mu(1000, 1000, 1000, 24.0)
     assert big < hi
 
 

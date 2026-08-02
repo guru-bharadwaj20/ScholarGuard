@@ -698,11 +698,6 @@ def _uniform_chance_mu(n_matches: int, w: int, h: int, eps: float) -> float:
     return max(float(n_matches) * cell / offset_space, 1e-6)
 
 
-# Backwards-compatible alias (the uniform model is now a floor for the
-# empirical estimate; kept so existing tests/importers keep working).
-_chance_cell_matches = _uniform_chance_mu
-
-
 def _empirical_chance_mu(offsets: np.ndarray, member_mask: np.ndarray,
                          eps: float, shape) -> float:
     """Expected matches in one offset cell under the *empirical* null.

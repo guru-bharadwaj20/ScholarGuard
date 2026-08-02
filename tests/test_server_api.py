@@ -5,7 +5,6 @@ codes, content types, the shape of /result -- was unverified. The pipeline is
 never run here; jobs are injected directly into the registry.
 """
 
-import os
 
 import cv2
 import numpy as np

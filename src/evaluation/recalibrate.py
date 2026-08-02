@@ -410,25 +410,6 @@ def run(report_path: str, target_fpr: float, ai_z: float, prior: float,
     }
 
 
-def compare_scoring(papers: list[Paper], target_fpr: float, ai_z: float,
-                    prior: float) -> dict:
-    """ROC-AUC of each paper-scoring scheme (threshold-free ranking).
-
-    Directly tests the compounding hypothesis: if ``max_cofire`` /
-    ``best_figure_llr`` (figure-count-insensitive) beat ``any_fire_count``
-    (compounding), then requiring corroboration on a single figure is the win.
-    Uses a full-data calibration — ranking AUC is the comparison, and the
-    calibration only sets thresholds, not the labels being ranked.
-    """
-    cal = fit_calibration(papers, target_fpr, ai_z, prior)
-    y = [p.gt_fraud for p in papers]
-    out = {}
-    for name in ("any_fire_count", "max_cofire", "best_figure_llr"):
-        out[name] = M.roc_auc(y, [paper_scores(p, cal)[name] for p in papers])
-    out["stored_prob"] = M.roc_auc(y, [p.stored_prob for p in papers])
-    return out
-
-
 def _fmt(v):
     return "n/a" if v is None else f"{v:.3f}"
 
