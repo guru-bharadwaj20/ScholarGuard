@@ -68,6 +68,29 @@ def test_confusion_and_binary_metrics_math():
     assert m["accuracy"] == pytest.approx(3 / 5)
 
 
+def test_f1_is_zero_not_undefined_when_a_rate_is_zero():
+    """A measured 0.0 must not render as "not measurable".
+
+    A detector that fires only on clean figures has precision 0.0 and F1 0.0 --
+    a real, terrible measurement. `not precision` treated that as undefined, so
+    metrics_summary.md showed the worst possible result identically to a
+    missing one.
+    """
+    # Fires once, always wrongly; catches nothing. precision 0, recall 0.
+    m = metrics.binary_metrics({"tp": 0, "fp": 3, "fn": 4, "tn": 5})
+    assert m["precision"] == 0.0
+    assert m["recall"] == 0.0
+    assert m["f1"] == 0.0
+
+    # Catches everything but also floods false alarms: recall 1, precision 0.2.
+    m = metrics.binary_metrics({"tp": 2, "fp": 8, "fn": 0, "tn": 5})
+    assert m["recall"] == 1.0
+    assert m["f1"] == pytest.approx(2 * 0.2 * 1.0 / 1.2, abs=1e-3)
+
+    # Only a zero DENOMINATOR is undefined, and that still returns None.
+    assert metrics.binary_metrics({"tp": 0, "fp": 0, "fn": 0, "tn": 5})["f1"] is None
+
+
 def test_binary_metrics_handles_undefined_ratios():
     # No positives predicted or present -> precision undefined (None), not 0.
     counts = {"tp": 0, "fp": 0, "fn": 0, "tn": 5}

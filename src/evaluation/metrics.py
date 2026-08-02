@@ -466,7 +466,16 @@ def binary_metrics(counts: dict) -> dict:
 
 
 def _f1(precision, recall) -> float | None:
-    if not precision or not recall:
+    """F1 from precision/recall, or None when either is genuinely undefined.
+
+    The test is ``is None``, not falsiness. A precision or recall of exactly
+    0.0 is a *measurement* -- the detector fired only on clean figures, or
+    caught none of the positives -- and its F1 is 0.0. Treating it as undefined
+    rendered the worst possible result identically to a missing one ("not
+    measurable") in metrics_summary.md and the side-by-side comparison tables.
+    Only a zero denominator upstream, which surfaces as None, is undefined.
+    """
+    if precision is None or recall is None:
         return None
     if precision + recall == 0:
         return 0.0
