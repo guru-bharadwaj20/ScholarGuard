@@ -189,27 +189,46 @@ def detect_ai_generation(image_path: str, weights_path: str | None = None,
         forensic_high = float(base["mean"]) + Z_LIKELY_AI * float(base["std"])
 
     classifier = classify_artifact(image_path, weights_path)
-    reasons: list[str] = []
 
-    # Describe the forensic signals in words.
-    if freq_score >= forensic_high:
-        reasons.append(f"frequency spectrum is anomalous ({freq_score:.2f}): "
-                       f"periodicity={freq['periodicity']:.2f}, "
-                       f"falloff_gap={freq['high_freq_falloff']:.1f}")
-    if noise_score >= forensic_high:
-        reasons.append(f"noise residual is unnatural ({noise_score:.2f}): "
-                       f"autocorr={noise['autocorrelation']:.2f}, "
-                       f"flatness={noise['spectral_flatness']:.2f}")
-
+    # --- decide the verdict FIRST, then describe it ------------------------
+    # The explanation used to be assembled before the verdict was known, which
+    # let the two contradict each other: the per-component notes below fired on
+    # `freq_score >= forensic_high`, but that band is calibrated for the MEAN of
+    # the two sub-scores. A figure with freq 0.9 and noise 0.1 has a forensic
+    # score of 0.5 -- comfortably "likely_real" -- yet its explanation opened
+    # with "frequency spectrum is anomalous".
     if classifier is None:
         verdict = _forensic_verdict(forensic, forensic_low, forensic_high)
         classifier_score = None
+    else:
+        classifier_score = classifier["p_ai_generated"]
+        combined = (CLASSIFIER_WEIGHT * classifier_score
+                    + FORENSIC_WEIGHT * forensic)
+        disagreement = abs(classifier_score - forensic)
+        verdict = (SUSPICIOUS if disagreement >= DISAGREEMENT_MARGIN
+                   else _combined_verdict(combined))
+
+    reasons: list[str] = []
+
+    # Which component drove the forensic score, reported only when the forensic
+    # score itself is elevated -- so the detail always explains the verdict
+    # rather than arguing with it.
+    if forensic >= forensic_low:
+        if freq_score >= noise_score:
+            reasons.append(f"frequency spectrum is the stronger signal "
+                           f"({freq_score:.2f}): "
+                           f"periodicity={freq['periodicity']:.2f}, "
+                           f"falloff_gap={freq['high_freq_falloff']:.1f}")
+        if noise_score >= freq_score:
+            reasons.append(f"noise residual is the stronger signal "
+                           f"({noise_score:.2f}): "
+                           f"autocorr={noise['autocorrelation']:.2f}, "
+                           f"flatness={noise['spectral_flatness']:.2f}")
+
+    if classifier is None:
         if not reasons:
             reasons.append(f"frequency ({freq_score:.2f}) and noise "
-                           f"({noise_score:.2f}) signals within natural range"
-                           if verdict == LIKELY_REAL else
-                           f"forensic signals mildly elevated "
-                           f"(freq {freq_score:.2f}, noise {noise_score:.2f})")
+                           f"({noise_score:.2f}) signals within natural range")
         if stratum is not None:
             reasons.append(
                 f"compared against the real-figure baseline for its "
@@ -217,23 +236,13 @@ def detect_ai_generation(image_path: str, weights_path: str | None = None,
                 f"forensic z={forensic_z:+.1f}")
         reasons.append("no classifier weights loaded — verdict from forensic "
                        "signals only (train via colab notebook for stronger calls)")
+    elif abs(classifier_score - forensic) >= DISAGREEMENT_MARGIN:
+        reasons.append(
+            f"classifier (p_ai={classifier_score:.2f}) and forensics "
+            f"(score={forensic:.2f}) strongly disagree — flagged for review")
     else:
-        classifier_score = classifier["p_ai_generated"]
-        combined = (CLASSIFIER_WEIGHT * classifier_score
-                    + FORENSIC_WEIGHT * forensic)
-        disagreement = abs(classifier_score - forensic)
-        if disagreement >= DISAGREEMENT_MARGIN:
-            verdict = SUSPICIOUS
-            reasons.append(
-                f"classifier (p_ai={classifier_score:.2f}) and forensics "
-                f"(score={forensic:.2f}) strongly disagree — flagged for review")
-        else:
-            verdict = _combined_verdict(combined)
-            reasons.append(f"classifier p_ai={classifier_score:.2f} "
-                           f"(val_acc={classifier.get('val_accuracy')})")
-
-    if not reasons:
-        reasons.append("no anomalous signals detected")
+        reasons.append(f"classifier p_ai={classifier_score:.2f} "
+                       f"(val_acc={classifier.get('val_accuracy')})")
 
     return {
         "frequency_anomaly_score": round(freq_score, 4),

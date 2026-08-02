@@ -148,3 +148,48 @@ def test_forensic_bands_recalibrated_to_real_baseline():
     assert abs(FORENSIC_HIGH - three_sd) < 0.03
     assert _forensic_verdict(two_sd + 0.005) == SUSPICIOUS
     assert _forensic_verdict(three_sd + 0.02) == LIKELY_AI
+
+
+# ---------------------------------------------------------------------------
+# The explanation must agree with the verdict it explains.
+# ---------------------------------------------------------------------------
+def _explain(freq, noise, monkeypatch, baselines=None):
+    """Run detect_ai_generation with stubbed sub-scores; return the result."""
+    import src.detectors.ai_generation_detector as mod
+
+    monkeypatch.setattr(mod, "analyze_frequency_spectrum",
+                        lambda p: {"anomaly_score": freq, "periodicity": 0.1,
+                                   "high_freq_falloff": -4.0})
+    monkeypatch.setattr(mod, "analyze_noise_residual",
+                        lambda p: {"anomaly_score": noise,
+                                   "autocorrelation": 0.1,
+                                   "spectral_flatness": 0.5})
+    monkeypatch.setattr(mod, "classify_artifact", lambda p, w: None)
+    return mod.detect_ai_generation("unused.png", baselines={})
+
+
+def test_explanation_does_not_claim_anomaly_on_a_likely_real_verdict(monkeypatch):
+    """One lopsided sub-score must not produce a contradictory explanation.
+
+    The component notes fired on `freq_score >= forensic_high`, but that band is
+    calibrated for the MEAN of the two sub-scores. freq 0.9 / noise 0.1 gives a
+    forensic score of 0.5 -- well inside likely_real -- yet the explanation
+    opened with "frequency spectrum is anomalous".
+    """
+    result = _explain(0.9, 0.1, monkeypatch)
+    assert result["combined_verdict"] == "likely_real"
+    assert "anomalous" not in result["explanation"]
+    assert "within natural range" in result["explanation"]
+
+
+def test_explanation_names_the_driving_component_when_elevated(monkeypatch):
+    result = _explain(0.95, 0.95, monkeypatch)
+    assert result["combined_verdict"] == "likely_ai_generated"
+    assert "stronger signal" in result["explanation"]
+
+
+def test_explanation_is_never_empty(monkeypatch):
+    """Every path must say something; the old `if not reasons` was dead code."""
+    for freq, noise in [(0.0, 0.0), (0.5, 0.5), (1.0, 1.0), (0.9, 0.1)]:
+        result = _explain(freq, noise, monkeypatch)
+        assert result["explanation"].strip()
