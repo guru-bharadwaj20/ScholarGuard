@@ -330,6 +330,17 @@ class CopyMoveDetector:
         (Stage 3 cross-figure matching runs the same SIFT configuration)."""
         return self._extract_features(gray, analysis_mask)
 
+    @property
+    def descriptor_norm(self) -> int:
+        """cv2 norm type matching this detector's descriptors (L2 / HAMMING).
+
+        Public because the cross-figure matcher needs it to build a BFMatcher
+        over the same descriptors, and was reaching into ``_norm`` across a
+        module boundary to get it. Which norm applies depends on whether SIFT
+        or the ORB fallback was built, so it cannot be hardcoded by callers.
+        """
+        return self._norm
+
     # ------------------------------------------------------ matching stage
     def _self_match(self, keypoints, descriptors) -> list[tuple[int, int]]:
         """Match the image's descriptors against themselves.

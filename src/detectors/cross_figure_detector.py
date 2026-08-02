@@ -30,6 +30,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from collections import OrderedDict
 from dataclasses import dataclass, field
 
 import cv2
@@ -184,7 +185,7 @@ class CrossImageRegionMatcher:
             return no_match
 
         # Plain cross-image 2-NN matching with Lowe ratio test.
-        matcher = cv2.BFMatcher(self._stage2._norm)
+        matcher = cv2.BFMatcher(self._stage2.descriptor_norm)
         knn = matcher.knnMatch(des_a, des_b, k=2)
         pts_a, pts_b = [], []
         for pair in knn:
@@ -304,16 +305,24 @@ class CrossFigureDetector:
             corpus_dir, extractor=self.extractor, show_progress=show_progress
         )
         self._region_matcher = CrossImageRegionMatcher(self.config)
-        self._mask_cache: dict[str, np.ndarray | None] = {}
+        # Bounded: one analysis mask is a full image-sized uint8 array, and a
+        # long-lived detector querying a large corpus would otherwise retain
+        # one per corpus image for the life of the process.
+        self._mask_cache: OrderedDict[str, np.ndarray | None] = OrderedDict()
+        self._mask_cache_limit = 64
 
     def _analysis_mask_for(self, path: str, image: np.ndarray) -> np.ndarray | None:
         """Cached content-gating mask per image path (None = no gating)."""
         if not self.config.use_analysis_mask:
             return None
-        if path not in self._mask_cache:
-            mask, _ = build_analysis_mask(image, PanelSegConfig())
-            self._mask_cache[path] = mask
-        return self._mask_cache[path]
+        if path in self._mask_cache:
+            self._mask_cache.move_to_end(path)
+            return self._mask_cache[path]
+        mask, _ = build_analysis_mask(image, PanelSegConfig())
+        self._mask_cache[path] = mask
+        while len(self._mask_cache) > self._mask_cache_limit:
+            self._mask_cache.popitem(last=False)     # evict least-recently-used
+        return mask
 
     def detect(self, query_image_path: str, verify_regions: bool = True) -> dict:
         """Run the three-tier duplicate search for one query image."""
