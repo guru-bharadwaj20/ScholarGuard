@@ -349,3 +349,78 @@ def test_concurrency_slots_serialise_runs(monkeypatch):
 def test_concurrency_default_is_sane():
     assert bridge.MAX_CONCURRENT_ANALYSES >= 1
     assert bridge.MAX_INFLIGHT_ANALYSES > bridge.MAX_CONCURRENT_ANALYSES
+
+
+# ------------------------------------------------------------------ overlays
+def test_overlay_uses_the_configured_detector_not_stock_defaults(tmp_path,
+                                                                 monkeypatch):
+    """The overlay must be drawn at the same thresholds as the report.
+
+    It used to call the module-level detect_copy_move() helper, which builds a
+    CopyMoveDetector with plain DetectorConfig() defaults and ignores
+    config.yaml. The overlay could therefore contradict the report it
+    illustrates -- regions where the report found none, or none where the
+    report said "forged".
+    """
+    import cv2
+    import numpy as np
+
+    from src.config.settings import load_settings
+
+    fig = tmp_path / "fig.png"
+    cv2.imwrite(str(fig), np.full((80, 80, 3), 180, np.uint8))
+
+    job = bridge.Job(job_id="ov", pdf_path="p.pdf",
+                     output_dir=str(tmp_path / "out"))
+    job.report = {"figures": [{"image_path": str(fig)}]}
+
+    seen = {}
+    real_ctor = bridge_copy_move_ctor()
+
+    def spy(config=None):
+        seen["config"] = config
+        return real_ctor(config)
+
+    monkeypatch.setattr("src.detectors.copy_move_detector.CopyMoveDetector", spy)
+    out = bridge.overlay_image_path(job, 0)
+
+    assert out is not None and os.path.isfile(out)
+    assert seen["config"] is not None, "overlay ran with default config"
+    expected = load_settings().copy_move_config()
+    assert seen["config"].confidence_threshold == expected.confidence_threshold
+    assert seen["config"].max_dim == expected.max_dim
+    assert seen["config"].use_dense_tier == expected.use_dense_tier
+
+
+def bridge_copy_move_ctor():
+    from src.detectors.copy_move_detector import CopyMoveDetector
+    return CopyMoveDetector
+
+
+def test_overlay_is_cached_and_built_once(tmp_path, monkeypatch):
+    import cv2
+    import numpy as np
+
+    fig = tmp_path / "fig.png"
+    cv2.imwrite(str(fig), np.full((60, 60, 3), 200, np.uint8))
+    job = bridge.Job(job_id="cache", pdf_path="p.pdf",
+                     output_dir=str(tmp_path / "out"))
+    job.report = {"figures": [{"image_path": str(fig)}]}
+
+    builds = []
+    real = bridge_copy_move_ctor()
+    monkeypatch.setattr("src.detectors.copy_move_detector.CopyMoveDetector",
+                        lambda config=None: (builds.append(1), real(config))[1])
+
+    first = bridge.overlay_image_path(job, 0)
+    second = bridge.overlay_image_path(job, 0)
+    assert first == second
+    assert len(builds) == 1, "the cached overlay was rebuilt"
+
+
+def test_overlay_returns_none_without_a_figure_image(tmp_path):
+    job = bridge.Job(job_id="none", pdf_path="p.pdf",
+                     output_dir=str(tmp_path / "out"))
+    job.report = {"figures": [{"image_path": None}]}
+    assert bridge.overlay_image_path(job, 0) is None
+    assert bridge.overlay_image_path(job, 99) is None

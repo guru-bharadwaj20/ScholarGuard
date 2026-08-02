@@ -385,12 +385,25 @@ def figure_image_path(job: Job, index: int) -> str | None:
     return path if os.path.isfile(path) else None
 
 
+#: Overlay generation re-runs copy-move, which is seconds to minutes of CPU.
+#: Serialise it so a page full of figures cannot stampede the box, and so two
+#: requests for the same overlay do not both compute it.
+_overlay_lock = threading.Lock()
+
+
 def overlay_image_path(job: Job, index: int) -> str | None:
     """Copy-move region overlay for one figure, generated lazily and cached.
 
-    Calls the EXISTING ``detect_copy_move()`` (Stage 2, unchanged) purely for
-    its ``visualization`` output — the same drawing the Stage 2 CLI writes.
-    No visualization logic is reimplemented here.
+    Calls the EXISTING Stage 2 detector purely for its ``visualization`` output
+    -- the same drawing the Stage 2 CLI writes. No visualization logic is
+    reimplemented here.
+
+    It is built with the detector CONFIGURED FROM config.yaml, not with stock
+    dataclass defaults. The previous call to the module-level
+    ``detect_copy_move()`` helper used a DetectorConfig() built from defaults,
+    so the overlay could disagree with the report it was illustrating -- boxes
+    where the report found nothing, or nothing where the report said "forged" --
+    because the two ran at different thresholds.
     """
     src_path = figure_image_path(job, index)
     if src_path is None:
@@ -401,8 +414,14 @@ def overlay_image_path(job: Job, index: int) -> str | None:
     if os.path.isfile(out_path):
         return out_path
 
-    from src.detectors.copy_move_detector import detect_copy_move  # existing
-    from src.utils.image_io import save_image                       # existing
-    result = detect_copy_move(src_path)
-    save_image(result["visualization"], out_path)
+    from src.config.settings import load_settings
+    from src.detectors.copy_move_detector import CopyMoveDetector
+    from src.utils.image_io import load_image, save_image
+
+    with _overlay_lock:
+        if os.path.isfile(out_path):     # built while we waited for the lock
+            return out_path
+        detector = CopyMoveDetector(load_settings().copy_move_config())
+        result = detector.detect(load_image(src_path))
+        save_image(result["visualization"], out_path)
     return out_path
