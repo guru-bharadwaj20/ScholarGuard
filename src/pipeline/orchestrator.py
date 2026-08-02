@@ -48,15 +48,52 @@ class Pipeline:
     def __init__(self, settings: Settings, llm_client=_AUTO):
         self.settings = settings
         self.warnings: list[str] = []
+        self._parse_error: str | None = None
         self._llm_client = self._resolve_llm_client(llm_client)
         # Built lazily/once per paper in analyze().
         self._copy_move = None
         self._cross_detector = None
         self._corpus_is_self = False
+        # Scratch directory holding the self-corpus copies + its embedding
+        # index; removed by _cleanup() once the paper is done.
+        self._temp_corpus_dir: str | None = None
 
     # ------------------------------------------------------------------ API
     def analyze(self, pdf_path: str, output_dir: str | None = None) -> dict:
-        """Run the full pipeline on one PDF and return the report dict."""
+        """Run the full pipeline on one PDF and return the report dict.
+
+        The self-corpus scratch directory is always removed afterwards, whether
+        the run succeeded, returned a failure report, or raised.
+        """
+        try:
+            return self._analyze(pdf_path, output_dir)
+        finally:
+            self._cleanup()
+
+    def __enter__(self) -> "Pipeline":
+        return self
+
+    def __exit__(self, *exc_info) -> None:
+        self._cleanup()
+
+    def _cleanup(self) -> None:
+        """Remove the per-paper self-corpus scratch directory.
+
+        _build_cross_detector copies EVERY figure of the paper into a mkdtemp
+        directory, and SimilarityIndex.build_or_load then writes its embeddings
+        cache inside it. Nothing ever deleted that: a 30-paper benchmark left 30
+        full duplicates of the figure corpus behind, and the API server leaked
+        one per job for the lifetime of the process.
+        """
+        directory, self._temp_corpus_dir = self._temp_corpus_dir, None
+        # Drop the detector first: it holds the index built from that directory.
+        self._cross_detector = None
+        if not directory:
+            return
+        shutil.rmtree(directory, ignore_errors=True)
+        logger.debug("removed temporary corpus %s", directory)
+
+    def _analyze(self, pdf_path: str, output_dir: str | None = None) -> dict:
         output_dir = output_dir or self.settings.output_dir
 
         # --- 1. validate + parse (corrupt PDF -> graceful failure) ---------
@@ -206,6 +243,9 @@ class Pipeline:
                 return None
             self._corpus_is_self = True
             corpus_dir = tempfile.mkdtemp(prefix="scholarguard_stage6_corpus_")
+            # Recorded so _cleanup() can remove it: this holds a copy of every
+            # figure plus the embedding index built over them.
+            self._temp_corpus_dir = corpus_dir
             for p in paths:
                 shutil.copy(p, os.path.join(corpus_dir, os.path.basename(p)))
             logger.info("cross-figure corpus: paper's own %d figure(s)", len(paths))

@@ -154,3 +154,48 @@ def test_unconfigured_absolute_bands_produce_no_notice():
     settings = Settings(raw={"detectors": {"ai_generation": {}}})
     assert settings.ai_threshold_conflict() is None
     assert settings.ai_compression_baselines() is None
+
+
+def test_self_corpus_scratch_dir_is_removed(sample_pdf, tmp_path):
+    """The per-paper corpus copy must not survive the run.
+
+    _build_cross_detector mkdtemp's a directory, copies EVERY figure of the
+    paper into it, and SimilarityIndex writes its embeddings cache inside.
+    Nothing deleted it: a 30-paper benchmark left 30 full duplicates of the
+    figure corpus behind, and the API server leaked one per job.
+    """
+    import glob
+    import tempfile
+
+    pattern = os.path.join(tempfile.gettempdir(),
+                           "scholarguard_stage6_corpus_*")
+    before = set(glob.glob(pattern))
+
+    run_pipeline(sample_pdf, output_dir=str(tmp_path / "out"),
+                 llm_client=FakeLLM())
+
+    assert set(glob.glob(pattern)) - before == set(), (
+        "the self-corpus scratch directory outlived the pipeline run")
+
+
+def test_scratch_dir_is_removed_even_when_a_paper_raises(sample_pdf, tmp_path,
+                                                         monkeypatch):
+    """Cleanup is in a finally, so a mid-run crash still tidies up."""
+    import glob
+    import tempfile
+
+    from src.pipeline import orchestrator as orch
+
+    pattern = os.path.join(tempfile.gettempdir(),
+                           "scholarguard_stage6_corpus_*")
+    before = set(glob.glob(pattern))
+
+    def boom(self, figure):
+        raise RuntimeError("simulated mid-run failure")
+
+    monkeypatch.setattr(orch.Pipeline, "_analyze_figure", boom)
+    with pytest.raises(RuntimeError, match="simulated mid-run failure"):
+        run_pipeline(sample_pdf, output_dir=str(tmp_path / "out2"),
+                     llm_client=FakeLLM())
+
+    assert set(glob.glob(pattern)) - before == set()
