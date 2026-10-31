@@ -1,5 +1,13 @@
 # ScholarGuard
 
+<p align="center">
+  <a href="ScholarGuard%20Demo.mp4">
+    <img src="images/ScholarGuard%20Demo%20thumbnail.png" alt="Watch the ScholarGuard demo video" width="720">
+  </a>
+  <br>
+  <sub>▶ <b><a href="ScholarGuard%20Demo.mp4">Watch the ScholarGuard demo</a></b> (74 s): the eight-stage roadmap, the twelve-stage evaluation, 111 commits, CI, then twelve live steps on real retracted and clean papers</sub>
+</p>
+
 **Figure-integrity screening for scientific papers — with every limitation measured and disclosed.**
 
 [![Tests](https://github.com/guru-bharadwaj20/ScholarGuard/actions/workflows/tests.yml/badge.svg)](https://github.com/guru-bharadwaj20/ScholarGuard/actions/workflows/tests.yml)
